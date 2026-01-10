@@ -50,6 +50,15 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call1_obj
 
+        ! jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2);
+        function fj_call2_obj_double(func_name, arg_obj, arg2) bind(c, name="fj_call2_obj_double") result(res)
+            import :: c_char, c_ptr, c_double
+            character(kind=c_char), dimension(*), intent(in) :: func_name
+            type(c_ptr), value :: arg_obj
+            real(kind=c_double), value :: arg2
+            type(c_ptr) :: res
+        end function fj_call2_obj_double
+
         ! jl_value_t* fj_eval_string(const char* cmd);
         function fj_eval_string(cmd) bind(c, name="fj_eval_string") result(res)
             import :: c_char, c_ptr
@@ -80,6 +89,14 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_wrap_array_1d
 
+        ! jl_value_t* fj_wrap_array_2d(void* data, int64_t rows, int64_t cols);
+        function fj_wrap_array_2d(data, rows, cols) bind(c, name="fj_wrap_array_2d") result(res)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: data
+            integer(kind=c_int64_t), value :: rows, cols
+            type(c_ptr) :: res
+        end function fj_wrap_array_2d
+
     end interface
 
     ! --- Helpers for Strings ---
@@ -107,6 +124,7 @@ module julia_high_level
         procedure :: call_method_0
         procedure :: call_method_1_real
         procedure :: call_method_1_obj
+        procedure :: call_method_2_obj_real
         ! procedure :: to_real
         final :: destructor
     end type JuliaValue
@@ -239,5 +257,17 @@ contains
         raw_res = fj_call1_obj(to_c_string(func_name), arg_obj%ptr)
         res%ptr = fj_retain(raw_res)
     end function call_method_1_obj
+
+    function call_method_2_obj_real(self, func_name, arg_obj, arg2) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: func_name
+        type(JuliaValue), intent(in) :: arg_obj
+        real(kind=c_double), intent(in) :: arg2
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        
+        raw_res = fj_call2_obj_double(to_c_string(func_name), arg_obj%ptr, arg2)
+        res%ptr = fj_retain(raw_res)
+    end function call_method_2_obj_real
 
 end module julia_high_level

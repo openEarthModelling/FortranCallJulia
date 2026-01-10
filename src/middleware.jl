@@ -1,8 +1,11 @@
 module FortranBridge
 
 using Base.Libc.Libdl
+using LinearAlgebra
+using Pkg
 
-export julia_add, print_array_info, retain_obj, release_obj, register_f2
+export julia_add, print_array_info, retain_obj, release_obj, register_f2, register_f2_string,
+       calc_eigen, calc_inv, ensure_special_functions, calc_bessel_j, print_matrix_info, complex_demo_func
 
 # --- Global Reference Management (GC Protection) ---
 # Prevents Julia objects held by Fortran/C from being garbage collected.
@@ -145,6 +148,101 @@ function print_array_info(arr::Array)
     println("  Size: ", size(arr))
     println("  First Element: ", isempty(arr) ? "empty" : arr[1])
     return nothing
+end
+
+function print_matrix_info(mat::Matrix)
+    println("[Julia] Matrix Info:")
+    println("  Type: ", typeof(mat))
+    println("  Size: ", size(mat))
+    if !isempty(mat)
+        println("  Corner (1,1): ", mat[1,1])
+        println("  Corner (end,end): ", mat[end,end])
+    end
+    return nothing
+end
+
+# --- Linear Algebra Wrappers ---
+
+function calc_inv(A::Matrix{Float64})::Matrix{Float64}
+    # returns inverse of A
+    return inv(A)
+end
+
+function calc_eigen(A::Matrix{Float64})
+    # Returns an Eigen object. 
+    # Fortran will see this as an opaque object (JuliaValue).
+    # We can add methods to extract values from it later if needed,
+    # or just print it for now.
+    return eigen(A)
+end
+
+
+# --- Special Functions (External Package) ---
+
+const SpecialFuncsLoaded = Ref{Bool}(false)
+
+function ensure_special_functions()
+    if SpecialFuncsLoaded[]
+        return nothing
+    end
+    
+    # check if installed
+    try
+        # This will fail if not installed
+        @eval import SpecialFunctions
+        SpecialFuncsLoaded[] = true
+        println("[Julia] SpecialFunctions already installed.")
+    catch
+        println("[Julia] SpecialFunctions not found. Installing...")
+        try
+            Pkg.add("SpecialFunctions")
+            @eval import SpecialFunctions
+            SpecialFuncsLoaded[] = true
+            println("[Julia] SpecialFunctions installed successfully.")
+        catch e
+            @error "Failed to install SpecialFunctions" exception=e
+            rethrow(e)
+        end
+    end
+    return nothing
+end
+
+function calc_bessel_j(nu::Float64, x::Float64)
+    if !SpecialFuncsLoaded[]
+        ensure_special_functions()
+    end
+    # Call dynamically to avoid compile-time dependency if package missing initially
+    # SpecialFunctions is imported into this module via @eval
+    sf_mod = getfield(@__MODULE__, :SpecialFunctions)
+    return Base.invokelatest(getfield(sf_mod, :besselj), nu, x)
+end
+
+function complex_demo_func(A::Matrix{Float64}, x::Float64)
+    # Ensure SpecialFunctions is loaded
+    if !SpecialFuncsLoaded[]
+        ensure_special_functions()
+    end
+    
+    # Use dynamic dispatch for SpecialFunctions to be safe
+    sf_mod = getfield(@__MODULE__, :SpecialFunctions)
+    besselj_func = getfield(sf_mod, :besselj)
+    
+    # Calculate J0(x)
+    j0_val = Base.invokelatest(besselj_func, 0.0, x)
+    
+    println("[Julia] complex_demo_func calling...")
+    println("[Julia]   J0(", x, ") = ", j0_val)
+    
+    # Matrix calc: B = J0(x) * A + inv(A)
+    # We assume A is invertible.
+    B = j0_val * A + inv(A)
+    
+    # Solve Eigenvalues
+    F = eigen(B)
+    
+    println("[Julia]   Calculation done. Returning eigenvalues.")
+    
+    return F.values # Returns Vector (possibly Complex)
 end
 
 # --- Example Mathematical Function for Testing ---

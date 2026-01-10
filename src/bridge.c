@@ -240,6 +240,39 @@ jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj) {
     return ret;
 }
 
+jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2) {
+    if (!check_thread()) return NULL;
+
+    jl_function_t *func = jl_get_function(jl_main_module, func_name);
+    if (!func) {
+        func = jl_get_function(FortranBridgeMod, func_name);
+    }
+
+    if (!func) {
+        char err[256];
+        snprintf(err, 256, "Function %s not found.", func_name);
+        set_error(err);
+        return NULL;
+    }
+
+    jl_value_t *arg1_val = (jl_value_t*)arg_obj;
+    jl_value_t *arg2_val = NULL;
+    
+    JL_GC_PUSH2(&arg1_val, &arg2_val); // Push arg1 too just to be safe/consistent, though it should be rooted
+    
+    arg2_val = jl_box_float64(arg2);
+    
+    jl_value_t* ret = jl_call2(func, arg1_val, arg2_val);
+    
+    if (check_julia_exception()) {
+        JL_GC_POP();
+        return NULL;
+    }
+    
+    JL_GC_POP();
+    return ret;
+}
+
 jl_value_t* fj_eval_string(const char* cmd) {
     if (!check_thread()) return NULL;
     
@@ -297,5 +330,51 @@ jl_value_t* fj_wrap_array_1d(void* data, int64_t length) {
     jl_array_t *arr = jl_ptr_to_array_1d(array_type, data, length, 0);
     
     if (check_julia_exception()) return NULL;
+    return (jl_value_t*)arr;
+}
+
+jl_value_t* fj_wrap_array_2d(void* data, int64_t rows, int64_t cols) {
+    if (!check_thread()) return NULL;
+
+    // jl_ptr_to_array(jl_value_t *atype, void *data, jl_value_t *dims, int own_buffer);
+    
+    jl_value_t *array_type = jl_apply_array_type((jl_value_t*)jl_float64_type, 2);
+    
+    // Create tuple for dimensions
+    jl_value_t *dims = jl_eval_string("nothing"); // Placeholder
+    
+    // Actually, jl_ptr_to_array_1d is specialized. For 2D, there isn't a direct "jl_ptr_to_array_2d" in typical public API 
+    // unless we use jl_ptr_to_array with a dims tuple.
+    
+    // Let's create the tuple (rows, cols)
+    // Note: Fortran is Column-Major, Julia is Column-Major. Matches perfectly.
+    
+    jl_value_t *dims_tuple = NULL;
+    JL_GC_PUSH1(&dims_tuple);
+    
+    // We can construct a tuple via eval or jl_new_struct
+    // Easier: jl_new_struct(jl_tuple_type, ...) but tuple type is variadic.
+    
+    // Safer way: Use jl_apply_tuple_type? No, that makes a type.
+    // Use jl_box_long for dims.
+    
+    jl_value_t *v_rows = jl_box_long(rows);
+    jl_value_t *v_cols = jl_box_long(cols);
+    
+    // Create tuple (rows, cols)
+    // jl_tuple2 is not exported? It usually is part of the API or macros. 
+    // If not, we can use jl_call with `tuple` function.
+    
+    jl_function_t *tuple_func = jl_get_function(jl_base_module, "tuple");
+    dims_tuple = jl_call2(tuple_func, v_rows, v_cols);
+    
+    jl_array_t *arr = jl_ptr_to_array(array_type, data, dims_tuple, 0);
+    
+    if (check_julia_exception()) {
+        JL_GC_POP();
+        return NULL;
+    }
+    
+    JL_GC_POP();
     return (jl_value_t*)arr;
 }

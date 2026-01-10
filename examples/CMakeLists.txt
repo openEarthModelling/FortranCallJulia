@@ -99,4 +99,24 @@ add_fj_example(ex02_math_oop    02_math_oop.f90)
 add_fj_example(ex03_performance 03_performance.f90)
 add_fj_example(ex04_arrays      04_arrays.f90)
 add_fj_example(ex05_errors      05_errors.f90)
-add_fj_example(ex06_sysimage    06_sysimage.f90)
+# Example 6: Sysimage Loading
+add_fj_example(ex06_sysimage 06_sysimage.f90)
+
+# Example 7: Linear Algebra
+add_fj_example(ex07_linear_algebra 07_linear_algebra.f90)
+
+# Example 8: Special Functions
+add_fj_example(ex08_special_functions 08_special_functions.f90)
+
+# Example 9: Complex Workflow
+add_fj_example(ex09_complex_workflow 09_complex_workflow.f90)
+
+# Example 10: External Script
+add_fj_example(ex10_external_script 10_external_script.f90)
+add_custom_command(TARGET ex10_external_script POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_SOURCE_DIR}/user_script.jl
+    ${CMAKE_CURRENT_BINARY_DIR}/user_script.jl
+    COMMENT "Copying user_script.jl to ex10 directory"
+)
+
