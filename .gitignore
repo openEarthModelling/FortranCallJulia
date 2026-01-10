@@ -1,0 +1,22 @@
+# CMake build directory
+build/
+cmake-build-*/
+
+# Compiled Object files
+*.o
+*.mod
+*.smod
+
+# Executables
+test_app
+*.exe
+*.out
+
+# Julia
+*.ji
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*~
