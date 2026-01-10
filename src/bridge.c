@@ -12,6 +12,10 @@ jl_function_t* FuncRetain = NULL;
 jl_function_t* FuncRelease = NULL;
 jl_function_t* FuncRegister = NULL;
 
+#ifndef JULIA_BINDIR
+#define JULIA_BINDIR NULL
+#endif
+
 void check_julia_exception() {
     if (jl_exception_occurred()) {
         jl_value_t *ex = jl_exception_occurred();
@@ -31,16 +35,26 @@ void fj_init(const char* image_path) {
     if (jl_is_initialized()) return;
 
     if (image_path != NULL) {
-        jl_init_with_image(NULL, image_path);
+        jl_init_with_image(JULIA_BINDIR, image_path);
     } else {
         jl_init();
     }
 
-    // Load the middleware logic
-    // In a real deployment, this might be precompiled into the sysimage.
-    // Here we load it dynamically.
-    jl_eval_string("include(\"middleware.jl\")");
-    jl_eval_string("using .FortranBridge");
+    // Check if FortranBridge is already loaded (from sysimage)
+    jl_value_t* mod_check = jl_eval_string("isdefined(Main, :FortranBridge)");
+    int is_loaded = (mod_check && jl_unbox_bool(mod_check));
+
+    if (!is_loaded) {
+        // Not loaded, so include it dynamically (Development Mode)
+        // printf("[C Bridge] Loading middleware.jl dynamically...\n");
+        jl_eval_string("include(\"middleware.jl\")");
+        jl_eval_string("using .FortranBridge");
+    } else {
+        // Loaded from sysimage
+        // printf("[C Bridge] Using precompiled FortranBridge.\n");
+        jl_eval_string("using Main.FortranBridge");
+    }
+
     check_julia_exception();
 
     // Cache the module and key functions

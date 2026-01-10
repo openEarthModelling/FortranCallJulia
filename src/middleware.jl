@@ -2,7 +2,7 @@ module FortranBridge
 
 using Base.Libc.Libdl
 
-export julia_add, print_array_info
+export julia_add, print_array_info, retain_obj, release_obj, register_f2
 
 # --- Global Reference Management (GC Protection) ---
 # Prevents Julia objects held by Fortran/C from being garbage collected.

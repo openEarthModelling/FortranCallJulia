@@ -68,6 +68,9 @@ target_include_directories(fj_middleware PUBLIC
 )
 
 # Apply Julia C Flags to bridge.c
+get_filename_component(JULIA_BINDIR ${JULIA_EXECUTABLE} DIRECTORY)
+target_compile_definitions(fj_middleware PRIVATE JULIA_BINDIR="${JULIA_BINDIR}")
+
 target_compile_options(fj_middleware PRIVATE 
     $<$<COMPILE_LANGUAGE:C>:${JULIA_CFLAGS}>
     $<$<COMPILE_LANGUAGE:Fortran>:-fno-underscoring> 
@@ -103,3 +106,20 @@ add_custom_command(TARGET test_app POST_BUILD
     ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
     COMMENT "Copying middleware.jl to binary directory"
 )
+
+# ==============================================================================
+# AOT Sysimage Target
+# ==============================================================================
+add_custom_target(sysimage
+    COMMAND ${JULIA_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/build_sysimage.jl
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    COMMENT "Building Julia Sysimage (AOT)..."
+)
+
+# ==============================================================================
+# AOT Test Application
+# ==============================================================================
+add_executable(test_aot examples/test_aot.f90)
+target_link_libraries(test_aot PRIVATE fj_middleware)
+target_compile_options(test_aot PRIVATE -fno-underscoring)
+set_target_properties(test_aot PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules)

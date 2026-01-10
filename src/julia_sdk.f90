@@ -120,6 +120,14 @@ contains
         call fj_init(c_null_ptr)
     end subroutine julia_init
 
+    subroutine julia_init_with_image(image_path)
+        character(len=*), intent(in) :: image_path
+        character(kind=c_char, len=len_trim(image_path)+1), target :: c_path
+        
+        c_path = trim(image_path) // c_null_char
+        call fj_init(c_loc(c_path))
+    end subroutine julia_init_with_image
+
     subroutine julia_shutdown()
         call fj_shutdown()
     end subroutine julia_shutdown
