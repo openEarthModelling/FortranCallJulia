@@ -10,11 +10,17 @@ program ex07_linear_algebra
     type(c_ptr) :: raw_ptr, wrapped_ptr
     integer :: i, j
 
-    print *, "--- Example 7: Linear Algebra (Matrix Ops) ---"
+    print *, "--- Example 7: Linear Algebra (Matrices) ---"
     call julia_init()
 
-    ! Initialize 3x3 Matrix (Identity + some values)
-    ! Fortran is Column-Major. Julia is Column-Major.
+    ! Load Demo Logic
+    call julia_eval_string('include("advanced_demo.jl")')
+    call julia_eval_string('using .AdvancedDemo')
+    call julia_eval_string('const calc_inv = AdvancedDemo.calc_inv')
+    call julia_eval_string('const calc_eigen = AdvancedDemo.calc_eigen')
+
+    ! 1. Create a 3x3 Matrix in Fortran
+    ! Column-Major:
     matrix = 0.0d0
     do i = 1, 3
         matrix(i, i) = 2.0d0 ! Diagonal

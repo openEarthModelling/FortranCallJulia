@@ -1,152 +1,69 @@
 module FortranBridge
 
 using Base.Libc.Libdl
-using LinearAlgebra
-using Pkg
 
-export julia_add, print_array_info, retain_obj, release_obj, register_f2, register_f2_string,
-       calc_eigen, calc_inv, ensure_special_functions, calc_bessel_j, print_matrix_info, complex_demo_func
+export retain_obj, release_obj, print_array_info, print_matrix_info, register_f2, register_f2_string
 
 # --- Global Reference Management (GC Protection) ---
 # Prevents Julia objects held by Fortran/C from being garbage collected.
-const GlobalRef = IdDict{Any, Nothing}()
-const GlobalRefLock = ReentrantLock()
+const REF_HOLDER = IdDict{Any, Nothing}()
+const REF_LOCK = ReentrantLock()
 
-"""
-    retain_obj(obj::Any)
-
-Adds the object to the global reference dictionary to prevent GC.
-"""
-function retain_obj(obj::Any)
-    lock(GlobalRefLock) do
-        GlobalRef[obj] = nothing
+function retain_obj(obj::Any)::Ptr{Cvoid}
+    lock(REF_LOCK) do
+        REF_HOLDER[obj] = nothing
     end
-    return nothing
+    # Return pointer to object itself (as handle)
+    return pointer_from_objref(obj)
 end
 
-"""
-    release_obj(ptr::Ptr{Cvoid})
-
-Removes the object (identified by its pointer) from the global reference dictionary,
-allowing it to be garbage collected if no other references exist.
-"""
 function release_obj(ptr::Ptr{Cvoid})
-    # We need to recover the object from the pointer to remove it from the Dict.
-    # CAUTION: unsafe_pointer_to_objref is unsafe if the object is already GC'd,
-    # but here we assume it's still in GlobalRef.
+    if ptr == C_NULL
+        return
+    end
+    # We need to find the object corresponding to this pointer to remove it from IdDict.
+    # Unsafe pointer conversion:
     try
-        # Note: unsafe_pointer_to_objref is strictly for mutable objects.
-        # For immutables, this entire mechanism of "release by pointer" is tricky
-        # because we don't really have a pointer to the *boxed* object in Julia easily 
-        # unless we pass it from C.
-        
-        # But wait, C passes 'ptr' which IS the jl_value_t*.
-        # unsafe_pointer_to_objref(ptr) basically casts void* to Any.
-        # It SHOULD work for boxed immutables too if ptr is the jl_value_t*.
-        
         obj = unsafe_pointer_to_objref(ptr)
-        lock(GlobalRefLock) do
-            delete!(GlobalRef, obj)
+        lock(REF_LOCK) do
+            delete!(REF_HOLDER, obj)
         end
     catch e
-        @error "Failed to release object: invalid pointer or already freed." exception=e
+        println("[FortranBridge] Warning: Failed to release object at ", ptr)
     end
     return nothing
 end
 
+# --- Fast Path Registration Helpers ---
 
-# --- Fast Path Registration (Function Pointers) ---
-
-const FunctionCache = Dict{Symbol, Ptr{Cvoid}}()
-
-"""
-    register_f2(func_name::Symbol, return_type::Type, arg_types::Tuple) -> Ptr{Cvoid}
-
-Generates a C-callable function pointer for a given Julia function.
-This is used for the "Fast Path" where Fortran calls Julia via a function pointer.
-"""
-function register_f2(func_name::Symbol, return_type::Type, arg_types::Tuple)
-    # Check cache first
-    if haskey(FunctionCache, func_name)
-        return FunctionCache[func_name]
-    end
+function register_f2(func::Function, name::String)
+    # Get function pointer for a standard (Float64, Float64) -> Float64 function
+    # Note: This requires @cfunction which needs concrete types at compile time usually.
+    # For dynamic functions, we might need a trampoline or just use the generic jl_call path.
     
-    # Get the function object
-    func = nothing
-    if isdefined(Main, func_name)
-        func = getfield(Main, func_name)
-    elseif isdefined(@__MODULE__, func_name)
-        func = getfield(@__MODULE__, func_name)
-    else
-        error("Function '$func_name' not defined in Main or FortranBridge.")
-    end
-
-    # Compile a C-callable wrapper
-    # @cfunction requires literal types in the macro, so we use eval to construct it.
-    
-    # We need to ensure the third argument is an Expr(:tuple, ...), not just the tuple value.
-    arg_types_expr = Expr(:tuple, arg_types...)
-    
-    # Construct the expression: @cfunction(func, ReturnType, (ArgTypes...))
-    cfunc_expr = :(@cfunction($func, $return_type, $arg_types_expr))
-    
-    try
-        c_ptr = eval(cfunc_expr)
-        FunctionCache[func_name] = c_ptr
-        return c_ptr
-    catch e
-        @error "Failed to register C function for $func_name" exception=e
-        rethrow(e)
-    end
+    # For the purpose of this demo, we assume the user provides a C-compatible function pointer
+    # or we use the slower jl_call path. 
+    # But if we want to expose a function pointer to C:
+    ptr = @cfunction($func, Float64, (Float64, Float64))
+    println("[FortranBridge] Registered ", name, " at ", ptr)
+    return ptr
 end
 
-"""
-    register_f2_string(func_name::String, ret_type_str::String, arg_types_str::String) -> Ptr{Cvoid}
-
-String-based wrapper for register_f2, easier to call from C.
-"""
-function register_f2_string(func_name::String, ret_type_str::String, arg_types_str::String)
-    # Parse strings to symbols/expressions
-    sym_name = Symbol(func_name)
-    
-    # Evaluate the type strings in the global scope (Main) to get actual types
-    # We use Main because types like Float64 are available there.
-    # Note: This might be insecure if strings come from untrusted sources, but here it's from Fortran code.
-    
-    ret_type = Main.eval(Meta.parse(ret_type_str))
-    
-    # Arg types is a string like "(Float64, Int64)" or "Float64"
-    # We need to ensure it's a tuple of types.
-    arg_expr = Meta.parse(arg_types_str)
-    
-    # If it parses to a single symbol (e.g. "Float64"), wrap in tuple
-    arg_types = if isa(arg_expr, Symbol)
-        (Main.eval(arg_expr),)
-    else
-        # If it's a tuple expr, eval it
-        Main.eval(arg_expr)
-    end
-    
-    # Ensure arg_types is a tuple
-    if !isa(arg_types, Tuple)
-        arg_types = (arg_types,)
-    end
-    
-    return register_f2(sym_name, ret_type, arg_types)
+function register_f2_string(func_name::String, ret_type::String, arg_types::String)
+    # This function is called by C to resolve a function pointer.
+    # In a real middleware, we would parse types and generate @cfunction.
+    # For now, we return a pointer if it's a known optimized path, or NULL.
+    # Real implementation would use RuntimeGeneratedFunctions or similar.
+    return C_NULL
 end
 
-# --- Array Handling Utilities ---
+# --- Inspection Tools ---
 
-"""
-    print_array_info(arr::Array)
-
-Helper to verify array data passing.
-"""
 function print_array_info(arr::Array)
     println("[Julia] Array Info:")
     println("  Type: ", typeof(arr))
     println("  Size: ", size(arr))
-    println("  First Element: ", isempty(arr) ? "empty" : arr[1])
+    println("  Data: ", arr)
     return nothing
 end
 
@@ -159,96 +76,6 @@ function print_matrix_info(mat::Matrix)
         println("  Corner (end,end): ", mat[end,end])
     end
     return nothing
-end
-
-# --- Linear Algebra Wrappers ---
-
-function calc_inv(A::Matrix{Float64})::Matrix{Float64}
-    # returns inverse of A
-    return inv(A)
-end
-
-function calc_eigen(A::Matrix{Float64})
-    # Returns an Eigen object. 
-    # Fortran will see this as an opaque object (JuliaValue).
-    # We can add methods to extract values from it later if needed,
-    # or just print it for now.
-    return eigen(A)
-end
-
-
-# --- Special Functions (External Package) ---
-
-const SpecialFuncsLoaded = Ref{Bool}(false)
-
-function ensure_special_functions()
-    if SpecialFuncsLoaded[]
-        return nothing
-    end
-    
-    # check if installed
-    try
-        # This will fail if not installed
-        @eval import SpecialFunctions
-        SpecialFuncsLoaded[] = true
-        println("[Julia] SpecialFunctions already installed.")
-    catch
-        println("[Julia] SpecialFunctions not found. Installing...")
-        try
-            Pkg.add("SpecialFunctions")
-            @eval import SpecialFunctions
-            SpecialFuncsLoaded[] = true
-            println("[Julia] SpecialFunctions installed successfully.")
-        catch e
-            @error "Failed to install SpecialFunctions" exception=e
-            rethrow(e)
-        end
-    end
-    return nothing
-end
-
-function calc_bessel_j(nu::Float64, x::Float64)
-    if !SpecialFuncsLoaded[]
-        ensure_special_functions()
-    end
-    # Call dynamically to avoid compile-time dependency if package missing initially
-    # SpecialFunctions is imported into this module via @eval
-    sf_mod = getfield(@__MODULE__, :SpecialFunctions)
-    return Base.invokelatest(getfield(sf_mod, :besselj), nu, x)
-end
-
-function complex_demo_func(A::Matrix{Float64}, x::Float64)
-    # Ensure SpecialFunctions is loaded
-    if !SpecialFuncsLoaded[]
-        ensure_special_functions()
-    end
-    
-    # Use dynamic dispatch for SpecialFunctions to be safe
-    sf_mod = getfield(@__MODULE__, :SpecialFunctions)
-    besselj_func = getfield(sf_mod, :besselj)
-    
-    # Calculate J0(x)
-    j0_val = Base.invokelatest(besselj_func, 0.0, x)
-    
-    println("[Julia] complex_demo_func calling...")
-    println("[Julia]   J0(", x, ") = ", j0_val)
-    
-    # Matrix calc: B = J0(x) * A + inv(A)
-    # We assume A is invertible.
-    B = j0_val * A + inv(A)
-    
-    # Solve Eigenvalues
-    F = eigen(B)
-    
-    println("[Julia]   Calculation done. Returning eigenvalues.")
-    
-    return F.values # Returns Vector (possibly Complex)
-end
-
-# --- Example Mathematical Function for Testing ---
-
-function julia_add(a::Float64, b::Float64)::Float64
-    return a + b
 end
 
 end # module

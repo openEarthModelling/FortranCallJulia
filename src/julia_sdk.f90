@@ -59,6 +59,15 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call2_obj_double
 
+        ! jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs);
+        function fj_call_general(func_name, args, nargs) bind(c, name="fj_call_general") result(res)
+            import :: c_char, c_ptr, c_int32_t
+            character(kind=c_char), dimension(*), intent(in) :: func_name
+            type(c_ptr), dimension(*), intent(in) :: args
+            integer(kind=c_int32_t), value :: nargs
+            type(c_ptr) :: res
+        end function fj_call_general
+
         ! jl_value_t* fj_eval_string(const char* cmd);
         function fj_eval_string(cmd) bind(c, name="fj_eval_string") result(res)
             import :: c_char, c_ptr
@@ -97,6 +106,13 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_wrap_array_2d
 
+        ! jl_value_t* fj_box_float64(double val);
+        function fj_box_float64(val) bind(c, name="fj_box_float64") result(res)
+            import :: c_ptr, c_double
+            real(kind=c_double), value :: val
+            type(c_ptr) :: res
+        end function fj_box_float64
+
     end interface
 
     ! --- Helpers for Strings ---
@@ -125,26 +141,54 @@ module julia_high_level
         procedure :: call_method_1_real
         procedure :: call_method_1_obj
         procedure :: call_method_2_obj_real
+        procedure :: call_method_generic
         ! procedure :: to_real
         final :: destructor
     end type JuliaValue
 
+    interface
+        function strlen(s) bind(c, name="strlen")
+            import :: c_ptr, c_size_t
+            type(c_ptr), value :: s
+            integer(kind=c_size_t) :: strlen
+        end function strlen
+    end interface
+
 contains
 
-    ! --- Lifecycle Management ---
-
-    subroutine destructor(this)
-        type(JuliaValue), intent(inout) :: this
-        if (c_associated(this%ptr)) then
-            ! print *, "[Fortran] Releasing Julia object..."
-            call fj_release(this%ptr)
-            this%ptr = c_null_ptr
+    ! --- Implementation ---
+    
+    subroutine destructor(self)
+        type(JuliaValue), intent(inout) :: self
+        if (c_associated(self%ptr)) then
+            call fj_release(self%ptr)
+            self%ptr = c_null_ptr
         end if
     end subroutine destructor
 
-    logical function is_valid(this)
-        class(JuliaValue), intent(in) :: this
-        is_valid = c_associated(this%ptr)
+    function call_method_generic(self, func_name, args) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: func_name
+        type(JuliaValue), dimension(:), intent(in) :: args
+        type(JuliaValue) :: res
+        type(c_ptr), allocatable :: ptrs(:)
+        type(c_ptr) :: raw_res
+        integer :: i, n
+        
+        n = size(args)
+        allocate(ptrs(n))
+        do i = 1, n
+            ptrs(i) = args(i)%ptr
+        end do
+        
+        raw_res = fj_call_general(to_c_string(func_name), ptrs, int(n, c_int32_t))
+        res%ptr = fj_retain(raw_res)
+    end function call_method_generic
+
+    function is_valid(self)
+        class(JuliaValue), intent(in) :: self
+        logical :: is_valid
+        is_valid = c_associated(self%ptr)
     end function is_valid
 
     ! --- High-Level Initialization ---
@@ -170,7 +214,6 @@ contains
         type(c_ptr) :: raw_res
         
         raw_res = fj_eval_string(to_c_string(cmd))
-        ! We ignore the result for this subroutine version
     end subroutine julia_eval_string
 
     ! --- Error Handling ---
@@ -187,10 +230,8 @@ contains
              return
         end if
         
-        ! We assume the buffer in C is static and large enough (2048 in bridge.c)
         call c_f_pointer(c_str, f_char_ptr, [2048]) 
         
-        ! Find null terminator
         length = 0
         do i = 1, 2048
             if (f_char_ptr(i) == c_null_char) then
@@ -218,21 +259,13 @@ contains
 
     ! --- Generic Call Methods (Simplified Prototypes) ---
 
-    ! Call a function that returns a new JuliaValue
     function call_method_0(self, func_name) result(res)
-        class(JuliaValue), intent(in) :: self ! 'self' implies method call, but here we invoke global functions for now
+        class(JuliaValue), intent(in) :: self
         character(len=*), intent(in) :: func_name
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
         
-        ! Note: Self is unused here if we just call global functions, 
-        ! but in real OOP, self would be the object to call method on.
-        ! For this demo, we just wrap global calls.
-        
         raw_res = fj_call0(to_c_string(func_name))
-        
-        ! Important: The result from C is a raw jl_value_t*.
-        ! We must RETAIN it to make it a persistent Fortran-owned object.
         res%ptr = fj_retain(raw_res)
     end function call_method_0
 
@@ -269,5 +302,13 @@ contains
         raw_res = fj_call2_obj_double(to_c_string(func_name), arg_obj%ptr, arg2)
         res%ptr = fj_retain(raw_res)
     end function call_method_2_obj_real
+
+    function julia_box_real(val) result(res)
+        real(kind=c_double), intent(in) :: val
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr
+        raw_ptr = fj_box_float64(val)
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_box_real
 
 end module julia_high_level

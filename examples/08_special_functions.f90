@@ -7,17 +7,16 @@ program ex08_special_functions
     type(JuliaValue) :: res
     real(kind=c_double) :: nu, x
     
-    print *, "--- Example 8: Special Functions (BesselJ) ---"
+    print *, "--- Example 8: Special Functions (External Packages) ---"
     call julia_init()
 
-    ! Ensure package is loaded
-    print *, "Checking/Installing SpecialFunctions.jl..."
-    block
-        type(JuliaValue) :: dummy
-        dummy = ctx%call_method_0("ensure_special_functions")
-    end block
+    ! Load Demo Logic
+    call julia_eval_string('include("advanced_demo.jl")')
+    call julia_eval_string('using .AdvancedDemo')
+    call julia_eval_string('const calc_bessel_j = AdvancedDemo.calc_bessel_j')
 
-    nu = 0.0d0
+    ! Calculate J_nu(x)
+    nu = 1.0d0
     x = 10.0d0
     
     print *, "Calculating BesselJ(0, 10.0)..."

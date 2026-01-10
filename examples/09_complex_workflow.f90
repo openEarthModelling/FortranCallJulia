@@ -11,14 +11,16 @@ program ex09_complex_workflow
     integer :: i
     real(kind=c_double) :: x_val
 
-    print *, "--- Example 9: Complex Workflow (LinAlg + SpecialFuncs) ---"
+    print *, "--- Example 9: Complex Workflow (Mixed Types) ---"
     call julia_init()
 
-    ! 1. Initialize Matrix A (Diagonal 2.0)
-    matrix = 0.0d0
-    do i = 1, 3
-        matrix(i, i) = 2.0d0
-    end do
+    ! Load Demo Logic
+    call julia_eval_string('include("advanced_demo.jl")')
+    call julia_eval_string('using .AdvancedDemo')
+    call julia_eval_string('const complex_demo_func = AdvancedDemo.complex_demo_func')
+
+    ! 1. Prepare Data
+    x_val = 2.5d0
     
     ! 2. Wrap Matrix
     raw_ptr = c_loc(matrix)

@@ -102,6 +102,9 @@ add_fj_example(ex05_errors      05_errors.f90)
 # Example 6: Sysimage Loading
 add_fj_example(ex06_sysimage 06_sysimage.f90)
 
+# Define list of advanced examples that need advanced_demo.jl
+set(ADVANCED_EXAMPLES ex07_linear_algebra ex08_special_functions ex09_complex_workflow)
+
 # Example 7: Linear Algebra
 add_fj_example(ex07_linear_algebra 07_linear_algebra.f90)
 
@@ -110,6 +113,16 @@ add_fj_example(ex08_special_functions 08_special_functions.f90)
 
 # Example 9: Complex Workflow
 add_fj_example(ex09_complex_workflow 09_complex_workflow.f90)
+
+# Copy advanced_demo.jl for these targets
+foreach(tgt ${ADVANCED_EXAMPLES})
+    add_custom_command(TARGET ${tgt} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/advanced_demo.jl
+        ${CMAKE_CURRENT_BINARY_DIR}/advanced_demo.jl
+        COMMENT "Copying advanced_demo.jl to ${tgt} directory"
+    )
+endforeach()
 
 # Example 10: External Script
 add_fj_example(ex10_external_script 10_external_script.f90)

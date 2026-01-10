@@ -27,6 +27,11 @@ jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj);
 jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2);
 jl_value_t* fj_eval_string(const char* cmd);
 
+// Call a Julia function with N arguments
+// args: array of pointers to jl_value_t (jl_value_t**)
+// nargs: number of arguments
+jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs);
+
 
 // --- Fast Path (Low-Level API) ---
 
@@ -44,5 +49,8 @@ const char* fj_get_last_error();
 // Array Handling
 jl_value_t* fj_wrap_array_1d(void* data, int64_t length);
 jl_value_t* fj_wrap_array_2d(void* data, int64_t rows, int64_t cols);
+
+// Boxing (Primitives to Objects)
+jl_value_t* fj_box_float64(double val);
 
 #endif // BRIDGE_H

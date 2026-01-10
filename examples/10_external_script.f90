@@ -5,12 +5,13 @@ program ex10_external_script
     implicit none
 
     type(JuliaValue) :: ctx, mat_obj, res_obj
+    type(JuliaValue), allocatable :: args(:)
     real(kind=c_double), target :: matrix(2,2)
     type(c_ptr) :: raw_ptr, wrapped_ptr
     real(kind=c_double) :: val = 2.5d0
     integer :: i
 
-    print *, "--- Example 10: Loading External Julia Script ---"
+    print *, "--- Example 10: Loading External Julia Script (Generic Call) ---"
     call julia_init()
 
     ! 1. Load the script file
@@ -40,9 +41,15 @@ program ex10_external_script
     wrapped_ptr = fj_wrap_array_2d(raw_ptr, 2_8, 2_8)
     mat_obj%ptr = fj_retain(wrapped_ptr)
 
-    ! 4. Call the aliased function
+    ! 4. Call the aliased function using Generic Interface
     print *, "Calling 'RunSim' with scalar:", val
-    res_obj = ctx%call_method_2_obj_real("RunSim", mat_obj, val)
+    ! res_obj = ctx%call_method_2_obj_real("RunSim", mat_obj, val)
+    
+    allocate(args(2))
+    args(1) = mat_obj
+    args(2) = julia_box_real(val)
+    
+    res_obj = ctx%call_method_generic("RunSim", args)
     
     ! 5. Display Result
     if (res_obj%is_valid()) then

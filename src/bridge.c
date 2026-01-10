@@ -273,6 +273,32 @@ jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg
     return ret;
 }
 
+jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs) {
+    if (!check_thread()) return NULL;
+
+    jl_function_t *func = jl_get_function(jl_main_module, func_name);
+    if (!func) {
+        func = jl_get_function(FortranBridgeMod, func_name);
+    }
+
+    if (!func) {
+        char err[256];
+        snprintf(err, 256, "Function %s not found.", func_name);
+        set_error(err);
+        return NULL;
+    }
+
+    // args is void**, but it's actually jl_value_t**
+    // We assume the caller (Fortran) ensures these objects are valid (Retained or Rooted).
+    // Since this is a general call, we trust the input array.
+    
+    jl_value_t* ret = jl_call(func, (jl_value_t**)args, nargs);
+    
+    if (check_julia_exception()) return NULL;
+    
+    return ret;
+}
+
 jl_value_t* fj_eval_string(const char* cmd) {
     if (!check_thread()) return NULL;
     
@@ -377,4 +403,12 @@ jl_value_t* fj_wrap_array_2d(void* data, int64_t rows, int64_t cols) {
     
     JL_GC_POP();
     return (jl_value_t*)arr;
+}
+
+jl_value_t* fj_box_float64(double val) {
+    if (!check_thread()) return NULL;
+    // jl_box_float64 returns a new rooted value (I think? No, usually it returns a value that needs rooting if not used immediately, 
+    // but here we return it to Fortran which will retain it).
+    // Actually jl_box_... allocates.
+    return jl_box_float64(val);
 }
