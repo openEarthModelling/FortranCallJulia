@@ -36,7 +36,14 @@ jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj);
 // --- Fast Path (Low-Level API) ---
 
 // Get a raw C function pointer for a registered Julia function
-void* fj_get_function_pointer(const char* func_name);
+// ret_type: String describing return type (e.g. "Float64")
+// arg_types: String describing argument types tuple (e.g. "(Float64, Float64)")
+void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types);
+
+// --- Error Handling ---
+
+// Get the last error message recorded by the bridge
+const char* fj_get_last_error();
 
 
 // --- Array Handling ---

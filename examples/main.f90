@@ -43,7 +43,8 @@ program main
     print *, "[Step 3] Low-Level Fast Path: Registering and Calling julia_add"
     
     ! Get function pointer (this triggers register_f2 in C/Julia)
-    c_f_ptr = fj_get_function_pointer(to_c_string("julia_add"))
+    ! New signature: func_name, ret_type, arg_types
+    c_f_ptr = get_function_pointer("julia_add", "Float64", "(Float64, Float64)")
     
     if (c_associated(c_f_ptr)) then
         call c_f_procpointer(c_f_ptr, f_add)
@@ -96,7 +97,17 @@ program main
         
     end block
 
-    print *, "[Step 5] Shutting down..."
+    ! 5. Test Error Handling
+    print *, "[Step 5] Test Error Handling: Calling non_existent_func"
+    res = jl_ctx%call_method_1_real("non_existent_func", 1.0d0)
+    
+    if (.not. res%is_valid()) then
+         print *, "Expected Failure caught. Error: ", get_last_error_message()
+    else
+         print *, "Unexpected Success."
+    end if
+
+    print *, "[Step 6] Shutting down..."
     call julia_shutdown()
     print *, "--- Test Finished ---"
 

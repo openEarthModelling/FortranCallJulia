@@ -50,12 +50,20 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call1_obj
 
-        ! void* fj_get_function_pointer(const char* func_name);
-        function fj_get_function_pointer(func_name) bind(c, name="fj_get_function_pointer") result(funptr)
+        ! void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types);
+        function fj_get_function_pointer(func_name, ret_type, arg_types) bind(c, name="fj_get_function_pointer") result(funptr)
             import :: c_char, c_funptr
             character(kind=c_char), dimension(*), intent(in) :: func_name
+            character(kind=c_char), dimension(*), intent(in) :: ret_type
+            character(kind=c_char), dimension(*), intent(in) :: arg_types
             type(c_funptr) :: funptr
         end function fj_get_function_pointer
+        
+        ! const char* fj_get_last_error();
+        function fj_get_last_error() bind(c, name="fj_get_last_error") result(c_str)
+            import :: c_ptr
+            type(c_ptr) :: c_str
+        end function fj_get_last_error
         
         ! jl_value_t* fj_wrap_array_1d(void* data, int64_t length);
         function fj_wrap_array_1d(data, length) bind(c, name="fj_wrap_array_1d") result(res)
@@ -131,6 +139,49 @@ contains
     subroutine julia_shutdown()
         call fj_shutdown()
     end subroutine julia_shutdown
+
+    ! --- Error Handling ---
+
+    function get_last_error_message() result(msg)
+        character(len=:), allocatable :: msg
+        type(c_ptr) :: c_str
+        character(kind=c_char), pointer :: f_char_ptr(:)
+        integer :: i, length
+        
+        c_str = fj_get_last_error()
+        if (.not. c_associated(c_str)) then
+             msg = "Unknown Error (NULL)"
+             return
+        end if
+        
+        ! We assume the buffer in C is static and large enough (2048 in bridge.c)
+        call c_f_pointer(c_str, f_char_ptr, [2048]) 
+        
+        ! Find null terminator
+        length = 0
+        do i = 1, 2048
+            if (f_char_ptr(i) == c_null_char) then
+                length = i - 1
+                exit
+            end if
+        end do
+        
+        allocate(character(len=length) :: msg)
+        do i = 1, length
+            msg(i:i) = f_char_ptr(i)
+        end do
+    end function get_last_error_message
+
+    ! --- Fast Path Wrapper ---
+
+    function get_function_pointer(func_name, ret_type, arg_types) result(funptr)
+        character(len=*), intent(in) :: func_name, ret_type, arg_types
+        type(c_funptr) :: funptr
+        
+        funptr = fj_get_function_pointer(to_c_string(func_name), &
+                                         to_c_string(ret_type), &
+                                         to_c_string(arg_types))
+    end function get_function_pointer
 
     ! --- Generic Call Methods (Simplified Prototypes) ---
 

@@ -97,6 +97,41 @@ function register_f2(func_name::Symbol, return_type::Type, arg_types::Tuple)
     end
 end
 
+"""
+    register_f2_string(func_name::String, ret_type_str::String, arg_types_str::String) -> Ptr{Cvoid}
+
+String-based wrapper for register_f2, easier to call from C.
+"""
+function register_f2_string(func_name::String, ret_type_str::String, arg_types_str::String)
+    # Parse strings to symbols/expressions
+    sym_name = Symbol(func_name)
+    
+    # Evaluate the type strings in the global scope (Main) to get actual types
+    # We use Main because types like Float64 are available there.
+    # Note: This might be insecure if strings come from untrusted sources, but here it's from Fortran code.
+    
+    ret_type = Main.eval(Meta.parse(ret_type_str))
+    
+    # Arg types is a string like "(Float64, Int64)" or "Float64"
+    # We need to ensure it's a tuple of types.
+    arg_expr = Meta.parse(arg_types_str)
+    
+    # If it parses to a single symbol (e.g. "Float64"), wrap in tuple
+    arg_types = if isa(arg_expr, Symbol)
+        (Main.eval(arg_expr),)
+    else
+        # If it's a tuple expr, eval it
+        Main.eval(arg_expr)
+    end
+    
+    # Ensure arg_types is a tuple
+    if !isa(arg_types, Tuple)
+        arg_types = (arg_types,)
+    end
+    
+    return register_f2(sym_name, ret_type, arg_types)
+end
+
 # --- Array Handling Utilities ---
 
 """
