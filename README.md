@@ -18,9 +18,13 @@ A robust cross-language middleware that allows Fortran programs to efficiently c
 │   ├── bridge.c        # C Bridge Layer (Runtime & Type Management)
 │   ├── julia_sdk.f90   # Fortran SDK (OOP Wrapper & iso_c_binding)
 │   └── middleware.jl   # Julia Side Registration & GC Protection
-├── examples/           # Example Applications
-│   └── main.f90        # Demonstration of OOP and Fast Path usage
-├── cmake/              # CMake modules
+├── examples/           # Tutorial & Examples
+│   ├── 01_hello.f90    # Basic Initialization
+│   ├── 02_math_oop.f90 # OOP Interface & Math
+│   ├── 03_performance.f90 # Fast Path Performance Demo
+│   ├── 04_arrays.f90   # Zero-Copy Array Passing
+│   ├── 05_errors.f90   # Error Handling
+│   └── 06_sysimage.f90 # AOT / Sysimage Loading
 └── CMakeLists.txt      # Build Configuration
 ```
 
@@ -31,50 +35,74 @@ A robust cross-language middleware that allows Fortran programs to efficiently c
 *   **C Compiler:** `gcc` or `clang`.
 *   **CMake:** Version 3.10 or higher.
 
-## Building and Running
+## Building
+
+### Standard Build (Library + Examples)
 
 1.  **Create a Build Directory:**
     ```bash
-    mkdir build
-    cd build
+    mkdir build && cd build
     ```
 
-2.  **Configure with CMake:**
+2.  **Configure:**
     ```bash
-    cmake ..
+    cmake -DBUILD_EXAMPLES=ON ..
     ```
-    *Note: CMake will automatically attempt to find your `julia` executable in your PATH.*
 
 3.  **Compile:**
     ```bash
     make
     ```
 
-4.  **Run the Test Application:**
+4.  **Run Examples:**
     ```bash
-    ./test_app
+    ./examples/ex01_hello
+    ./examples/ex03_performance
+    ```
+
+### Separated Compilation (Install Library, Build Examples Standalone)
+
+1.  **Build and Install Library:**
+    ```bash
+    mkdir build && cd build
+    cmake -DCMAKE_INSTALL_PREFIX=../install_dist ..
+    make install
+    ```
+
+2.  **Build Examples Standalone:**
+    ```bash
+    cd ../examples
+    mkdir build && cd build
+    cmake -DCMAKE_PREFIX_PATH=../../install_dist ..
+    make
     ```
 
 ## Usage Example
 
 ### 1. Initialize & High-Level Call
 ```fortran
-type(julia_env) :: env
-type(julia_value) :: val
+use julia_high_level
 
-call env%init()
-val = env%eval("println(""Hello from Julia!"")")
+call julia_init()
+
+block
+    type(JuliaValue) :: ctx, res
+    ! Call OOP method
+    res = ctx%call_method_1_real("sqrt", 2.0d0)
+end block
+
+call julia_shutdown()
 ```
 
 ### 2. Fast Path (Function Pointers)
 ```fortran
-type(c_funptr) :: f_add
-real(c_double) :: res
+type(c_funptr) :: c_ptr
+procedure(proto), pointer :: f_ptr
 
-! Register function in Julia: @cfunction(add, Float64, (Float64, Float64))
-f_add = env%get_func_ptr("add")
+! Get raw function pointer from Julia
+c_ptr = get_function_pointer("julia_add", "Float64", "(Float64, Float64)")
+call c_f_procpointer(c_ptr, f_ptr)
 
-! Direct call via C pointer
-call c_f_procpointer(f_add, f_ptr)
+! Zero-overhead call
 res = f_ptr(10.0d0, 20.0d0)
 ```

@@ -90,11 +90,17 @@ void fj_init(const char* image_path) {
         jl_eval_string("using Main.FortranBridge");
     }
 
-    if (check_julia_exception()) return;
+    if (check_julia_exception()) {
+        fprintf(stderr, "Error: Julia initialization failed (Loading FortranBridge).\nLast Error: %s\n", fj_get_last_error());
+        exit(1);
+    }
 
     // Cache the module and key functions
     jl_value_t* mod_val = jl_eval_string("FortranBridge");
-    if (check_julia_exception()) return;
+    if (check_julia_exception()) {
+        fprintf(stderr, "Error: Julia initialization failed (Getting FortranBridge module).\nLast Error: %s\n", fj_get_last_error());
+        exit(1);
+    }
     
     if (mod_val && jl_is_module(mod_val)) {
         FortranBridgeMod = (jl_module_t*)mod_val;
@@ -102,6 +108,11 @@ void fj_init(const char* image_path) {
         FuncRelease = jl_get_function(FortranBridgeMod, "release_obj");
         FuncRegister = jl_get_function(FortranBridgeMod, "register_f2");
         FuncRegisterStr = jl_get_function(FortranBridgeMod, "register_f2_string");
+        
+        if (!FuncRetain || !FuncRelease || !FuncRegister || !FuncRegisterStr) {
+             fprintf(stderr, "Error: One or more FortranBridge functions could not be loaded.\n");
+             exit(1);
+        }
     } else {
         fprintf(stderr, "Error: Could not load FortranBridge module.\n");
         exit(1);
@@ -226,6 +237,15 @@ jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj) {
     }
     
     JL_GC_POP();
+    return ret;
+}
+
+jl_value_t* fj_eval_string(const char* cmd) {
+    if (!check_thread()) return NULL;
+    
+    jl_value_t *ret = jl_eval_string(cmd);
+    
+    if (check_julia_exception()) return NULL;
     return ret;
 }
 

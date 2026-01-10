@@ -50,6 +50,13 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call1_obj
 
+        ! jl_value_t* fj_eval_string(const char* cmd);
+        function fj_eval_string(cmd) bind(c, name="fj_eval_string") result(res)
+            import :: c_char, c_ptr
+            character(kind=c_char), dimension(*), intent(in) :: cmd
+            type(c_ptr) :: res
+        end function fj_eval_string
+
         ! void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types);
         function fj_get_function_pointer(func_name, ret_type, arg_types) bind(c, name="fj_get_function_pointer") result(funptr)
             import :: c_char, c_funptr
@@ -139,6 +146,14 @@ contains
     subroutine julia_shutdown()
         call fj_shutdown()
     end subroutine julia_shutdown
+
+    subroutine julia_eval_string(cmd)
+        character(len=*), intent(in) :: cmd
+        type(c_ptr) :: raw_res
+        
+        raw_res = fj_eval_string(to_c_string(cmd))
+        ! We ignore the result for this subroutine version
+    end subroutine julia_eval_string
 
     ! --- Error Handling ---
 

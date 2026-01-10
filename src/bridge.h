@@ -32,6 +32,9 @@ jl_value_t* fj_call1_float64(const char* func_name, double arg1);
 // Call with 1 object argument
 jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj);
 
+// Evaluate a string command in the global scope (Main)
+jl_value_t* fj_eval_string(const char* cmd);
+
 
 // --- Fast Path (Low-Level API) ---
 

@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 3.10)
 project(FortranCallJulia LANGUAGES C Fortran)
 
 # ==============================================================================
+# Options
+# ==============================================================================
+option(BUILD_EXAMPLES "Build the example applications" OFF)
+option(BUILD_SYSIMAGE "Build the AOT sysimage target" OFF)
+
+# ==============================================================================
 # Find Julia and Configuration
 # ==============================================================================
 find_program(JULIA_EXECUTABLE julia DOC "Path to Julia executable")
@@ -28,17 +34,12 @@ endfunction()
 
 # Get Flags from Julia
 get_julia_config("import Libdl; print(joinpath(Sys.BINDIR, Base.DATAROOTDIR, \"julia\", \"julia-config.jl\"))" JULIA_CONFIG_SCRIPT)
-message(STATUS "Julia Config Script: ${JULIA_CONFIG_SCRIPT}")
-
-# We use the config script to get flags. 
-# Note: The script outputs raw flags. We need to be careful with parsing if they are complex.
-# For simplicity and robustness (as in the Makefile), we will capture the output and append it.
 
 execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --cflags OUTPUT_VARIABLE JULIA_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --ldflags OUTPUT_VARIABLE JULIA_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
 execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --ldlibs OUTPUT_VARIABLE JULIA_LDLIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-# Clean up newlines if any and convert to list
+# Clean up flags
 string(REPLACE "\n" " " JULIA_CFLAGS "${JULIA_CFLAGS}")
 string(REPLACE " " ";" JULIA_CFLAGS "${JULIA_CFLAGS}")
 string(REPLACE "'" "" JULIA_CFLAGS "${JULIA_CFLAGS}")
@@ -49,22 +50,18 @@ string(REPLACE "\n" " " JULIA_LDLIBS "${JULIA_LDLIBS}")
 string(REPLACE " " ";" JULIA_LDLIBS "${JULIA_LDLIBS}")
 string(REPLACE "'" "" JULIA_LDLIBS "${JULIA_LDLIBS}")
 
-message(STATUS "Julia CFLAGS: ${JULIA_CFLAGS}")
-message(STATUS "Julia LDFLAGS: ${JULIA_LDFLAGS}")
-message(STATUS "Julia LDLIBS: ${JULIA_LDLIBS}")
-
 # ==============================================================================
 # Core Library (Fortran-Julia Middleware)
 # ==============================================================================
-# Compile bridge.c with Julia flags
 add_library(fj_middleware STATIC
     src/bridge.c
     src/julia_sdk.f90
 )
 
-# Set Include Directories
+# Set Include Directories (Public so consumers inherit it)
 target_include_directories(fj_middleware PUBLIC 
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    $<INSTALL_INTERFACE:include>
 )
 
 # Apply Julia C Flags to bridge.c
@@ -73,53 +70,56 @@ target_compile_definitions(fj_middleware PRIVATE JULIA_BINDIR="${JULIA_BINDIR}")
 
 target_compile_options(fj_middleware PRIVATE 
     $<$<COMPILE_LANGUAGE:C>:${JULIA_CFLAGS}>
-    $<$<COMPILE_LANGUAGE:Fortran>:-fno-underscoring> 
+    $<$<COMPILE_LANGUAGE:Fortran>:-fno-underscoring>
 )
 
-# Link Libraries (We likely need to link the interface or executable against Julia)
-# For a static lib, we propagate the link flags to consumers
+# Link Options
 target_link_options(fj_middleware INTERFACE ${JULIA_LDFLAGS})
 target_link_libraries(fj_middleware INTERFACE ${JULIA_LDLIBS})
 
-
-# ==============================================================================
-# Example Application
-# ==============================================================================
-add_executable(test_app examples/main.f90)
-
-# Link against our middleware
-target_link_libraries(test_app PRIVATE fj_middleware)
-
-# Fortran specific flags for the app
-target_compile_options(test_app PRIVATE -fno-underscoring)
-
-# Ensure modules are found (CMake handles this for targets, but explicit checking helps)
-set_target_properties(test_app PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules)
-set_target_properties(fj_middleware PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules)
-
-# ==============================================================================
-# Copy middleware.jl to build dir for easy running
-# ==============================================================================
-add_custom_command(TARGET test_app POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/middleware.jl
-    ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
-    COMMENT "Copying middleware.jl to binary directory"
+# Fortran Module Output Directory
+set_target_properties(fj_middleware PROPERTIES 
+    Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
 )
 
 # ==============================================================================
-# AOT Sysimage Target
+# Installation
 # ==============================================================================
-add_custom_target(sysimage
-    COMMAND ${JULIA_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/build_sysimage.jl
-    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "Building Julia Sysimage (AOT)..."
+include(GNUInstallDirs)
+
+# Install Library
+install(TARGETS fj_middleware
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+# Install Headers
+install(FILES src/bridge.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+# Install Fortran Modules
+install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    FILES_MATCHING PATTERN "*.mod"
+)
+
+# Install Middleware Julia Script
+install(FILES src/middleware.jl DESTINATION ${CMAKE_INSTALL_DATADIR}/FortranCallJulia)
+
 # ==============================================================================
-# AOT Test Application
+# AOT Sysimage (Optional)
 # ==============================================================================
-add_executable(test_aot examples/test_aot.f90)
-target_link_libraries(test_aot PRIVATE fj_middleware)
-target_compile_options(test_aot PRIVATE -fno-underscoring)
-set_target_properties(test_aot PROPERTIES Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules)
+if(BUILD_SYSIMAGE)
+    add_custom_target(sysimage
+        COMMAND ${JULIA_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/build_sysimage.jl
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Building Julia Sysimage (AOT)..."
+    )
+endif()
+
+# ==============================================================================
+# Examples (Separated)
+# ==============================================================================
+if(BUILD_EXAMPLES)
+    add_subdirectory(examples)
+endif()
