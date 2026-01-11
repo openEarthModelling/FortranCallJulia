@@ -126,6 +126,15 @@ endforeach()
 
 # Example 10: External Script
 add_fj_example(ex10_external_script 10_external_script.f90)
+
+# Example 11: Full Type Coverage
+add_fj_example(ex11_all_types 11_all_types.f90)
+add_custom_command(TARGET ex11_all_types POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_SOURCE_DIR}/types_demo.jl
+    ${CMAKE_CURRENT_BINARY_DIR}/types_demo.jl
+    COMMENT "Copying types_demo.jl to ex11_all_types directory"
+)
 add_custom_command(TARGET ex10_external_script POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_if_different
     ${CMAKE_CURRENT_SOURCE_DIR}/user_script.jl

@@ -4,37 +4,31 @@ module julia_low_level
 
     ! --- C Interface Definitions ---
     interface
-        ! void fj_init(const char* image_path);
         subroutine fj_init(image_path) bind(c, name="fj_init")
             import :: c_char, c_ptr
             type(c_ptr), value :: image_path
         end subroutine fj_init
 
-        ! void fj_shutdown();
         subroutine fj_shutdown() bind(c, name="fj_shutdown")
         end subroutine fj_shutdown
 
-        ! void* fj_retain(jl_value_t* val);
         function fj_retain(val) bind(c, name="fj_retain") result(ptr)
             import :: c_ptr
             type(c_ptr), value :: val
             type(c_ptr) :: ptr
         end function fj_retain
 
-        ! void fj_release(void* ptr);
         subroutine fj_release(ptr) bind(c, name="fj_release")
             import :: c_ptr
             type(c_ptr), value :: ptr
         end subroutine fj_release
 
-        ! jl_value_t* fj_call0(const char* func_name);
         function fj_call0(func_name) bind(c, name="fj_call0") result(res)
             import :: c_char, c_ptr
             character(kind=c_char), dimension(*), intent(in) :: func_name
             type(c_ptr) :: res
         end function fj_call0
 
-        ! jl_value_t* fj_call1_float64(const char* func_name, double arg1);
         function fj_call1_float64(func_name, arg1) bind(c, name="fj_call1_float64") result(res)
             import :: c_char, c_double, c_ptr
             character(kind=c_char), dimension(*), intent(in) :: func_name
@@ -42,7 +36,6 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call1_float64
 
-        ! jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj);
         function fj_call1_obj(func_name, arg_obj) bind(c, name="fj_call1_obj") result(res)
             import :: c_char, c_ptr
             character(kind=c_char), dimension(*), intent(in) :: func_name
@@ -50,7 +43,6 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call1_obj
 
-        ! jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2);
         function fj_call2_obj_double(func_name, arg_obj, arg2) bind(c, name="fj_call2_obj_double") result(res)
             import :: c_char, c_ptr, c_double
             character(kind=c_char), dimension(*), intent(in) :: func_name
@@ -59,7 +51,6 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call2_obj_double
 
-        ! jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs);
         function fj_call_general(func_name, args, nargs) bind(c, name="fj_call_general") result(res)
             import :: c_char, c_ptr, c_int32_t
             character(kind=c_char), dimension(*), intent(in) :: func_name
@@ -68,14 +59,12 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call_general
 
-        ! jl_value_t* fj_eval_string(const char* cmd);
         function fj_eval_string(cmd) bind(c, name="fj_eval_string") result(res)
             import :: c_char, c_ptr
             character(kind=c_char), dimension(*), intent(in) :: cmd
             type(c_ptr) :: res
         end function fj_eval_string
 
-        ! void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types);
         function fj_get_function_pointer(func_name, ret_type, arg_types) bind(c, name="fj_get_function_pointer") result(funptr)
             import :: c_char, c_funptr
             character(kind=c_char), dimension(*), intent(in) :: func_name
@@ -84,13 +73,12 @@ module julia_low_level
             type(c_funptr) :: funptr
         end function fj_get_function_pointer
         
-        ! const char* fj_get_last_error();
         function fj_get_last_error() bind(c, name="fj_get_last_error") result(c_str)
             import :: c_ptr
             type(c_ptr) :: c_str
         end function fj_get_last_error
         
-        ! jl_value_t* fj_wrap_array_1d(void* data, int64_t length);
+        ! --- Array Wrappers ---
         function fj_wrap_array_1d(data, length) bind(c, name="fj_wrap_array_1d") result(res)
             import :: c_ptr, c_int64_t
             type(c_ptr), value :: data
@@ -98,7 +86,6 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_wrap_array_1d
 
-        ! jl_value_t* fj_wrap_array_2d(void* data, int64_t rows, int64_t cols);
         function fj_wrap_array_2d(data, rows, cols) bind(c, name="fj_wrap_array_2d") result(res)
             import :: c_ptr, c_int64_t
             type(c_ptr), value :: data
@@ -106,16 +93,95 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_wrap_array_2d
 
-        ! jl_value_t* fj_box_float64(double val);
+        function fj_wrap_array_3d(data, d1, d2, d3) bind(c, name="fj_wrap_array_3d") result(res)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: data
+            integer(kind=c_int64_t), value :: d1, d2, d3
+            type(c_ptr) :: res
+        end function fj_wrap_array_3d
+
+        ! --- Boxing ---
         function fj_box_float64(val) bind(c, name="fj_box_float64") result(res)
             import :: c_ptr, c_double
             real(kind=c_double), value :: val
             type(c_ptr) :: res
         end function fj_box_float64
 
+        function fj_box_int64(val) bind(c, name="fj_box_int64") result(res)
+            import :: c_ptr, c_int64_t
+            integer(kind=c_int64_t), value :: val
+            type(c_ptr) :: res
+        end function fj_box_int64
+
+        function fj_box_int32(val) bind(c, name="fj_box_int32") result(res)
+            import :: c_ptr, c_int32_t
+            integer(kind=c_int32_t), value :: val
+            type(c_ptr) :: res
+        end function fj_box_int32
+
+        function fj_box_bool(val) bind(c, name="fj_box_bool") result(res)
+            import :: c_ptr, c_int
+            integer(kind=c_int), value :: val
+            type(c_ptr) :: res
+        end function fj_box_bool
+
+        function fj_box_string(val) bind(c, name="fj_box_string") result(res)
+            import :: c_ptr, c_char
+            character(kind=c_char), dimension(*), intent(in) :: val
+            type(c_ptr) :: res
+        end function fj_box_string
+
+        function fj_box_complex(re, im) bind(c, name="fj_box_complex") result(res)
+            import :: c_ptr, c_double
+            real(kind=c_double), value :: re, im
+            type(c_ptr) :: res
+        end function fj_box_complex
+
+        ! --- Unboxing ---
+        function fj_unbox_float64(obj) bind(c, name="fj_unbox_float64") result(val)
+            import :: c_ptr, c_double
+            type(c_ptr), value :: obj
+            real(kind=c_double) :: val
+        end function fj_unbox_float64
+
+        function fj_unbox_int64(obj) bind(c, name="fj_unbox_int64") result(val)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t) :: val
+        end function fj_unbox_int64
+
+        function fj_unbox_int32(obj) bind(c, name="fj_unbox_int32") result(val)
+            import :: c_ptr, c_int32_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int32_t) :: val
+        end function fj_unbox_int32
+
+        function fj_unbox_bool(obj) bind(c, name="fj_unbox_bool") result(val)
+            import :: c_ptr, c_int
+            type(c_ptr), value :: obj
+            integer(kind=c_int) :: val
+        end function fj_unbox_bool
+
+        function fj_unbox_string(obj) bind(c, name="fj_unbox_string") result(c_str)
+            import :: c_ptr
+            type(c_ptr), value :: obj
+            type(c_ptr) :: c_str
+        end function fj_unbox_string
+
+        function fj_unbox_complex_real(obj) bind(c, name="fj_unbox_complex_real") result(val)
+            import :: c_ptr, c_double
+            type(c_ptr), value :: obj
+            real(kind=c_double) :: val
+        end function fj_unbox_complex_real
+
+        function fj_unbox_complex_imag(obj) bind(c, name="fj_unbox_complex_imag") result(val)
+            import :: c_ptr, c_double
+            type(c_ptr), value :: obj
+            real(kind=c_double) :: val
+        end function fj_unbox_complex_imag
+
     end interface
 
-    ! --- Helpers for Strings ---
     contains
         
     function to_c_string(str) result(c_str)
@@ -132,17 +198,25 @@ module julia_high_level
     use julia_low_level
     implicit none
 
-    ! --- The Julia Object Wrapper (OOP) ---
     type :: JuliaValue
         type(c_ptr) :: ptr = c_null_ptr
     contains
         procedure :: is_valid
+        procedure :: call_method_generic
+        ! Deprecated / Convenience methods
         procedure :: call_method_0
         procedure :: call_method_1_real
         procedure :: call_method_1_obj
         procedure :: call_method_2_obj_real
-        procedure :: call_method_generic
-        ! procedure :: to_real
+        ! Converters
+        procedure :: as_integer => julia_to_integer
+        procedure :: as_real => julia_to_real
+        procedure :: as_logical => julia_to_logical
+        procedure :: as_complex => julia_to_complex
+        procedure :: as_string => julia_to_string
+        ! Assignment Overload for Ref Counting
+        generic :: assignment(=) => copy_julia_value
+        procedure :: copy_julia_value
         final :: destructor
     end type JuliaValue
 
@@ -158,6 +232,17 @@ contains
 
     ! --- Implementation ---
     
+    subroutine copy_julia_value(dest, src)
+        class(JuliaValue), intent(out) :: dest
+        class(JuliaValue), intent(in) :: src
+        type(c_ptr) :: dummy
+        
+        dest%ptr = src%ptr
+        if (c_associated(dest%ptr)) then
+            dummy = fj_retain(dest%ptr)
+        end if
+    end subroutine copy_julia_value
+
     subroutine destructor(self)
         type(JuliaValue), intent(inout) :: self
         if (c_associated(self%ptr)) then
@@ -176,12 +261,16 @@ contains
         integer :: i, n
         
         n = size(args)
-        allocate(ptrs(n))
-        do i = 1, n
-            ptrs(i) = args(i)%ptr
-        end do
-        
-        raw_res = fj_call_general(to_c_string(func_name), ptrs, int(n, c_int32_t))
+        if (n > 0) then
+            allocate(ptrs(n))
+            do i = 1, n
+                ptrs(i) = args(i)%ptr
+            end do
+            raw_res = fj_call_general(to_c_string(func_name), ptrs, int(n, c_int32_t))
+            deallocate(ptrs)
+        else
+            raw_res = fj_call0(to_c_string(func_name))
+        end if
         res%ptr = fj_retain(raw_res)
     end function call_method_generic
 
@@ -191,7 +280,133 @@ contains
         is_valid = c_associated(self%ptr)
     end function is_valid
 
-    ! --- High-Level Initialization ---
+    ! --- Converters (Methods) ---
+    
+    function julia_to_integer(self) result(val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t) :: val
+        val = fj_unbox_int64(self%ptr)
+    end function julia_to_integer
+
+    function julia_to_real(self) result(val)
+        class(JuliaValue), intent(in) :: self
+        real(kind=c_double) :: val
+        val = fj_unbox_float64(self%ptr)
+    end function julia_to_real
+
+    function julia_to_logical(self) result(val)
+        class(JuliaValue), intent(in) :: self
+        logical :: val
+        val = (fj_unbox_bool(self%ptr) /= 0)
+    end function julia_to_logical
+    
+    function julia_to_complex(self) result(val)
+        class(JuliaValue), intent(in) :: self
+        complex(kind=c_double) :: val
+        real(kind=c_double) :: r, i
+        r = fj_unbox_complex_real(self%ptr)
+        i = fj_unbox_complex_imag(self%ptr)
+        val = cmplx(r, i, c_double)
+    end function julia_to_complex
+
+    function julia_to_string(self) result(msg)
+        class(JuliaValue), intent(in) :: self
+        character(len=:), allocatable :: msg
+        type(c_ptr) :: c_str
+        character(kind=c_char), pointer :: f_char_ptr(:)
+        integer :: i, length
+        
+        c_str = fj_unbox_string(self%ptr)
+        if (.not. c_associated(c_str)) then
+             msg = ""
+             return
+        end if
+        
+        ! Determine length manually if needed or trust c_str is null terminated
+        ! We can use strlen C function
+        length = int(strlen(c_str))
+        
+        call c_f_pointer(c_str, f_char_ptr, [length]) 
+        
+        allocate(character(len=length) :: msg)
+        do i = 1, length
+            msg(i:i) = f_char_ptr(i)
+        end do
+    end function julia_to_string
+
+    ! --- Boxing Helpers (Constructors) ---
+
+    function julia_box_real(val) result(res)
+        real(kind=c_double), intent(in) :: val
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr
+        raw_ptr = fj_box_float64(val)
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_box_real
+
+    function julia_box_integer(val) result(res)
+        integer(kind=c_int64_t), intent(in) :: val
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr
+        raw_ptr = fj_box_int64(val)
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_box_integer
+    
+    function julia_box_logical(val) result(res)
+        logical, intent(in) :: val
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr
+        integer(c_int) :: c_bool
+        if (val) then
+            c_bool = 1
+        else
+            c_bool = 0
+        end if
+        raw_ptr = fj_box_bool(c_bool)
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_box_logical
+
+    function julia_box_string(val) result(res)
+        character(len=*), intent(in) :: val
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr
+        raw_ptr = fj_box_string(to_c_string(val))
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_box_string
+
+    function julia_box_complex(val) result(res)
+        complex(kind=c_double), intent(in) :: val
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr
+        raw_ptr = fj_box_complex(dble(val), aimag(val))
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_box_complex
+
+    ! --- Array Wrappers ---
+    
+    function julia_wrap_array_1d(arr, length) result(res)
+        real(kind=c_double), target, intent(in) :: arr(:)
+        integer(kind=c_int64_t), intent(in) :: length
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr, data_ptr
+        
+        data_ptr = c_loc(arr)
+        raw_ptr = fj_wrap_array_1d(data_ptr, length)
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_wrap_array_1d
+
+    function julia_wrap_array_3d(arr, d1, d2, d3) result(res)
+        real(kind=c_double), target, intent(in) :: arr(:,:,:)
+        integer(kind=c_int64_t), intent(in) :: d1, d2, d3
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr, data_ptr
+        
+        data_ptr = c_loc(arr)
+        raw_ptr = fj_wrap_array_3d(data_ptr, d1, d2, d3)
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_wrap_array_3d
+
+    ! --- Initialization / Util ---
     
     subroutine julia_init()
         call fj_init(c_null_ptr)
@@ -212,59 +427,43 @@ contains
     subroutine julia_eval_string(cmd)
         character(len=*), intent(in) :: cmd
         type(c_ptr) :: raw_res
-        
         raw_res = fj_eval_string(to_c_string(cmd))
     end subroutine julia_eval_string
-
-    ! --- Error Handling ---
 
     function get_last_error_message() result(msg)
         character(len=:), allocatable :: msg
         type(c_ptr) :: c_str
         character(kind=c_char), pointer :: f_char_ptr(:)
         integer :: i, length
-        
         c_str = fj_get_last_error()
         if (.not. c_associated(c_str)) then
-             msg = "Unknown Error (NULL)"
+             msg = "Unknown Error"
              return
         end if
-        
-        call c_f_pointer(c_str, f_char_ptr, [2048]) 
-        
-        length = 0
-        do i = 1, 2048
-            if (f_char_ptr(i) == c_null_char) then
-                length = i - 1
-                exit
-            end if
-        end do
-        
+        length = int(strlen(c_str))
+        call c_f_pointer(c_str, f_char_ptr, [length]) 
         allocate(character(len=length) :: msg)
         do i = 1, length
             msg(i:i) = f_char_ptr(i)
         end do
     end function get_last_error_message
 
-    ! --- Fast Path Wrapper ---
-
     function get_function_pointer(func_name, ret_type, arg_types) result(funptr)
         character(len=*), intent(in) :: func_name, ret_type, arg_types
         type(c_funptr) :: funptr
-        
         funptr = fj_get_function_pointer(to_c_string(func_name), &
                                          to_c_string(ret_type), &
                                          to_c_string(arg_types))
     end function get_function_pointer
 
-    ! --- Generic Call Methods (Simplified Prototypes) ---
-
+    ! Old methods kept for compatibility but implemented via new ones if desired, 
+    ! or kept as is for performance.
+    
     function call_method_0(self, func_name) result(res)
         class(JuliaValue), intent(in) :: self
         character(len=*), intent(in) :: func_name
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        
         raw_res = fj_call0(to_c_string(func_name))
         res%ptr = fj_retain(raw_res)
     end function call_method_0
@@ -275,7 +474,6 @@ contains
         real(kind=c_double), intent(in) :: arg1
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        
         raw_res = fj_call1_float64(to_c_string(func_name), arg1)
         res%ptr = fj_retain(raw_res)
     end function call_method_1_real
@@ -286,7 +484,6 @@ contains
         type(JuliaValue), intent(in) :: arg_obj
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        
         raw_res = fj_call1_obj(to_c_string(func_name), arg_obj%ptr)
         res%ptr = fj_retain(raw_res)
     end function call_method_1_obj
@@ -298,17 +495,8 @@ contains
         real(kind=c_double), intent(in) :: arg2
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        
         raw_res = fj_call2_obj_double(to_c_string(func_name), arg_obj%ptr, arg2)
         res%ptr = fj_retain(raw_res)
     end function call_method_2_obj_real
-
-    function julia_box_real(val) result(res)
-        real(kind=c_double), intent(in) :: val
-        type(JuliaValue) :: res
-        type(c_ptr) :: raw_ptr
-        raw_ptr = fj_box_float64(val)
-        res%ptr = fj_retain(raw_ptr)
-    end function julia_box_real
 
 end module julia_high_level
