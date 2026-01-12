@@ -62,6 +62,11 @@ void* fj_wrap_array_1d(void* data, long dim1);
 void* fj_wrap_array_2d(void* data, long dim1, long dim2);
 void* fj_wrap_array_3d(void* data, long dim1, long dim2, long dim3);
 
+// --- Array Deep Copies (Alloc + Memcpy) ---
+void* fj_copy_array_1d(void* data, long dim1);
+void* fj_copy_array_2d(void* data, long dim1, long dim2);
+void* fj_copy_array_3d(void* data, long dim1, long dim2, long dim3);
+
 // --- Accessors (Field & Index) ---
 void* fj_get_field(void* obj, const char* name);
 void fj_set_field(void* obj, const char* name, void* val);

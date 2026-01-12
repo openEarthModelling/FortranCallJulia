@@ -104,14 +104,36 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_wrap_array_2d
 
-        function fj_wrap_array_3d(data, d1, d2, d3) bind(c, name="fj_wrap_array_3d") result(res)
-            import :: c_ptr, c_int64_t
+        function fj_wrap_array_3d(data, dim1, dim2, dim3) bind(c, name="fj_wrap_array_3d") result(res)
+            import :: c_ptr, c_long
             type(c_ptr), value :: data
-            integer(kind=c_int64_t), value :: d1, d2, d3
+            integer(kind=c_long), value :: dim1, dim2, dim3
             type(c_ptr) :: res
         end function fj_wrap_array_3d
 
-        ! --- Boxing ---
+        ! --- Array Deep Copies ---
+        function fj_copy_array_1d(data, dim1) bind(c, name="fj_copy_array_1d") result(res)
+            import :: c_ptr, c_long
+            type(c_ptr), value :: data
+            integer(kind=c_long), value :: dim1
+            type(c_ptr) :: res
+        end function fj_copy_array_1d
+
+        function fj_copy_array_2d(data, dim1, dim2) bind(c, name="fj_copy_array_2d") result(res)
+            import :: c_ptr, c_long
+            type(c_ptr), value :: data
+            integer(kind=c_long), value :: dim1, dim2
+            type(c_ptr) :: res
+        end function fj_copy_array_2d
+
+        function fj_copy_array_3d(data, dim1, dim2, dim3) bind(c, name="fj_copy_array_3d") result(res)
+            import :: c_ptr, c_long
+            type(c_ptr), value :: data
+            integer(kind=c_long), value :: dim1, dim2, dim3
+            type(c_ptr) :: res
+        end function fj_copy_array_3d
+
+        ! --- Accessors ---
         function fj_box_float64(val) bind(c, name="fj_box_float64") result(res)
             import :: c_ptr, c_double
             real(kind=c_double), value :: val

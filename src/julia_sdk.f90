@@ -57,17 +57,29 @@ module julia_high_level
         final :: destructor
     end type JuliaValue
 
+    interface julia_wrap_array
+        module procedure julia_wrap_array_1d
+        module procedure julia_wrap_array_2d
+        module procedure julia_wrap_array_3d
+    end interface
+
+    interface julia_copy_array
+        module procedure julia_copy_array_1d
+        module procedure julia_copy_array_2d
+        module procedure julia_copy_array_3d
+    end interface
+
     interface
-        function strlen(s) bind(c, name="strlen")
+        function strlen(s) bind(c, name="strlen") result(res)
             import :: c_ptr, c_size_t
             type(c_ptr), value :: s
-            integer(kind=c_size_t) :: strlen
+            integer(kind=c_size_t) :: res
         end function strlen
     end interface
 
 contains
 
-    ! --- Introspection ---
+    ! --- Introspection Helpers ---
     
     function julia_range(start, stop) result(res)
         integer(kind=c_int64_t), intent(in) :: start, stop
@@ -77,7 +89,7 @@ contains
         res%ptr = fj_retain(raw_res)
     end function julia_range
 
-    ! --- Implementation ---
+    ! --- Internal Management ---
     
     subroutine copy_julia_value(dest, src)
         class(JuliaValue), intent(out) :: dest
@@ -97,6 +109,8 @@ contains
             self%ptr = c_null_ptr
         end if
     end subroutine destructor
+
+    ! --- Method Dispatch ---
 
     function call_method_generic(self, func_name, args) result(res)
         class(JuliaValue), intent(in) :: self
@@ -127,7 +141,7 @@ contains
         is_valid = c_associated(self%ptr)
     end function is_valid
 
-    ! --- Converters (Methods) ---
+    ! --- Converters ---
     
     function julia_to_integer(self) result(val)
         class(JuliaValue), intent(in) :: self
@@ -169,10 +183,7 @@ contains
              return
         end if
         
-        ! Determine length manually if needed or trust c_str is null terminated
-        ! We can use strlen C function
         length = int(strlen(c_str))
-        
         call c_f_pointer(c_str, f_char_ptr, [length]) 
         
         allocate(character(len=length) :: msg)
@@ -181,7 +192,7 @@ contains
         end do
     end function julia_to_string
 
-    ! --- Boxing Helpers (Constructors) ---
+    ! --- Boxing (Scalars) ---
 
     function julia_box_real(val) result(res)
         real(kind=c_double), intent(in) :: val
@@ -229,31 +240,74 @@ contains
         res%ptr = fj_retain(raw_ptr)
     end function julia_box_complex
 
-    ! --- Array Wrappers ---
+    ! --- Array Wrappers (Zero-Copy) ---
     
     function julia_wrap_array_1d(arr, length) result(res)
         real(kind=c_double), target, intent(in) :: arr(:)
         integer(kind=c_int64_t), intent(in) :: length
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr, data_ptr
-        
         data_ptr = c_loc(arr)
         raw_ptr = fj_wrap_array_1d(data_ptr, length)
         res%ptr = fj_retain(raw_ptr)
     end function julia_wrap_array_1d
+
+    function julia_wrap_array_2d(arr, d1, d2) result(res)
+        real(kind=c_double), target, intent(in) :: arr(:,:)
+        integer(kind=c_int64_t), intent(in) :: d1, d2
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_ptr, data_ptr
+        data_ptr = c_loc(arr)
+        raw_ptr = fj_wrap_array_2d(data_ptr, d1, d2)
+        res%ptr = fj_retain(raw_ptr)
+    end function julia_wrap_array_2d
 
     function julia_wrap_array_3d(arr, d1, d2, d3) result(res)
         real(kind=c_double), target, intent(in) :: arr(:,:,:)
         integer(kind=c_int64_t), intent(in) :: d1, d2, d3
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr, data_ptr
-        
         data_ptr = c_loc(arr)
         raw_ptr = fj_wrap_array_3d(data_ptr, d1, d2, d3)
         res%ptr = fj_retain(raw_ptr)
     end function julia_wrap_array_3d
 
-    ! --- Initialization / Util ---
+    ! --- Array Deep Copies (Alloc + Memcpy) ---
+
+    function julia_copy_array_1d(arr) result(res)
+        real(c_double), target, intent(in) :: arr(:)
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        integer(kind=c_long) :: dim1
+        dim1 = size(arr, kind=c_long)
+        raw_res = fj_copy_array_1d(c_loc(arr), dim1)
+        res%ptr = fj_retain(raw_res)
+    end function julia_copy_array_1d
+
+    function julia_copy_array_2d(arr) result(res)
+        real(c_double), target, intent(in) :: arr(:,:)
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        integer(kind=c_long) :: dim1, dim2
+        dim1 = size(arr, 1, kind=c_long)
+        dim2 = size(arr, 2, kind=c_long)
+        raw_res = fj_copy_array_2d(c_loc(arr), dim1, dim2)
+        res%ptr = fj_retain(raw_res)
+    end function julia_copy_array_2d
+
+    function julia_copy_array_3d(arr) result(res)
+        real(c_double), target, intent(in) :: arr(:,:,:)
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        integer(kind=c_long) :: dim1, dim2, dim3
+        dim1 = size(arr, 1, kind=c_long)
+        dim2 = size(arr, 2, kind=c_long)
+        dim3 = size(arr, 3, kind=c_long)
+        raw_res = fj_copy_array_3d(c_loc(arr), dim1, dim2, dim3)
+        res%ptr = fj_retain(raw_res)
+    end function julia_copy_array_3d
+
+    ! --- Init / Shutdown / Util ---
     
     subroutine julia_init()
         call fj_init(c_null_ptr)
@@ -262,7 +316,6 @@ contains
     subroutine julia_init_with_image(image_path)
         character(len=*), intent(in) :: image_path
         character(kind=c_char, len=len_trim(image_path)+1), target :: c_path
-        
         c_path = trim(image_path) // c_null_char
         call fj_init(c_loc(c_path))
     end subroutine julia_init_with_image
@@ -302,9 +355,6 @@ contains
                                          to_c_string(ret_type), &
                                          to_c_string(arg_types))
     end function get_function_pointer
-
-    ! Old methods kept for compatibility but implemented via new ones if desired, 
-    ! or kept as is for performance.
     
     function call_method_0(self, func_name) result(res)
         class(JuliaValue), intent(in) :: self
@@ -353,7 +403,6 @@ contains
         character(len=*), intent(in) :: name
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        
         raw_res = fj_get_field(self%ptr, to_c_string(name))
         res%ptr = fj_retain(raw_res)
     end function get_field
@@ -370,7 +419,6 @@ contains
         integer(kind=c_int64_t), intent(in) :: idx
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        
         raw_res = fj_get_index_i(self%ptr, idx)
         res%ptr = fj_retain(raw_res)
     end function at
@@ -455,11 +503,9 @@ contains
         class(JuliaKwargs), intent(inout) :: self
         character(len=*), intent(in) :: key
         type(JuliaValue), intent(in) :: val
-        
         type(JuliaValue), allocatable :: new_vals(:)
         character(len=64), allocatable :: new_keys(:)
         integer :: i
-        
         if (.not. allocated(self%keys)) then
             allocate(self%keys(1))
             allocate(self%values(1))
@@ -474,7 +520,6 @@ contains
             call move_alloc(new_keys, self%keys)
             call move_alloc(new_vals, self%values)
         end if
-        
         self%n = self%n + 1
         self%keys(self%n) = key
         self%values(self%n) = val
@@ -493,40 +538,24 @@ contains
         type(JuliaValue), dimension(:), intent(in) :: args
         type(JuliaKwargs), intent(in) :: kw
         type(JuliaValue) :: res
-        
         type(c_ptr), allocatable :: ptrs(:)
         type(c_ptr), allocatable :: kw_ptrs(:)
         type(c_ptr), allocatable :: val_ptrs(:)
         type(c_ptr) :: raw_res
         character(kind=c_char, len=65), target, allocatable :: c_keys(:)
         integer :: i, n, nkw
-        
-        n = size(args)
-        nkw = kw%n
-        
+        n = size(args); nkw = kw%n
         allocate(ptrs(max(1,n)))
-        do i = 1, n
-            ptrs(i) = args(i)%ptr
-        end do
-        
-        allocate(kw_ptrs(max(1,nkw)))
-        allocate(val_ptrs(max(1,nkw)))
-        allocate(c_keys(max(1,nkw)))
-        
+        do i = 1, n; ptrs(i) = args(i)%ptr; end do
+        allocate(kw_ptrs(max(1,nkw))); allocate(val_ptrs(max(1,nkw))); allocate(c_keys(max(1,nkw)))
         do i = 1, nkw
             c_keys(i) = trim(kw%keys(i)) // c_null_char
             kw_ptrs(i) = c_loc(c_keys(i))
             val_ptrs(i) = kw%values(i)%ptr
         end do
-        
         raw_res = fj_call_kwargs(to_c_string(func_name), ptrs, int(n, c_int32_t), &
                                  kw_ptrs, val_ptrs, int(nkw, c_int32_t))
-                                 
-        deallocate(ptrs)
-        deallocate(kw_ptrs)
-        deallocate(val_ptrs)
-        deallocate(c_keys)
-        
+        deallocate(ptrs); deallocate(kw_ptrs); deallocate(val_ptrs); deallocate(c_keys)
         res%ptr = fj_retain(raw_res)
     end function call_with_kwargs
 
