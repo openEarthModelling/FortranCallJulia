@@ -68,4 +68,18 @@ void fj_set_field(void* obj, const char* name, void* val);
 void* fj_get_index_i(void* obj, long long idx);
 void fj_set_index_i(void* obj, long long idx, void* val);
 
+// --- Extended Accessors ---
+void* fj_get_index_ii(void* obj, long long i, long long j);
+void fj_set_index_ii(void* obj, long long i, long long j, void* val);
+void* fj_get_index_iii(void* obj, long long i, long long j, long long k);
+void fj_set_index_iii(void* obj, long long i, long long j, long long k, void* val);
+void* fj_get_index_s(void* obj, const char* key);
+void fj_set_index_s(void* obj, const char* key, void* val);
+
+// --- Introspection ---
+long long fj_length(void* obj);
+long long fj_ndims(void* obj);
+long long fj_size(void* obj, int dim);
+void* fj_make_unitrange(long long start, long long stop);
+
 #endif // BRIDGE_H

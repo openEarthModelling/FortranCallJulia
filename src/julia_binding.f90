@@ -220,6 +220,75 @@ module julia_low_level
             type(c_ptr), value :: val
         end subroutine fj_set_index_i
 
+        ! --- Extended Accessors ---
+        function fj_get_index_ii(obj, i, j) bind(c, name="fj_get_index_ii") result(res)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: i, j
+            type(c_ptr) :: res
+        end function fj_get_index_ii
+
+        subroutine fj_set_index_ii(obj, i, j, val) bind(c, name="fj_set_index_ii")
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: i, j
+            type(c_ptr), value :: val
+        end subroutine fj_set_index_ii
+
+        function fj_get_index_iii(obj, i, j, k) bind(c, name="fj_get_index_iii") result(res)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: i, j, k
+            type(c_ptr) :: res
+        end function fj_get_index_iii
+
+        subroutine fj_set_index_iii(obj, i, j, k, val) bind(c, name="fj_set_index_iii")
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: i, j, k
+            type(c_ptr), value :: val
+        end subroutine fj_set_index_iii
+
+        function fj_get_index_s(obj, key) bind(c, name="fj_get_index_s") result(res)
+            import :: c_ptr, c_char
+            type(c_ptr), value :: obj
+            character(kind=c_char), dimension(*), intent(in) :: key
+            type(c_ptr) :: res
+        end function fj_get_index_s
+
+        subroutine fj_set_index_s(obj, key, val) bind(c, name="fj_set_index_s")
+            import :: c_ptr, c_char
+            type(c_ptr), value :: obj
+            character(kind=c_char), dimension(*), intent(in) :: key
+            type(c_ptr), value :: val
+        end subroutine fj_set_index_s
+
+        ! --- Introspection ---
+        function fj_length(obj) bind(c, name="fj_length") result(res)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t) :: res
+        end function fj_length
+
+        function fj_ndims(obj) bind(c, name="fj_ndims") result(res)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t) :: res
+        end function fj_ndims
+
+        function fj_size(obj, dim) bind(c, name="fj_size") result(res)
+            import :: c_ptr, c_int64_t, c_int
+            type(c_ptr), value :: obj
+            integer(kind=c_int), value :: dim
+            integer(kind=c_int64_t) :: res
+        end function fj_size
+
+        function fj_make_unitrange(start, stop) bind(c, name="fj_make_unitrange") result(res)
+            import :: c_ptr, c_int64_t
+            integer(kind=c_int64_t), value :: start, stop
+            type(c_ptr) :: res
+        end function fj_make_unitrange
+
     end interface
 
     contains

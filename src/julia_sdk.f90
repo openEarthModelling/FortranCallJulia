@@ -32,8 +32,25 @@ module julia_high_level
         ! Accessors
         procedure :: get_field
         procedure :: set_field
-        procedure :: at
-        procedure :: set_at
+        
+        procedure :: at_1d => at
+        procedure :: set_at_1d => set_at
+        
+        procedure :: at_2d
+        procedure :: set_at_2d
+        procedure :: at_3d
+        procedure :: set_at_3d
+        procedure :: at_string
+        procedure :: set_at_string
+        
+        generic :: at => at_1d, at_2d, at_3d, at_string
+        generic :: set_at => set_at_1d, set_at_2d, set_at_3d, set_at_string
+        
+        ! Introspection
+        procedure :: length
+        procedure :: ndims
+        procedure :: size_dim
+        
         ! Assignment Overload for Ref Counting
         generic :: assignment(=) => copy_julia_value
         procedure :: copy_julia_value
@@ -49,6 +66,16 @@ module julia_high_level
     end interface
 
 contains
+
+    ! --- Introspection ---
+    
+    function julia_range(start, stop) result(res)
+        integer(kind=c_int64_t), intent(in) :: start, stop
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        raw_res = fj_make_unitrange(start, stop)
+        res%ptr = fj_retain(raw_res)
+    end function julia_range
 
     ! --- Implementation ---
     
@@ -354,6 +381,73 @@ contains
         type(JuliaValue), intent(in) :: val
         call fj_set_index_i(self%ptr, idx, val%ptr)
     end subroutine set_at
+
+    function at_2d(self, i, j) result(res)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: i, j
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        raw_res = fj_get_index_ii(self%ptr, i, j)
+        res%ptr = fj_retain(raw_res)
+    end function at_2d
+
+    subroutine set_at_2d(self, i, j, val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: i, j
+        type(JuliaValue), intent(in) :: val
+        call fj_set_index_ii(self%ptr, i, j, val%ptr)
+    end subroutine set_at_2d
+
+    function at_3d(self, i, j, k) result(res)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: i, j, k
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        raw_res = fj_get_index_iii(self%ptr, i, j, k)
+        res%ptr = fj_retain(raw_res)
+    end function at_3d
+
+    subroutine set_at_3d(self, i, j, k, val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: i, j, k
+        type(JuliaValue), intent(in) :: val
+        call fj_set_index_iii(self%ptr, i, j, k, val%ptr)
+    end subroutine set_at_3d
+
+    function at_string(self, key) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: key
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        raw_res = fj_get_index_s(self%ptr, to_c_string(key))
+        res%ptr = fj_retain(raw_res)
+    end function at_string
+
+    subroutine set_at_string(self, key, val)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: key
+        type(JuliaValue), intent(in) :: val
+        call fj_set_index_s(self%ptr, to_c_string(key), val%ptr)
+    end subroutine set_at_string
+
+    function length(self) result(res)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t) :: res
+        res = fj_length(self%ptr)
+    end function length
+
+    function ndims(self) result(res)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t) :: res
+        res = fj_ndims(self%ptr)
+    end function ndims
+
+    function size_dim(self, dim) result(res)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int), intent(in) :: dim
+        integer(kind=c_int64_t) :: res
+        res = fj_size(self%ptr, dim)
+    end function size_dim
 
     ! --- Kwargs Support ---
 

@@ -20,6 +20,17 @@ jl_function_t* FuncGetIndex = NULL;
 jl_function_t* FuncSetIndex = NULL;
 jl_function_t* FuncCallKwargs = NULL;
 
+jl_function_t* FuncGetIndex2D = NULL;
+jl_function_t* FuncSetIndex2D = NULL;
+jl_function_t* FuncGetIndex3D = NULL;
+jl_function_t* FuncSetIndex3D = NULL;
+jl_function_t* FuncGetIndexString = NULL;
+jl_function_t* FuncSetIndexString = NULL;
+jl_function_t* FuncLength = NULL;
+jl_function_t* FuncNdims = NULL;
+jl_function_t* FuncSize = NULL;
+jl_function_t* FuncMakeUnitRange = NULL;
+
 static pthread_t main_thread_id;
 static char last_error_msg[2048] = "No error";
 
@@ -83,6 +94,10 @@ void fj_init(const char* image_path) {
 
     if (!is_loaded) {
         jl_eval_string("include(\"middleware.jl\")");
+        if (check_julia_exception()) {
+             fprintf(stderr, "Error loading middleware.jl: %s\n", fj_get_last_error());
+             exit(1);
+        }
         jl_eval_string("using .FortranBridge");
     } else {
         jl_eval_string("using Main.FortranBridge");
@@ -111,8 +126,22 @@ void fj_init(const char* image_path) {
         FuncSetIndex = jl_get_function(FortranBridgeMod, "helper_setindex");
         FuncCallKwargs = jl_get_function(FortranBridgeMod, "helper_call_kwargs");
         
+        FuncGetIndex2D = jl_get_function(FortranBridgeMod, "helper_getindex_2d");
+        FuncSetIndex2D = jl_get_function(FortranBridgeMod, "helper_setindex_2d");
+        FuncGetIndex3D = jl_get_function(FortranBridgeMod, "helper_getindex_3d");
+        FuncSetIndex3D = jl_get_function(FortranBridgeMod, "helper_setindex_3d");
+        FuncGetIndexString = jl_get_function(FortranBridgeMod, "helper_getindex_string");
+        FuncSetIndexString = jl_get_function(FortranBridgeMod, "helper_setindex_string");
+        FuncLength = jl_get_function(FortranBridgeMod, "helper_length");
+        FuncNdims = jl_get_function(FortranBridgeMod, "helper_ndims");
+        FuncSize = jl_get_function(FortranBridgeMod, "helper_size");
+        FuncMakeUnitRange = jl_get_function(FortranBridgeMod, "helper_make_unitrange");
+        
         if (!FuncRetain || !FuncRelease || !FuncRegister || !FuncRegisterStr ||
-            !FuncGetField || !FuncSetField || !FuncGetIndex || !FuncSetIndex || !FuncCallKwargs) {
+            !FuncGetField || !FuncSetField || !FuncGetIndex || !FuncSetIndex || !FuncCallKwargs ||
+            !FuncGetIndex2D || !FuncSetIndex2D || !FuncGetIndex3D || !FuncSetIndex3D || 
+            !FuncGetIndexString || !FuncSetIndexString ||
+            !FuncLength || !FuncNdims || !FuncSize || !FuncMakeUnitRange) {
              fprintf(stderr, "Error: One or more FortranBridge functions could not be loaded.\n");
              exit(1);
         }

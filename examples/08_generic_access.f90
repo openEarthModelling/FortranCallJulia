@@ -103,10 +103,39 @@ program ex08_generic_access
     
     score_val = scores_obj%at(2_8)
     print *, "New Score[2]: ", score_val%as_integer()
-    
     if (score_val%as_integer() == 100) then
         print *, "SUCCESS: Array modified."
     end if
+
+    ! 7. 2D Matrix Access
+    print *, "--- Extended: 2D Matrix ---"
+    call julia_eval_string('M = [1 2 3; 4 5 6]')
+    call julia_eval_string('function get_m(); return M; end')
+    data_obj = ctx%call_method_0("get_m")
+    
+    score_val = data_obj%at(2_8, 3_8)
+    print *, "M[2,3] (Expect 6): ", score_val%as_integer()
+    print *, "M Dims: ", data_obj%ndims()
+    print *, "M Length: ", data_obj%length()
+    
+    ! 8. Dictionary Access
+    print *, "--- Extended: Dictionary ---"
+    call julia_eval_string('D = Dict("key1" => 10, "key2" => 20)')
+    call julia_eval_string('function get_d(); return D; end')
+    data_obj = ctx%call_method_0("get_d")
+    
+    score_val = data_obj%at("key1")
+    print *, "D['key1']: ", score_val%as_integer()
+    
+    ! Modify Dict
+    block
+        type(JuliaValue) :: val_99
+        val_99 = julia_box_integer(99_8)
+        call data_obj%set_at("key1", val_99)
+    end block
+    
+    score_val = data_obj%at("key1")
+    print *, "D['key1'] New: ", score_val%as_integer()
 
     call julia_shutdown()
     print *, "--- Finished ---"

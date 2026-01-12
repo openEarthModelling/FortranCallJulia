@@ -2,7 +2,7 @@ module FortranBridge
 
 using Base.Libc.Libdl
 
-export retain_obj, release_obj, print_array_info, print_matrix_info, register_f2, register_f2_string, helper_getfield, helper_setfield, helper_getindex, helper_setindex, helper_call_kwargs
+export retain_obj, release_obj, print_array_info, print_matrix_info, register_f2, register_f2_string, helper_getfield, helper_setfield, helper_getindex, helper_setindex, helper_call_kwargs, helper_getindex_2d, helper_setindex_2d, helper_getindex_3d, helper_setindex_3d, helper_getindex_string, helper_setindex_string, helper_length, helper_ndims, helper_size, helper_make_unitrange
 
 # --- Global Reference Management (GC Protection) ---
 # We map the Raw Pointer Address -> Object.
@@ -146,6 +146,53 @@ function helper_call_kwargs(func_name::String, args::Vector{Any}, kw_keys::Vecto
     
     # Call
     return func(args...; kw_nt...)
+end
+
+# --- Extended Accessors (2D/3D/String) ---
+
+function helper_getindex_2d(obj::Any, i::Int64, j::Int64)
+    return getindex(obj, i, j)
+end
+
+function helper_setindex_2d(obj::Any, i::Int64, j::Int64, val::Any)
+    setindex!(obj, val, i, j)
+    return nothing
+end
+
+function helper_getindex_3d(obj::Any, i::Int64, j::Int64, k::Int64)
+    return getindex(obj, i, j, k)
+end
+
+function helper_setindex_3d(obj::Any, i::Int64, j::Int64, k::Int64, val::Any)
+    setindex!(obj, val, i, j, k)
+    return nothing
+end
+
+function helper_getindex_string(obj::Any, key::String)
+    return getindex(obj, key)
+end
+
+function helper_setindex_string(obj::Any, key::String, val::Any)
+    setindex!(obj, val, key)
+    return nothing
+end
+
+# --- Introspection & Util ---
+
+function helper_length(obj::Any)
+    return length(obj)
+end
+
+function helper_ndims(obj::Any)
+    return ndims(obj)
+end
+
+function helper_size(obj::Any, dim::Int64)
+    return size(obj, dim)
+end
+
+function helper_make_unitrange(start::Int64, stop::Int64)
+    return start:stop
 end
 
 end # module
