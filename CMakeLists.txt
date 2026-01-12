@@ -54,7 +54,12 @@ string(REPLACE "'" "" JULIA_LDLIBS "${JULIA_LDLIBS}")
 # Core Library (Fortran-Julia Middleware)
 # ==============================================================================
 add_library(fj_middleware STATIC
-    src/bridge.c
+    src/bridge/core.c
+    src/bridge/memory.c
+    src/bridge/dispatch.c
+    src/bridge/types.c
+    src/bridge/arrays.c
+    src/julia_binding.f90
     src/julia_sdk.f90
 )
 
@@ -95,7 +100,7 @@ install(TARGETS fj_middleware
 )
 
 # Install Headers
-install(FILES src/bridge.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES src/bridge/bridge.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Install Fortran Modules
 install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
