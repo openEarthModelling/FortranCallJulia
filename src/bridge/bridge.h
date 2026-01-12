@@ -29,6 +29,10 @@ jl_value_t* fj_eval_string(const char* cmd);
 // Call a Julia function with N arguments
 jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs);
 
+// Call with Keyword Arguments
+jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs, 
+                           const char** kw_keys, void** kw_vals, int32_t nkw);
+
 
 // --- Fast Path (Low-Level API) ---
 void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types);
@@ -57,5 +61,11 @@ double fj_unbox_complex_imag(void* obj);
 void* fj_wrap_array_1d(void* data, long dim1);
 void* fj_wrap_array_2d(void* data, long dim1, long dim2);
 void* fj_wrap_array_3d(void* data, long dim1, long dim2, long dim3);
+
+// --- Accessors (Field & Index) ---
+void* fj_get_field(void* obj, const char* name);
+void fj_set_field(void* obj, const char* name, void* val);
+void* fj_get_index_i(void* obj, long long idx);
+void fj_set_index_i(void* obj, long long idx, void* val);
 
 #endif // BRIDGE_H

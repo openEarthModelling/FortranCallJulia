@@ -96,3 +96,54 @@ void* fj_get_function_pointer(const char* func_name, const char* ret_type, const
     if (ret_ptr) return jl_unbox_voidpointer(ret_ptr);
     return NULL;
 }
+
+// --- Keyword Argument Calls ---
+
+jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs, 
+                           const char** kw_keys, void** kw_vals, int32_t nkw) {
+    if (!check_thread()) return NULL;
+    
+    jl_array_t *jl_args = NULL;
+    jl_array_t *jl_keys = NULL;
+    jl_array_t *jl_vals = NULL;
+    jl_value_t *v_func_name = NULL;
+    
+    JL_GC_PUSH4(&jl_args, &jl_keys, &jl_vals, &v_func_name);
+    
+    // 1. Prepare Arguments Array (Vector{Any})
+    jl_value_t *arg_array_type = jl_apply_array_type((jl_value_t*)jl_any_type, 1);
+    jl_args = jl_alloc_array_1d(arg_array_type, nargs);
+    
+    for (int i = 0; i < nargs; i++) {
+        jl_arrayset(jl_args, (jl_value_t*)args[i], i);
+    }
+    
+    // 2. Prepare Keys Array (Vector{String})
+    jl_value_t *str_array_type = jl_apply_array_type((jl_value_t*)jl_string_type, 1);
+    jl_keys = jl_alloc_array_1d(str_array_type, nkw);
+    
+    for (int i = 0; i < nkw; i++) {
+        jl_arrayset(jl_keys, jl_cstr_to_string(kw_keys[i]), i);
+    }
+    
+    // 3. Prepare Values Array (Vector{Any})
+    jl_vals = jl_alloc_array_1d(arg_array_type, nkw);
+    
+    for (int i = 0; i < nkw; i++) {
+        jl_arrayset(jl_vals, (jl_value_t*)kw_vals[i], i);
+    }
+    
+    // 4. Call Helper
+    v_func_name = jl_cstr_to_string(func_name);
+    
+    jl_value_t *call_args[4] = { v_func_name, (jl_value_t*)jl_args, (jl_value_t*)jl_keys, (jl_value_t*)jl_vals };
+    jl_value_t *ret = jl_call(FuncCallKwargs, call_args, 4);
+    
+    if (check_julia_exception()) {
+        JL_GC_POP();
+        return NULL;
+    }
+    
+    JL_GC_POP();
+    return ret;
+}

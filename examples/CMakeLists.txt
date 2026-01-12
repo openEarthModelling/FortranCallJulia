@@ -73,6 +73,8 @@ add_fj_example(ex03_integration     03_integration.f90)
 add_fj_example(ex04_performance     04_performance.f90)
 add_fj_example(ex05_sysimage        05_sysimage.f90)
 add_fj_example(ex06_multithreading  06_multithreading.f90)
+add_fj_example(ex08_generic_access  08_generic_access.f90)
+add_fj_example(ex09_kwargs          09_kwargs.f90)
 
 # ==============================================================================
 # HPC Examples (MPI)

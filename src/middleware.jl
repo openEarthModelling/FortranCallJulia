@@ -2,7 +2,7 @@ module FortranBridge
 
 using Base.Libc.Libdl
 
-export retain_obj, release_obj, print_array_info, print_matrix_info, register_f2, register_f2_string
+export retain_obj, release_obj, print_array_info, print_matrix_info, register_f2, register_f2_string, helper_getfield, helper_setfield, helper_getindex, helper_setindex, helper_call_kwargs
 
 # --- Global Reference Management (GC Protection) ---
 # We map the Raw Pointer Address -> Object.
@@ -103,6 +103,49 @@ function print_matrix_info(mat::Matrix)
         println("  Corner (end,end): ", mat[end,end])
     end
     return nothing
+end
+
+# --- Accessors (Field & Index) ---
+
+function helper_getfield(obj::Any, name::String)
+    # Support both struct fields and NamedTuple keys via getproperty
+    sym = Symbol(name)
+    return getproperty(obj, sym)
+end
+
+function helper_setfield(obj::Any, name::String, val::Any)
+    sym = Symbol(name)
+    setproperty!(obj, sym, val)
+    return nothing
+end
+
+function helper_getindex(obj::Any, idx::Int64)
+    return getindex(obj, idx)
+end
+
+function helper_setindex(obj::Any, idx::Int64, val::Any)
+    setindex!(obj, val, idx)
+    return nothing
+end
+
+# --- Keyword Arguments Support ---
+
+function helper_call_kwargs(func_name::String, args::Vector{Any}, kw_keys::Vector{String}, kw_vals::Vector{Any})
+    if !isdefined(Main, Symbol(func_name))
+        error("Function $func_name not found")
+    end
+    func = getfield(Main, Symbol(func_name))
+    
+    # Construct NamedTuple for kwargs
+    # 1. Convert keys to Symbols
+    syms = Tuple(Symbol.(kw_keys))
+    # 2. Convert values to Tuple
+    vals = Tuple(kw_vals)
+    # 3. Create NamedTuple
+    kw_nt = NamedTuple{syms}(vals)
+    
+    # Call
+    return func(args...; kw_nt...)
 end
 
 end # module

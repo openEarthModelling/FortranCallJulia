@@ -57,6 +57,7 @@ add_library(fj_middleware STATIC
     src/bridge/core.c
     src/bridge/memory.c
     src/bridge/dispatch.c
+    src/bridge/accessors.c
     src/bridge/types.c
     src/bridge/arrays.c
     src/julia_binding.f90

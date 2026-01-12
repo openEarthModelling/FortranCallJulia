@@ -59,6 +59,17 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call_general
 
+        function fj_call_kwargs(func_name, args, nargs, kw_keys, kw_vals, nkw) bind(c, name="fj_call_kwargs") result(res)
+            import :: c_char, c_ptr, c_int32_t
+            character(kind=c_char), dimension(*), intent(in) :: func_name
+            type(c_ptr), dimension(*), intent(in) :: args
+            integer(kind=c_int32_t), value :: nargs
+            type(c_ptr), dimension(*), intent(in) :: kw_keys
+            type(c_ptr), dimension(*), intent(in) :: kw_vals
+            integer(kind=c_int32_t), value :: nkw
+            type(c_ptr) :: res
+        end function fj_call_kwargs
+
         function fj_eval_string(cmd) bind(c, name="fj_eval_string") result(res)
             import :: c_char, c_ptr
             character(kind=c_char), dimension(*), intent(in) :: cmd
@@ -179,6 +190,35 @@ module julia_low_level
             type(c_ptr), value :: obj
             real(kind=c_double) :: val
         end function fj_unbox_complex_imag
+
+        ! --- Accessors ---
+        function fj_get_field(obj, name) bind(c, name="fj_get_field") result(res)
+            import :: c_ptr, c_char
+            type(c_ptr), value :: obj
+            character(kind=c_char), dimension(*), intent(in) :: name
+            type(c_ptr) :: res
+        end function fj_get_field
+
+        subroutine fj_set_field(obj, name, val) bind(c, name="fj_set_field")
+            import :: c_ptr, c_char
+            type(c_ptr), value :: obj
+            character(kind=c_char), dimension(*), intent(in) :: name
+            type(c_ptr), value :: val
+        end subroutine fj_set_field
+
+        function fj_get_index_i(obj, idx) bind(c, name="fj_get_index_i") result(res)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: idx
+            type(c_ptr) :: res
+        end function fj_get_index_i
+
+        subroutine fj_set_index_i(obj, idx, val) bind(c, name="fj_set_index_i")
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: idx
+            type(c_ptr), value :: val
+        end subroutine fj_set_index_i
 
     end interface
 

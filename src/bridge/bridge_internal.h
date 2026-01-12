@@ -11,6 +11,11 @@ extern jl_function_t* FuncRetain;
 extern jl_function_t* FuncRelease;
 extern jl_function_t* FuncRegister;
 extern jl_function_t* FuncRegisterStr;
+extern jl_function_t* FuncGetField;
+extern jl_function_t* FuncSetField;
+extern jl_function_t* FuncGetIndex;
+extern jl_function_t* FuncSetIndex;
+extern jl_function_t* FuncCallKwargs;
 
 // Helpers
 void set_error(const char* msg);

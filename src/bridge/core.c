@@ -14,6 +14,11 @@ jl_function_t* FuncRetain = NULL;
 jl_function_t* FuncRelease = NULL;
 jl_function_t* FuncRegister = NULL;
 jl_function_t* FuncRegisterStr = NULL;
+jl_function_t* FuncGetField = NULL;
+jl_function_t* FuncSetField = NULL;
+jl_function_t* FuncGetIndex = NULL;
+jl_function_t* FuncSetIndex = NULL;
+jl_function_t* FuncCallKwargs = NULL;
 
 static pthread_t main_thread_id;
 static char last_error_msg[2048] = "No error";
@@ -100,8 +105,14 @@ void fj_init(const char* image_path) {
         FuncRelease = jl_get_function(FortranBridgeMod, "release_obj");
         FuncRegister = jl_get_function(FortranBridgeMod, "register_f2");
         FuncRegisterStr = jl_get_function(FortranBridgeMod, "register_f2_string");
+        FuncGetField = jl_get_function(FortranBridgeMod, "helper_getfield");
+        FuncSetField = jl_get_function(FortranBridgeMod, "helper_setfield");
+        FuncGetIndex = jl_get_function(FortranBridgeMod, "helper_getindex");
+        FuncSetIndex = jl_get_function(FortranBridgeMod, "helper_setindex");
+        FuncCallKwargs = jl_get_function(FortranBridgeMod, "helper_call_kwargs");
         
-        if (!FuncRetain || !FuncRelease || !FuncRegister || !FuncRegisterStr) {
+        if (!FuncRetain || !FuncRelease || !FuncRegister || !FuncRegisterStr ||
+            !FuncGetField || !FuncSetField || !FuncGetIndex || !FuncSetIndex || !FuncCallKwargs) {
              fprintf(stderr, "Error: One or more FortranBridge functions could not be loaded.\n");
              exit(1);
         }

@@ -3,11 +3,21 @@ module julia_high_level
     use julia_low_level
     implicit none
 
+    type :: JuliaKwargs
+        integer :: n = 0
+        character(len=64), allocatable :: keys(:)
+        type(JuliaValue), allocatable :: values(:)
+    contains
+        procedure :: add => add_kwarg
+        final :: kw_destructor
+    end type JuliaKwargs
+
     type :: JuliaValue
         type(c_ptr) :: ptr = c_null_ptr
     contains
         procedure :: is_valid
         procedure :: call_method_generic
+        procedure :: call_with_kwargs
         ! Deprecated / Convenience methods
         procedure :: call_method_0
         procedure :: call_method_1_real
@@ -19,6 +29,11 @@ module julia_high_level
         procedure :: as_logical => julia_to_logical
         procedure :: as_complex => julia_to_complex
         procedure :: as_string => julia_to_string
+        ! Accessors
+        procedure :: get_field
+        procedure :: set_field
+        procedure :: at
+        procedure :: set_at
         ! Assignment Overload for Ref Counting
         generic :: assignment(=) => copy_julia_value
         procedure :: copy_julia_value
@@ -303,5 +318,122 @@ contains
         raw_res = fj_call2_obj_double(to_c_string(func_name), arg_obj%ptr, arg2)
         res%ptr = fj_retain(raw_res)
     end function call_method_2_obj_real
+
+    ! --- Accessors ---
+
+    function get_field(self, name) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: name
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        
+        raw_res = fj_get_field(self%ptr, to_c_string(name))
+        res%ptr = fj_retain(raw_res)
+    end function get_field
+
+    subroutine set_field(self, name, val)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: name
+        type(JuliaValue), intent(in) :: val
+        call fj_set_field(self%ptr, to_c_string(name), val%ptr)
+    end subroutine set_field
+
+    function at(self, idx) result(res)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: idx
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        
+        raw_res = fj_get_index_i(self%ptr, idx)
+        res%ptr = fj_retain(raw_res)
+    end function at
+
+    subroutine set_at(self, idx, val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: idx
+        type(JuliaValue), intent(in) :: val
+        call fj_set_index_i(self%ptr, idx, val%ptr)
+    end subroutine set_at
+
+    ! --- Kwargs Support ---
+
+    subroutine add_kwarg(self, key, val)
+        class(JuliaKwargs), intent(inout) :: self
+        character(len=*), intent(in) :: key
+        type(JuliaValue), intent(in) :: val
+        
+        type(JuliaValue), allocatable :: new_vals(:)
+        character(len=64), allocatable :: new_keys(:)
+        integer :: i
+        
+        if (.not. allocated(self%keys)) then
+            allocate(self%keys(1))
+            allocate(self%values(1))
+            self%n = 0
+        else
+            allocate(new_keys(self%n + 1))
+            allocate(new_vals(self%n + 1))
+            do i = 1, self%n
+                new_keys(i) = self%keys(i)
+                new_vals(i) = self%values(i)
+            end do
+            call move_alloc(new_keys, self%keys)
+            call move_alloc(new_vals, self%values)
+        end if
+        
+        self%n = self%n + 1
+        self%keys(self%n) = key
+        self%values(self%n) = val
+    end subroutine add_kwarg
+
+    subroutine kw_destructor(self)
+        type(JuliaKwargs), intent(inout) :: self
+        if (allocated(self%keys)) deallocate(self%keys)
+        if (allocated(self%values)) deallocate(self%values)
+        self%n = 0
+    end subroutine kw_destructor
+
+    function call_with_kwargs(self, func_name, args, kw) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: func_name
+        type(JuliaValue), dimension(:), intent(in) :: args
+        type(JuliaKwargs), intent(in) :: kw
+        type(JuliaValue) :: res
+        
+        type(c_ptr), allocatable :: ptrs(:)
+        type(c_ptr), allocatable :: kw_ptrs(:)
+        type(c_ptr), allocatable :: val_ptrs(:)
+        type(c_ptr) :: raw_res
+        character(kind=c_char, len=65), target, allocatable :: c_keys(:)
+        integer :: i, n, nkw
+        
+        n = size(args)
+        nkw = kw%n
+        
+        allocate(ptrs(max(1,n)))
+        do i = 1, n
+            ptrs(i) = args(i)%ptr
+        end do
+        
+        allocate(kw_ptrs(max(1,nkw)))
+        allocate(val_ptrs(max(1,nkw)))
+        allocate(c_keys(max(1,nkw)))
+        
+        do i = 1, nkw
+            c_keys(i) = trim(kw%keys(i)) // c_null_char
+            kw_ptrs(i) = c_loc(c_keys(i))
+            val_ptrs(i) = kw%values(i)%ptr
+        end do
+        
+        raw_res = fj_call_kwargs(to_c_string(func_name), ptrs, int(n, c_int32_t), &
+                                 kw_ptrs, val_ptrs, int(nkw, c_int32_t))
+                                 
+        deallocate(ptrs)
+        deallocate(kw_ptrs)
+        deallocate(val_ptrs)
+        deallocate(c_keys)
+        
+        res%ptr = fj_retain(raw_res)
+    end function call_with_kwargs
 
 end module julia_high_level
