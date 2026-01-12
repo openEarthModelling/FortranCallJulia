@@ -49,8 +49,39 @@ function register_f2(func::Function, name::String)
     return ptr
 end
 
-function register_f2_string(func_name::String, ret_type::String, arg_types::String)
-    return C_NULL
+function register_f2_string(func_name::String, ret_type_str::String, arg_types_str::String)
+    # 1. Lookup Function
+    if !isdefined(Main, Symbol(func_name))
+        println("[FortranBridge] Error: Function '$func_name' not found in Main.")
+        return C_NULL
+    end
+    func = getfield(Main, Symbol(func_name))
+
+    # 2. Dynamic Type Parsing & AST Construction
+    try
+        # We parse the strings into AST expressions (Expr), but we DO NOT eval them yet.
+        # @cfunction macro expects the type arguments to be expressions that look like types/tuples.
+        
+        RetTypeExpr = Meta.parse(ret_type_str)
+        ArgTypesExpr = Meta.parse(arg_types_str) # e.g., returns the Expr: :( (Float64, Int64) )
+        
+        # 3. Dynamic @cfunction Generation
+        # We construct the expression: @cfunction(func_val, RetTypeExpr, ArgTypesExpr)
+        # Note: We must interpolate the *value* of func, but the *expressions* of the types.
+        
+        # We use a let block or direct interpolation. 
+        # Construction:
+        cfunc_expr = :( @cfunction($func, $RetTypeExpr, $ArgTypesExpr) )
+        
+        # 4. Evaluate the constructed expression in the module scope
+        cfunc_ptr = eval(cfunc_expr)
+        
+        return cfunc_ptr
+
+    catch e
+        println("[FortranBridge] Error generating cfunction: ", e)
+        return C_NULL
+    end
 end
 
 # --- Inspection Tools ---

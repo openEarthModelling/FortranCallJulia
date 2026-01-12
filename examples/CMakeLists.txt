@@ -1,78 +1,46 @@
 cmake_minimum_required(VERSION 3.10)
-project(FortranCallJuliaExamples LANGUAGES Fortran)
+project(FortranCallJuliaExamples LANGUAGES Fortran C)
 
 # ==============================================================================
 # Examples Build Configuration
 # ==============================================================================
 
-# Check if we are part of the main build or standalone
 if(TARGET fj_middleware)
-    message(STATUS "Building examples as part of the main project.")
+    # Built as part of main project
     set(MW_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../src/middleware.jl")
-else(TARGET fj_middleware)
-    message(STATUS "Building examples standalone.")
-    
-    # Try to find the library and headers
-    # User should provide CMAKE_PREFIX_PATH pointing to install dir
-    
+else()
+    # Standalone build (User installed SDK)
     find_library(FJ_LIB NAMES fj_middleware REQUIRED)
     find_path(FJ_INCLUDE_DIR NAMES bridge.h REQUIRED)
     find_path(FJ_MOD_DIR NAMES julia_high_level.mod REQUIRED)
-    
-    message(STATUS "Found Library: ${FJ_LIB}")
-    message(STATUS "Found Includes: ${FJ_INCLUDE_DIR}")
-    message(STATUS "Found Modules: ${FJ_MOD_DIR}")
 
-    # --- Find Julia (Required for linking) ---
-    find_program(JULIA_EXECUTABLE julia DOC "Path to Julia executable")
-    if(NOT JULIA_EXECUTABLE)
-        message(FATAL_ERROR "Julia executable not found.")
-    endif()
-
+    # Find Julia (Linker flags)
+    find_program(JULIA_EXECUTABLE julia REQUIRED)
     execute_process(COMMAND ${JULIA_EXECUTABLE} -e "import Libdl; print(joinpath(Sys.BINDIR, Base.DATAROOTDIR, \"julia\", \"julia-config.jl\"))" OUTPUT_VARIABLE JULIA_CONFIG_SCRIPT)
     execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --ldflags OUTPUT_VARIABLE JULIA_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
     execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --ldlibs OUTPUT_VARIABLE JULIA_LDLIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
-    
-    # Cleanup flags
-    string(REPLACE "\n" " " JULIA_LDFLAGS "${JULIA_LDFLAGS}")
-    string(REPLACE " " ";" JULIA_LDFLAGS "${JULIA_LDFLAGS}")
-    string(REPLACE "'" "" JULIA_LDFLAGS "${JULIA_LDFLAGS}")
-    string(REPLACE "\n" " " JULIA_LDLIBS "${JULIA_LDLIBS}")
-    string(REPLACE " " ";" JULIA_LDLIBS "${JULIA_LDLIBS}")
-    string(REPLACE "'" "" JULIA_LDLIBS "${JULIA_LDLIBS}")
-    
-    message(STATUS "Julia LDFLAGS: ${JULIA_LDFLAGS}")
-    message(STATUS "Julia LDLIBS: ${JULIA_LDLIBS}")
 
-    # Create an interface target to match the internal one
+    # Create imported target
     add_library(fj_middleware UNKNOWN IMPORTED)
     set_target_properties(fj_middleware PROPERTIES
         IMPORTED_LOCATION "${FJ_LIB}"
         INTERFACE_INCLUDE_DIRECTORIES "${FJ_INCLUDE_DIR};${FJ_MOD_DIR}"
-        INTERFACE_LINK_LIBRARIES "${JULIA_LDLIBS}"
-        INTERFACE_LINK_OPTIONS "${JULIA_LDFLAGS}"
+        INTERFACE_LINK_LIBRARIES "${JULIA_LDLIBS} ${JULIA_LDFLAGS}"
     )
     
-    # We assume standard install layout where middleware.jl is in share/FortranCallJulia
-    # or user specified it.
-    find_file(MW_SOURCE middleware.jl PATHS 
-        ${FJ_INCLUDE_DIR}/../share/FortranCallJulia
-        ${FJ_INCLUDE_DIR}/../src # Fallback for build tree
-        REQUIRED
-    )
+    find_file(MW_SOURCE middleware.jl PATHS ${FJ_INCLUDE_DIR}/../share/FortranCallJulia REQUIRED)
 endif()
 
-# Helper macro for adding examples
+# ==============================================================================
+# Helper Macro
+# ==============================================================================
+
 macro(add_fj_example name source)
     add_executable(${name} ${source})
-    
-    # Link against the middleware library
     target_link_libraries(${name} PRIVATE fj_middleware)
-    
-    # Standard Fortran Flags
     target_compile_options(${name} PRIVATE -fno-underscoring)
-    
-    # Ensure modules are found (if using modules from build tree)
+
+    # If built in-tree, add module dir
     if(TARGET fj_middleware)
         get_target_property(MOD_DIR fj_middleware Fortran_MODULE_DIRECTORY)
         if(MOD_DIR)
@@ -80,65 +48,67 @@ macro(add_fj_example name source)
         endif()
     endif()
 
-    # Post-build: Copy middleware.jl to the executable's directory
-    # This is needed for Development Mode (loading .jl source)
+    # Copy middleware.jl (runtime requirement)
     add_custom_command(TARGET ${name} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${MW_SOURCE}
         ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
-        COMMENT "Copying middleware.jl to ${name} directory"
+    )
+
+    # Copy examples_lib.jl (runtime requirement for examples)
+    add_custom_command(TARGET ${name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples_lib.jl
+        ${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
     )
 endmacro()
 
 # ==============================================================================
-# Define Examples
+# Standard Examples (01 - 06)
 # ==============================================================================
 
-add_fj_example(ex01_hello       01_hello.f90)
-add_fj_example(ex02_math_oop    02_math_oop.f90)
-add_fj_example(ex03_performance 03_performance.f90)
-add_fj_example(ex04_arrays      04_arrays.f90)
-add_fj_example(ex05_errors      05_errors.f90)
-# Example 6: Sysimage Loading
-add_fj_example(ex06_sysimage 06_sysimage.f90)
+add_fj_example(ex01_basics          01_basics.f90)
+add_fj_example(ex02_data_types      02_data_types.f90)
+add_fj_example(ex03_integration     03_integration.f90)
+add_fj_example(ex04_performance     04_performance.f90)
+add_fj_example(ex05_sysimage        05_sysimage.f90)
+add_fj_example(ex06_multithreading  06_multithreading.f90)
 
-# Define list of advanced examples that need advanced_demo.jl
-set(ADVANCED_EXAMPLES ex07_linear_algebra ex08_special_functions ex09_complex_workflow)
+# ==============================================================================
+# HPC Examples (MPI)
+# ==============================================================================
 
-# Example 7: Linear Algebra
-add_fj_example(ex07_linear_algebra 07_linear_algebra.f90)
+option(BUILD_MPI_EXAMPLES "Build MPI examples" OFF)
 
-# Example 8: Special Functions
-add_fj_example(ex08_special_functions 08_special_functions.f90)
+if(BUILD_MPI_EXAMPLES)
+    find_package(MPI)
+endif()
 
-# Example 9: Complex Workflow
-add_fj_example(ex09_complex_workflow 09_complex_workflow.f90)
+if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
+    message(STATUS "MPI Found: Enabling ex07_mpi_bootstrap")
+    add_executable(ex07_mpi_bootstrap 07_mpi_bootstrap.f90)
+    target_link_libraries(ex07_mpi_bootstrap PRIVATE fj_middleware MPI::MPI_Fortran)
+    target_compile_options(ex07_mpi_bootstrap PRIVATE -fno-underscoring)
+    
+    # In-tree module support
+    if(TARGET fj_middleware)
+        get_target_property(MOD_DIR fj_middleware Fortran_MODULE_DIRECTORY)
+        if(MOD_DIR)
+            target_include_directories(ex07_mpi_bootstrap PRIVATE ${MOD_DIR})
+        endif()
+    endif()
 
-# Copy advanced_demo.jl for these targets
-foreach(tgt ${ADVANCED_EXAMPLES})
-    add_custom_command(TARGET ${tgt} POST_BUILD
+    # Copy runtime files
+    add_custom_command(TARGET ex07_mpi_bootstrap POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/advanced_demo.jl
-        ${CMAKE_CURRENT_BINARY_DIR}/advanced_demo.jl
-        COMMENT "Copying advanced_demo.jl to ${tgt} directory"
+        ${MW_SOURCE}
+        ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
     )
-endforeach()
-
-# Example 10: External Script
-add_fj_example(ex10_external_script 10_external_script.f90)
-
-# Example 11: Full Type Coverage
-add_fj_example(ex11_all_types 11_all_types.f90)
-add_custom_command(TARGET ex11_all_types POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/types_demo.jl
-    ${CMAKE_CURRENT_BINARY_DIR}/types_demo.jl
-    COMMENT "Copying types_demo.jl to ex11_all_types directory"
-)
-add_custom_command(TARGET ex10_external_script POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_CURRENT_SOURCE_DIR}/user_script.jl
-    ${CMAKE_CURRENT_BINARY_DIR}/user_script.jl
-    COMMENT "Copying user_script.jl to ex10 directory"
-)
-
+    add_custom_command(TARGET ex07_mpi_bootstrap POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${CMAKE_CURRENT_SOURCE_DIR}/examples_lib.jl
+        ${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
+    )
+else()
+    message(STATUS "MPI Not Found: Skipping ex07_mpi_bootstrap")
+endif()
