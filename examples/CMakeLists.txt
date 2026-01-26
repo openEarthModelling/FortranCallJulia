@@ -82,6 +82,8 @@ add_fj_example(ex05_sysimage        05_sysimage.f90)
 add_fj_example(ex06_multithreading  06_multithreading.f90)
 add_fj_example(ex08_generic_access  08_generic_access.f90)
 add_fj_example(ex09_kwargs          09_kwargs.f90)
+add_fj_example(ex11_modern_api      11_modern_api.f90)
+add_fj_example(ex12_benchmark_overhead 12_benchmark_overhead.f90)
 
 # ==============================================================================
 # HPC Examples (MPI)

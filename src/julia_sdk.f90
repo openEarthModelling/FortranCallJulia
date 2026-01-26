@@ -45,6 +45,17 @@ module julia_high_level
         
         generic :: at => at_1d, at_2d, at_3d, at_string
         generic :: set_at => set_at_1d, set_at_2d, set_at_3d, set_at_string
+
+        ! Generic Call Interface (Modern Fortran)
+        generic :: call => call_method_generic_dispatch_0, &
+                           call_method_generic_dispatch_1, &
+                           call_method_generic_dispatch_2, &
+                           call_method_generic_dispatch_3
+        
+        procedure, private :: call_method_generic_dispatch_0
+        procedure, private :: call_method_generic_dispatch_1
+        procedure, private :: call_method_generic_dispatch_2
+        procedure, private :: call_method_generic_dispatch_3
         
         ! Introspection
         procedure :: length
@@ -558,5 +569,126 @@ contains
         deallocate(ptrs); deallocate(kw_ptrs); deallocate(val_ptrs); deallocate(c_keys)
         res%ptr = fj_retain(raw_res)
     end function call_with_kwargs
+
+! end module julia_high_level (Moved to bottom)
+    ! --- Private Helper for Generic Call ---
+
+    function box_argument(arg) result(res)
+        class(*), intent(in) :: arg
+        type(JuliaValue) :: res
+        type(c_ptr) :: tmp_ptr
+        integer(c_int) :: c_bool
+        
+        select type (val => arg)
+        type is (integer(kind=c_int64_t))
+             tmp_ptr = fj_box_int64(val)
+             res%ptr = fj_retain(tmp_ptr)
+        type is (integer(kind=c_int32_t))
+             tmp_ptr = fj_box_int32(val)
+             res%ptr = fj_retain(tmp_ptr)
+        type is (real(kind=c_double))
+             tmp_ptr = fj_box_float64(val)
+             res%ptr = fj_retain(tmp_ptr)
+        type is (real(kind=c_float))
+             tmp_ptr = fj_box_float64(dble(val))
+             res%ptr = fj_retain(tmp_ptr)
+        type is (logical)
+            if (val) then
+                c_bool = 1
+            else
+                c_bool = 0
+            end if
+            tmp_ptr = fj_box_bool(c_bool)
+            res%ptr = fj_retain(tmp_ptr)
+        type is (character(len=*))
+             tmp_ptr = fj_box_string(to_c_string(val))
+             res%ptr = fj_retain(tmp_ptr)
+        type is (complex(kind=c_double))
+             tmp_ptr = fj_box_complex(dble(val), aimag(val))
+             res%ptr = fj_retain(tmp_ptr)
+        class is (JuliaValue)
+             if (c_associated(val%ptr)) then
+                 res%ptr = fj_retain(val%ptr)
+             else
+                 res%ptr = c_null_ptr
+             end if
+        class default
+             ! Fallback or Error. For now, we produce a null pointer which might crash or error in Julia.
+             ! In a production system, we should log this.
+             res%ptr = c_null_ptr
+        end select
+    end function box_argument
+
+    ! --- Generic Call Dispatch Implementation ---
+
+    function call_method_generic_dispatch_0(self, func_name) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: func_name
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        
+        ! Reuse existing call0 logic but consistent with this new pattern
+        raw_res = fj_call0(to_c_string(func_name))
+        res%ptr = fj_retain(raw_res)
+    end function call_method_generic_dispatch_0
+
+    function call_method_generic_dispatch_1(self, func_name, arg1) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: func_name
+        class(*), intent(in) :: arg1
+        type(JuliaValue) :: res
+        
+        type(JuliaValue) :: boxed_args(1)
+        type(c_ptr) :: raw_args(1)
+        type(c_ptr) :: raw_res
+        
+        boxed_args(1) = box_argument(arg1)
+        raw_args(1) = boxed_args(1)%ptr
+        
+        raw_res = fj_call_general(to_c_string(func_name), raw_args, 1_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_method_generic_dispatch_1
+
+    function call_method_generic_dispatch_2(self, func_name, arg1, arg2) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: func_name
+        class(*), intent(in) :: arg1, arg2
+        type(JuliaValue) :: res
+        
+        type(JuliaValue) :: boxed_args(2)
+        type(c_ptr) :: raw_args(2)
+        type(c_ptr) :: raw_res
+        
+        boxed_args(1) = box_argument(arg1)
+        boxed_args(2) = box_argument(arg2)
+        
+        raw_args(1) = boxed_args(1)%ptr
+        raw_args(2) = boxed_args(2)%ptr
+        
+        raw_res = fj_call_general(to_c_string(func_name), raw_args, 2_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_method_generic_dispatch_2
+
+    function call_method_generic_dispatch_3(self, func_name, arg1, arg2, arg3) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: func_name
+        class(*), intent(in) :: arg1, arg2, arg3
+        type(JuliaValue) :: res
+        
+        type(JuliaValue) :: boxed_args(3)
+        type(c_ptr) :: raw_args(3)
+        type(c_ptr) :: raw_res
+        
+        boxed_args(1) = box_argument(arg1)
+        boxed_args(2) = box_argument(arg2)
+        boxed_args(3) = box_argument(arg3)
+        
+        raw_args(1) = boxed_args(1)%ptr
+        raw_args(2) = boxed_args(2)%ptr
+        raw_args(3) = boxed_args(3)%ptr
+        
+        raw_res = fj_call_general(to_c_string(func_name), raw_args, 3_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_method_generic_dispatch_3
 
 end module julia_high_level
