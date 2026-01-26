@@ -71,24 +71,35 @@ macro(add_fj_example name source)
 endmacro()
 
 # ==============================================================================
-# Standard Examples (01 - 06)
+# 1. Basics (Start Here)
 # ==============================================================================
 
-add_fj_example(ex01_basics          01_basics.f90)
-add_fj_example(ex02_data_types      02_data_types.f90)
-add_fj_example(ex03_integration     03_integration.f90)
-add_fj_example(ex04_performance     04_performance.f90)
-add_fj_example(ex05_sysimage        05_sysimage.f90)
-add_fj_example(ex06_multithreading  06_multithreading.f90)
-add_fj_example(ex08_generic_access  08_generic_access.f90)
-add_fj_example(ex09_kwargs          09_kwargs.f90)
-add_fj_example(ex11_modern_api      11_modern_api.f90)
-add_fj_example(ex12_benchmark_overhead 12_benchmark_overhead.f90)
+add_fj_example(ex_basic_hello           basics/1_hello_world.f90)
+add_fj_example(ex_basic_modern_call     basics/2_modern_call.f90)
+add_fj_example(ex_basic_data_transfer   basics/3_data_transfer.f90)
+add_fj_example(ex_basic_object_access   basics/4_object_access.f90)
 
 # ==============================================================================
-# HPC Examples (MPI)
+# 2. Intermediate (Practical Usage)
 # ==============================================================================
 
+add_fj_example(ex_inter_linear_algebra  intermediate/1_linear_algebra.f90)
+add_fj_example(ex_inter_kwargs          intermediate/2_kwargs.f90)
+
+# ==============================================================================
+# 3. Performance (Optimization)
+# ==============================================================================
+
+add_fj_example(ex_perf_fast_path        performance/1_fast_path_pointers.f90)
+add_fj_example(ex_perf_benchmark        performance/2_benchmarks.f90)
+
+# ==============================================================================
+# 4. HPC & Parallelism
+# ==============================================================================
+
+add_fj_example(ex_hpc_multithreading    hpc_parallel/1_multithreading.f90)
+
+# MPI Example (Requires MPI)
 option(BUILD_MPI_EXAMPLES "Build MPI examples" OFF)
 
 if(BUILD_MPI_EXAMPLES)
@@ -96,30 +107,45 @@ if(BUILD_MPI_EXAMPLES)
 endif()
 
 if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
-    message(STATUS "MPI Found: Enabling ex07_mpi_bootstrap")
-    add_executable(ex07_mpi_bootstrap 07_mpi_bootstrap.f90)
-    target_link_libraries(ex07_mpi_bootstrap PRIVATE fj_middleware MPI::MPI_Fortran)
-    target_compile_options(ex07_mpi_bootstrap PRIVATE -fno-underscoring)
+    message(STATUS "MPI Found: Enabling ex_hpc_mpi_bootstrap")
+    add_executable(ex_hpc_mpi_bootstrap hpc_parallel/2_mpi_bootstrap.f90)
+    target_link_libraries(ex_hpc_mpi_bootstrap PRIVATE fj_middleware MPI::MPI_Fortran)
+    target_compile_options(ex_hpc_mpi_bootstrap PRIVATE -fno-underscoring)
     
     # In-tree module support
     if(TARGET fj_middleware)
         get_target_property(MOD_DIR fj_middleware Fortran_MODULE_DIRECTORY)
         if(MOD_DIR)
-            target_include_directories(ex07_mpi_bootstrap PRIVATE ${MOD_DIR})
+            target_include_directories(ex_hpc_mpi_bootstrap PRIVATE ${MOD_DIR})
         endif()
     endif()
 
     # Copy runtime files
-    add_custom_command(TARGET ex07_mpi_bootstrap POST_BUILD
+    add_custom_command(TARGET ex_hpc_mpi_bootstrap POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${MW_SOURCE}
         ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
     )
-    add_custom_command(TARGET ex07_mpi_bootstrap POST_BUILD
+    add_custom_command(TARGET ex_hpc_mpi_bootstrap POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/middleware
+        ${CMAKE_CURRENT_BINARY_DIR}/middleware
+    )
+    add_custom_command(TARGET ex_hpc_mpi_bootstrap POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${CMAKE_CURRENT_SOURCE_DIR}/examples_lib.jl
         ${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
     )
 else()
-    message(STATUS "MPI Not Found: Skipping ex07_mpi_bootstrap")
+    message(STATUS "MPI Not Found: Skipping ex_hpc_mpi_bootstrap")
 endif()
+
+# ==============================================================================
+# 5. Deployment
+# ==============================================================================
+
+add_fj_example(ex_deploy_sysimage       deployment/1_custom_sysimage.f90)
+
+# Compiled Library (10_compiled_library) has its own standalone build system
+# and is not built by this CMakeLists.txt by default.
+# It serves as a template for user projects.
