@@ -23,3 +23,8 @@ test_app
 
 # Documentation references
 docs/references/
+
+# Example build artifacts
+examples/*/dist/
+examples/*/build/
+examples/*/demo_app

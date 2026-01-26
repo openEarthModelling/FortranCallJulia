@@ -1,0 +1,7 @@
+name = "MyLib"
+uuid = "dba614cd-9b45-44d2-8eca-841ae4f2fc5b"
+authors = ["Fan Zhang <vanvonzhang@gmail.com>"]
+version = "0.1.0"
+
+[deps]
+CEnum = "fa961155-64e5-5f13-b03f-caf6b980ea82"
