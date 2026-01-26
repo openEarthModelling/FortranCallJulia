@@ -55,6 +55,13 @@ macro(add_fj_example name source)
         ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
     )
 
+    # Copy middleware/ directory (runtime requirement for submodules)
+    add_custom_command(TARGET ${name} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/../src/middleware
+        ${CMAKE_CURRENT_BINARY_DIR}/middleware
+    )
+
     # Copy examples_lib.jl (runtime requirement for examples)
     add_custom_command(TARGET ${name} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different

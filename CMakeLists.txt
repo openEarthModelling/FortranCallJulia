@@ -111,6 +111,7 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
 
 # Install Middleware Julia Script
 install(FILES src/middleware.jl DESTINATION ${CMAKE_INSTALL_DATADIR}/FortranCallJulia)
+install(DIRECTORY src/middleware DESTINATION ${CMAKE_INSTALL_DATADIR}/FortranCallJulia)
 
 # ==============================================================================
 # AOT Sysimage (Optional)
