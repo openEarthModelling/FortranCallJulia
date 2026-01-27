@@ -89,8 +89,10 @@ add_fj_example(ex_inter_kwargs          intermediate/2_kwargs.f90)
 # 3. Performance (Optimization)
 # ==============================================================================
 
-add_fj_example(ex_perf_fast_path        performance/1_fast_path_pointers.f90)
-add_fj_example(ex_perf_benchmark        performance/2_benchmarks.f90)
+add_fj_example(ex_perf_call_overhead    performance/1_call_overhead.f90)
+add_fj_example(ex_perf_memory_transfer  performance/2_memory_transfer.f90)
+add_fj_example(ex_perf_access_patterns  performance/3_access_patterns.f90)
+add_fj_example(ex_perf_suite            performance/4_benchmark_suite.f90)
 
 # ==============================================================================
 # 4. HPC & Parallelism

@@ -3,6 +3,8 @@ module ExamplesLib
 using LinearAlgebra
 using Base.Threads
 
+export perf_add_one, perf_scale_matrix, perf_scale_matrix_bang, perf_sqrt_vector_bang, perf_sqrt_scalar
+
 # ==============================================================================
 # 0. Quickstart Helpers (For Ex 01)
 # ==============================================================================
@@ -160,5 +162,34 @@ function polymorphic_func(x::Any)
         return "Unknown Type"
     end
 end
+
+    # --- Performance Benchmark Helpers ---
+
+    # 1. Scalar Operation (Low Latency Test)
+    function perf_add_one(x::Float64)::Float64
+        return x + 1.0
+    end
+
+    # 2. Matrix Operation (Deep Copy Test)
+    function perf_scale_matrix(A::Array{Float64, 2}, scalar::Float64)::Array{Float64, 2}
+        return A .* scalar
+    end
+
+    # 3. Matrix Operation (In-Place / Zero-Copy Test)
+    function perf_scale_matrix_bang(A::Array{Float64, 2}, scalar::Float64)::Nothing
+        A .*= scalar
+        return nothing
+    end
+
+    # 4. Vector Operation (Batching Test)
+    function perf_sqrt_vector_bang(A::Vector{Float64})::Nothing
+        @. A = sqrt(A)
+        return nothing
+    end
+
+    # 5. Scalar Sqrt (for Element-wise comparison)
+    function perf_sqrt_scalar(x::Float64)::Float64
+        return sqrt(x)
+    end
 
 end # module

@@ -11,12 +11,19 @@ function register_f2(func::Function, name::String)
 end
 
 function register_f2_string(func_name::String, ret_type_str::String, arg_types_str::String)
-    # 1. Lookup Function
-    if !isdefined(Main, Symbol(func_name))
-        println("[FortranBridge] Error: Function '$func_name' not found in Main.")
+    # 1. Lookup Function using eval to support "Mod.func"
+    func = nothing
+    try
+        # Evaluate in Main scope so that 'using' in Main works, 
+        # and 'Mod.func' also works.
+        func = Main.eval(Meta.parse(func_name))
+    catch
+    end
+
+    if func === nothing
+        println("[FortranBridge] Error: Function '$func_name' not found.")
         return C_NULL
     end
-    func = getfield(Main, Symbol(func_name))
 
     # 2. Dynamic Type Parsing & AST Construction
     try
@@ -24,7 +31,12 @@ function register_f2_string(func_name::String, ret_type_str::String, arg_types_s
         # @cfunction macro expects the type arguments to be expressions that look like types/tuples.
         
         RetTypeExpr = Meta.parse(ret_type_str)
-        ArgTypesExpr = Meta.parse(arg_types_str) # e.g., returns the Expr: :( (Float64, Int64) )
+        ArgTypesExpr = Meta.parse(arg_types_str)
+        
+        # Ensure ArgTypes is a tuple expression (e.g., if user passed "Float64", make it "(Float64,)")
+        if !isa(ArgTypesExpr, Expr) || ArgTypesExpr.head != :tuple
+            ArgTypesExpr = Expr(:tuple, ArgTypesExpr)
+        end
         
         # 3. Dynamic @cfunction Generation
         # We construct the expression: @cfunction(func_val, RetTypeExpr, ArgTypesExpr)
