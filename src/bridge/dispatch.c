@@ -1,12 +1,28 @@
 #include <stdio.h>
 #include "bridge_internal.h"
 
+// --- Internal Lookup Helper ---
+
+static jl_function_t* lookup_function(const char* func_name) {
+    jl_function_t *func = jl_get_function(jl_main_module, func_name);
+    if (!func) func = jl_get_function(FortranBridgeMod, func_name);
+    
+    // Fallback: If name contains dots, it might be a module-qualified name.
+    // We use jl_eval_string to resolve it.
+    if (!func && strchr(func_name, '.')) {
+        jl_value_t *val = jl_eval_string(func_name);
+        if (val) {
+            func = (jl_function_t*)val;
+        }
+    }
+    return func;
+}
+
 // --- Generic Calls ---
 
 jl_value_t* fj_call0(const char* func_name) {
     if (!check_thread()) return NULL;
-    jl_function_t *func = jl_get_function(jl_main_module, func_name);
-    if (!func) func = jl_get_function(FortranBridgeMod, func_name);
+    jl_function_t *func = lookup_function(func_name);
     if (!func) {
         char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
     }
@@ -17,8 +33,7 @@ jl_value_t* fj_call0(const char* func_name) {
 
 jl_value_t* fj_call1_float64(const char* func_name, double arg1) {
     if (!check_thread()) return NULL;
-    jl_function_t *func = jl_get_function(jl_main_module, func_name);
-    if (!func) func = jl_get_function(FortranBridgeMod, func_name);
+    jl_function_t *func = lookup_function(func_name);
     if (!func) {
         char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
     }
@@ -33,8 +48,7 @@ jl_value_t* fj_call1_float64(const char* func_name, double arg1) {
 
 jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj) {
     if (!check_thread()) return NULL;
-    jl_function_t *func = jl_get_function(jl_main_module, func_name);
-    if (!func) func = jl_get_function(FortranBridgeMod, func_name);
+    jl_function_t *func = lookup_function(func_name);
     if (!func) {
         char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
     }
@@ -48,8 +62,7 @@ jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj) {
 
 jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2) {
     if (!check_thread()) return NULL;
-    jl_function_t *func = jl_get_function(jl_main_module, func_name);
-    if (!func) func = jl_get_function(FortranBridgeMod, func_name);
+    jl_function_t *func = lookup_function(func_name);
     if (!func) {
         char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
     }
@@ -65,8 +78,7 @@ jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg
 
 jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs) {
     if (!check_thread()) return NULL;
-    jl_function_t *func = jl_get_function(jl_main_module, func_name);
-    if (!func) func = jl_get_function(FortranBridgeMod, func_name);
+    jl_function_t *func = lookup_function(func_name);
     if (!func) {
         char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
     }

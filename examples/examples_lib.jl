@@ -4,8 +4,34 @@ using LinearAlgebra
 using Base.Threads
 
 # ==============================================================================
-# 1. Basic Scalar & Array Logic (For Ex 01 & 02)
+# 0. Quickstart Helpers (For Ex 01)
 # ==============================================================================
+
+function greet(name::String)
+    println("Julia says: Hello, $name!")
+    return "Greeting received"
+end
+
+function add_numbers(x::Float64, y::Float64)
+    return x + y
+end
+
+# ==============================================================================
+# 1. Basic Scalar & Array Logic (For Ex 02)
+# ==============================================================================
+
+# For Zero-Copy Example: Simulates updating a physics state array in-place
+function update_simulation_state!(state::Matrix{Float64}, dt::Float64)
+    # state is passed by reference (zero-copy)
+    rows, cols = size(state)
+    for j in 1:cols
+        for i in 1:rows
+            # Simple diffusion-like update
+            state[i,j] += 0.1 * dt * (i + j)
+        end
+    end
+    # println("[Julia] State updated with dt=$dt")
+end
 
 function process_primitives(i::Int64, b::Bool, s::String, c::ComplexF64)
     if b

@@ -50,12 +50,14 @@ module julia_high_level
         generic :: call => call_method_generic_dispatch_0, &
                            call_method_generic_dispatch_1, &
                            call_method_generic_dispatch_2, &
-                           call_method_generic_dispatch_3
+                           call_method_generic_dispatch_3, &
+                           call_method_generic_dispatch_4
         
         procedure, private :: call_method_generic_dispatch_0
         procedure, private :: call_method_generic_dispatch_1
         procedure, private :: call_method_generic_dispatch_2
         procedure, private :: call_method_generic_dispatch_3
+        procedure, private :: call_method_generic_dispatch_4
         
         ! Introspection
         procedure :: length
@@ -340,6 +342,14 @@ contains
         type(c_ptr) :: raw_res
         raw_res = fj_eval_string(to_c_string(cmd))
     end subroutine julia_eval_string
+
+    function julia_eval(cmd) result(res)
+        character(len=*), intent(in) :: cmd
+        type(JuliaValue) :: res
+        type(c_ptr) :: raw_res
+        raw_res = fj_eval_string(to_c_string(cmd))
+        res%ptr = fj_retain(raw_res)
+    end function julia_eval
 
     function get_last_error_message() result(msg)
         character(len=:), allocatable :: msg
@@ -690,5 +700,29 @@ contains
         raw_res = fj_call_general(to_c_string(func_name), raw_args, 3_c_int32_t)
         res%ptr = fj_retain(raw_res)
     end function call_method_generic_dispatch_3
+
+    function call_method_generic_dispatch_4(self, func_name, arg1, arg2, arg3, arg4) result(res)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: func_name
+        class(*), intent(in) :: arg1, arg2, arg3, arg4
+        type(JuliaValue) :: res
+        
+        type(JuliaValue) :: boxed_args(4)
+        type(c_ptr) :: raw_args(4)
+        type(c_ptr) :: raw_res
+        
+        boxed_args(1) = box_argument(arg1)
+        boxed_args(2) = box_argument(arg2)
+        boxed_args(3) = box_argument(arg3)
+        boxed_args(4) = box_argument(arg4)
+        
+        raw_args(1) = boxed_args(1)%ptr
+        raw_args(2) = boxed_args(2)%ptr
+        raw_args(3) = boxed_args(3)%ptr
+        raw_args(4) = boxed_args(4)%ptr
+        
+        raw_res = fj_call_general(to_c_string(func_name), raw_args, 4_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_method_generic_dispatch_4
 
 end module julia_high_level

@@ -2,50 +2,53 @@ program ex01_basics
     use julia_high_level
     implicit none
 
-    type(JuliaValue) :: res
-    real(kind=8) :: val = 16.0d0
+    type(JuliaValue) :: dummy, res
     character(len=:), allocatable :: err_msg
 
-    print *, "--- Example 1: Basics (Init, Call, Error Handling) ---"
+    print *, "--- Example 1: Hello World & Modern API ---"
 
     ! 1. Initialize
     print *, "[Fortran] Initializing Julia Runtime..."
     call julia_init()
 
-    ! 2. Simple Call (sqrt)
+    ! 2. Modern Generic Call (Auto-boxing)
+    ! The 'call' method automatically handles:
+    ! - Integer -> Int64/Int32
+    ! - Real -> Float64
+    ! - String -> String
+    ! - Complex -> ComplexF64
+    ! - Logical -> Bool
+    
     print *, "[Fortran] Calling Julia 'sqrt(16.0)'..."
-    ! We use a temporary object to make the call. 
-    ! Ideally, call_method_* functions could be static/shared, 
-    ! but current OOP design requires an object instance or we add a helper.
-    ! We will use the 'res' object itself as the invoker for convenience in this SDK version.
-    res = res%call_method_1_real("sqrt", val)
+    res = dummy%call("sqrt", 16.0d0)
 
     if (res%is_valid()) then
-        print *, "[Fortran] Result Object Address: ", res%ptr
-        ! In a real app, you would verify the value here using a specific accessor 
-        ! (e.g. res%to_real() if implemented, or passing it back to Julia to print)
-        call julia_eval_string("println('[Julia] Verified Result: ', sqrt(16.0))")
+        print *, "[Fortran] Result: ", res%as_real()
     else
         print *, "[Fortran] Error calling sqrt."
     endif
 
-    ! 3. Robust Error Handling
+    ! 3. Multiple Arguments
+    ! Let's define a quick function to call
+    call julia_eval_string('greet(name, n) = println("Hello $name, count: $n")')
+    
+    print *, "[Fortran] Calling 'greet'..."
+    ! Pass String and Integer naturally
+    res = dummy%call("greet", "User", 42)
+
+    ! 4. Error Handling
     print *, ""
-    print *, "[Fortran] Intentional Error Test: Calling 'non_existent_func'..."
-    res = res%call_method_1_real("non_existent_func", val)
+    print *, "[Fortran] Intentional Error Test..."
+    res = dummy%call("non_existent_func", 123)
 
     if (.not. res%is_valid()) then
         err_msg = get_last_error_message()
-        print *, "[Fortran] Caught expected error successfully!"
-        print *, "[Fortran] Error details: ", err_msg
-    else
-        print *, "[Fortran] Unexpected success? Something is wrong."
+        print *, "[Fortran] Caught expected error: ", err_msg
     endif
 
-    ! 4. Shutdown
+    ! 5. Shutdown
     print *, ""
     print *, "[Fortran] Shutting down..."
     call julia_shutdown()
-    print *, "--- Finished ---"
 
 end program ex01_basics

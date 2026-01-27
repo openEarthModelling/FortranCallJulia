@@ -74,16 +74,15 @@ endmacro()
 # 1. Basics (Start Here)
 # ==============================================================================
 
-add_fj_example(ex_basic_hello           basics/1_hello_world.f90)
-add_fj_example(ex_basic_modern_call     basics/2_modern_call.f90)
-add_fj_example(ex_basic_data_transfer   basics/3_data_transfer.f90)
-add_fj_example(ex_basic_object_access   basics/4_object_access.f90)
+add_fj_example(ex01_quickstart          basics/1_quickstart.f90)
+add_fj_example(ex02_zero_copy_arrays    basics/2_zero_copy_arrays.f90)
+add_fj_example(ex03_data_structures     basics/3_data_structures.f90)
 
 # ==============================================================================
 # 2. Intermediate (Practical Usage)
 # ==============================================================================
 
-add_fj_example(ex_inter_linear_algebra  intermediate/1_linear_algebra.f90)
+add_fj_example(ex_inter_math_operations intermediate/1_math_operations.f90)
 add_fj_example(ex_inter_kwargs          intermediate/2_kwargs.f90)
 
 # ==============================================================================
