@@ -15,16 +15,16 @@ A robust cross-language middleware that allows Fortran programs to efficiently c
 ```text
 .
 ├── src/                # Core Source Code
-│   ├── bridge.c        # C Bridge Layer (Runtime & Type Management)
-│   ├── julia_sdk.f90   # Fortran SDK (OOP Wrapper & iso_c_binding)
-│   └── middleware.jl   # Julia Side Registration & GC Protection
-├── examples/           # Tutorial & Examples
-│   ├── 01_hello.f90    # Basic Initialization
-│   ├── 02_math_oop.f90 # OOP Interface & Math
-│   ├── 03_performance.f90 # Fast Path Performance Demo
-│   ├── 04_arrays.f90   # Zero-Copy Array Passing
-│   ├── 05_errors.f90   # Error Handling
-│   └── 06_sysimage.f90 # AOT / Sysimage Loading
+│   ├── bridge/         # C Bridge Layer (Runtime & Type Management)
+│   ├── lib_support/    # Fortran Interfaces
+│   ├── middleware/     # Julia Helper Modules
+│   └── julia_sdk.f90   # Main Fortran SDK
+├── examples/           # Progressive Tutorial Suite
+│   ├── 01_basics/      # Hello World, Arrays, Data Types
+│   ├── 02_intermediate/# Math Ops, Kwargs
+│   ├── 03_deployment/  # Sysimage, Compiled Libraries
+│   ├── 04_performance/ # Call Overhead, Zero-Copy, Batching, Benchmarks
+│   └── 05_hpc_parallel/# Multithreading, MPI
 └── CMakeLists.txt      # Build Configuration
 ```
 
@@ -56,8 +56,11 @@ A robust cross-language middleware that allows Fortran programs to efficiently c
 
 4.  **Run Examples:**
     ```bash
-    ./examples/ex01_hello
-    ./examples/ex03_performance
+    # Basic
+    ./examples/ex01_quickstart
+    
+    # Performance Demo
+    ./examples/ex_perf_suite
     ```
 
 ### Separated Compilation (Install Library, Build Examples Standalone)

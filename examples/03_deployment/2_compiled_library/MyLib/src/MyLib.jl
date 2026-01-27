@@ -14,6 +14,10 @@ Base.@ccallable function my_add(a::Cint, b::Cint)::Cint
     return a + b
 end
 
+Base.@ccallable function my_add_float(a::Cdouble, b::Cdouble)::Cdouble
+    return a + b
+end
+
 # 3. 数组传递 (Pointer + Length)
 # 接收 C 指针和长度，计算数组元素的和
 Base.@ccallable function my_sum_array(ptr::Ptr{Cdouble}, len::Cint)::Cdouble

@@ -74,31 +74,65 @@ endmacro()
 # 1. Basics (Start Here)
 # ==============================================================================
 
-add_fj_example(ex01_quickstart          basics/1_quickstart.f90)
-add_fj_example(ex02_zero_copy_arrays    basics/2_zero_copy_arrays.f90)
-add_fj_example(ex03_data_structures     basics/3_data_structures.f90)
+add_fj_example(ex01_quickstart          01_basics/1_quickstart.f90)
+add_fj_example(ex02_zero_copy_arrays    01_basics/2_zero_copy_arrays.f90)
+add_fj_example(ex03_data_structures     01_basics/3_data_structures.f90)
 
 # ==============================================================================
 # 2. Intermediate (Practical Usage)
 # ==============================================================================
 
-add_fj_example(ex_inter_math_operations intermediate/1_math_operations.f90)
-add_fj_example(ex_inter_kwargs          intermediate/2_kwargs.f90)
+add_fj_example(ex_inter_math_operations 02_intermediate/1_math_operations.f90)
+add_fj_example(ex_inter_kwargs          02_intermediate/2_kwargs.f90)
 
 # ==============================================================================
-# 3. Performance (Optimization)
+# 3. Deployment (Production Ready)
 # ==============================================================================
 
-add_fj_example(ex_perf_call_overhead    performance/1_call_overhead.f90)
-add_fj_example(ex_perf_memory_transfer  performance/2_memory_transfer.f90)
-add_fj_example(ex_perf_access_patterns  performance/3_access_patterns.f90)
-add_fj_example(ex_perf_suite            performance/4_benchmark_suite.f90)
+add_fj_example(ex_deploy_sysimage       03_deployment/1_custom_sysimage.f90)
 
 # ==============================================================================
-# 4. HPC & Parallelism
+# 4. Performance (Optimization)
 # ==============================================================================
 
-add_fj_example(ex_hpc_multithreading    hpc_parallel/1_multithreading.f90)
+# 4.1. Startup Comparison (JIT vs AOT)
+# Target A: Dynamic (JIT)
+add_fj_example(ex_perf_startup_jit      04_performance/1_jit_vs_aot.f90)
+target_compile_options(ex_perf_startup_jit PRIVATE -cpp)
+
+# Target B: Static (Compiled Library)
+# We only build this if the user has built the library in 03_deployment/2_compiled_library
+set(MYLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/03_deployment/2_compiled_library/dist/lib")
+find_library(MYLIB_LIB NAMES MyLib PATHS ${MYLIB_DIR} NO_DEFAULT_PATH)
+
+if(MYLIB_LIB)
+    message(STATUS "Found MyLib (Compiled Mode): ${MYLIB_LIB}")
+    add_executable(ex_perf_startup_aot 04_performance/1_jit_vs_aot.f90)
+    target_link_libraries(ex_perf_startup_aot PRIVATE ${MYLIB_LIB} fj_middleware)
+    target_compile_options(ex_perf_startup_aot PRIVATE -fno-underscoring -DCOMPILED_MODE -cpp)
+    # Include headers for MyLib if any (implicit in this case)
+    
+    # Standard copies
+    add_custom_command(TARGET ex_perf_startup_aot POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${MW_SOURCE}
+        ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
+    )
+else()
+    message(STATUS "MyLib not found. Skipping ex_perf_startup_aot. (Build 03_deployment/2_compiled_library first)")
+endif()
+
+
+add_fj_example(ex_perf_call_overhead    04_performance/2_call_overhead.f90)
+add_fj_example(ex_perf_memory_transfer  04_performance/3_memory_transfer.f90)
+add_fj_example(ex_perf_access_patterns  04_performance/4_access_patterns.f90)
+add_fj_example(ex_perf_suite            04_performance/5_benchmark_suite.f90)
+
+# ==============================================================================
+# 5. HPC & Parallelism
+# ==============================================================================
+
+add_fj_example(ex_hpc_multithreading    05_hpc_parallel/1_multithreading.f90)
 
 # MPI Example (Requires MPI)
 option(BUILD_MPI_EXAMPLES "Build MPI examples" OFF)
@@ -109,7 +143,7 @@ endif()
 
 if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
     message(STATUS "MPI Found: Enabling ex_hpc_mpi_bootstrap")
-    add_executable(ex_hpc_mpi_bootstrap hpc_parallel/2_mpi_bootstrap.f90)
+    add_executable(ex_hpc_mpi_bootstrap 05_hpc_parallel/2_mpi_bootstrap.f90)
     target_link_libraries(ex_hpc_mpi_bootstrap PRIVATE fj_middleware MPI::MPI_Fortran)
     target_compile_options(ex_hpc_mpi_bootstrap PRIVATE -fno-underscoring)
     
@@ -140,13 +174,3 @@ if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
 else()
     message(STATUS "MPI Not Found: Skipping ex_hpc_mpi_bootstrap")
 endif()
-
-# ==============================================================================
-# 5. Deployment
-# ==============================================================================
-
-add_fj_example(ex_deploy_sysimage       deployment/1_custom_sysimage.f90)
-
-# Compiled Library (10_compiled_library) has its own standalone build system
-# and is not built by this CMakeLists.txt by default.
-# It serves as a template for user projects.
