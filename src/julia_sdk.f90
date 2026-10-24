@@ -1,5 +1,6 @@
 module julia_high_level
     use iso_c_binding
+    use, intrinsic :: iso_fortran_env, only: error_unit
     use julia_low_level
     implicit none
 
@@ -260,6 +261,20 @@ contains
         integer(kind=c_int64_t), intent(in) :: length
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr, data_ptr
+        if (length /= size(arr, dim=1, kind=c_int64_t)) then
+            write(error_unit, '(A,I0,A,I0,A)') &
+                'julia_wrap_array_1d: length (', length, ') /= size(arr,1) (', &
+                size(arr, dim=1, kind=c_int64_t), '); returning invalid JuliaValue'
+            res%ptr = c_null_ptr
+            return
+        end if
+        if (.not. is_contiguous(arr)) then
+            write(error_unit, '(A)') &
+                'julia_wrap_array_1d: arr is not contiguous; zero-copy wrap rejected; ' // &
+                'returning invalid JuliaValue'
+            res%ptr = c_null_ptr
+            return
+        end if
         data_ptr = c_loc(arr)
         raw_ptr = fj_wrap_array_1d(data_ptr, length)
         res%ptr = fj_retain(raw_ptr)
@@ -270,6 +285,22 @@ contains
         integer(kind=c_int64_t), intent(in) :: d1, d2
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr, data_ptr
+        if (d1 /= size(arr, dim=1, kind=c_int64_t) .or. &
+            d2 /= size(arr, dim=2, kind=c_int64_t)) then
+            write(error_unit, '(A,I0,A,I0,A,I0,A,I0,A)') &
+                'julia_wrap_array_2d: dims (', d1, ', ', d2, ') /= size(arr) (', &
+                size(arr, dim=1, kind=c_int64_t), ', ', size(arr, dim=2, kind=c_int64_t), &
+                '); returning invalid JuliaValue'
+            res%ptr = c_null_ptr
+            return
+        end if
+        if (.not. is_contiguous(arr)) then
+            write(error_unit, '(A)') &
+                'julia_wrap_array_2d: arr is not contiguous; zero-copy wrap rejected; ' // &
+                'returning invalid JuliaValue'
+            res%ptr = c_null_ptr
+            return
+        end if
         data_ptr = c_loc(arr)
         raw_ptr = fj_wrap_array_2d(data_ptr, d1, d2)
         res%ptr = fj_retain(raw_ptr)
@@ -280,6 +311,23 @@ contains
         integer(kind=c_int64_t), intent(in) :: d1, d2, d3
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr, data_ptr
+        if (d1 /= size(arr, dim=1, kind=c_int64_t) .or. &
+            d2 /= size(arr, dim=2, kind=c_int64_t) .or. &
+            d3 /= size(arr, dim=3, kind=c_int64_t)) then
+            write(error_unit, '(A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
+                'julia_wrap_array_3d: dims (', d1, ', ', d2, ', ', d3, ') /= size(arr) (', &
+                size(arr, dim=1, kind=c_int64_t), ', ', size(arr, dim=2, kind=c_int64_t), &
+                ', ', size(arr, dim=3, kind=c_int64_t), '); returning invalid JuliaValue'
+            res%ptr = c_null_ptr
+            return
+        end if
+        if (.not. is_contiguous(arr)) then
+            write(error_unit, '(A)') &
+                'julia_wrap_array_3d: arr is not contiguous; zero-copy wrap rejected; ' // &
+                'returning invalid JuliaValue'
+            res%ptr = c_null_ptr
+            return
+        end if
         data_ptr = c_loc(arr)
         raw_ptr = fj_wrap_array_3d(data_ptr, d1, d2, d3)
         res%ptr = fj_retain(raw_ptr)
@@ -375,6 +423,10 @@ contains
         funptr = fj_get_function_pointer(to_c_string(func_name), &
                                          to_c_string(ret_type), &
                                          to_c_string(arg_types))
+        if (.not. c_associated(funptr)) then
+            write(error_unit, '(A)') 'get_function_pointer: registration failed for "' // &
+                trim(func_name) // '": ' // get_last_error_message()
+        end if
     end function get_function_pointer
     
     function call_method_0(self, func_name) result(res)
