@@ -21,6 +21,7 @@ static jl_function_t* lookup_function(const char* func_name) {
 // --- Generic Calls ---
 
 jl_value_t* fj_call0(const char* func_name) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -32,6 +33,7 @@ jl_value_t* fj_call0(const char* func_name) {
 }
 
 jl_value_t* fj_call1_float64(const char* func_name, double arg1) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -47,6 +49,7 @@ jl_value_t* fj_call1_float64(const char* func_name, double arg1) {
 }
 
 jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -61,6 +64,7 @@ jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj) {
 }
 
 jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -77,6 +81,7 @@ jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg
 }
 
 jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -88,6 +93,7 @@ jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs) {
 }
 
 jl_value_t* fj_eval_string(const char* cmd) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_value_t *ret = jl_eval_string(cmd);
     if (check_julia_exception()) return NULL;
@@ -95,6 +101,7 @@ jl_value_t* fj_eval_string(const char* cmd) {
 }
 
 void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     if (!FuncRegisterStr) { set_error("register_f2_string function not loaded."); return NULL; }
     jl_value_t **args;
@@ -113,6 +120,7 @@ void* fj_get_function_pointer(const char* func_name, const char* ret_type, const
 
 jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs, 
                            const char** kw_keys, void** kw_vals, int32_t nkw) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     
     jl_array_t *jl_args = NULL;
@@ -127,7 +135,7 @@ jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
     jl_args = jl_alloc_array_1d(arg_array_type, nargs);
     
     for (int i = 0; i < nargs; i++) {
-        jl_arrayset(jl_args, (jl_value_t*)args[i], i);
+        jl_array_ptr_set(jl_args, i, (jl_value_t*)args[i]);
     }
     
     // 2. Prepare Keys Array (Vector{String})
@@ -135,14 +143,14 @@ jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
     jl_keys = jl_alloc_array_1d(str_array_type, nkw);
     
     for (int i = 0; i < nkw; i++) {
-        jl_arrayset(jl_keys, jl_cstr_to_string(kw_keys[i]), i);
+        jl_array_ptr_set(jl_keys, i, jl_cstr_to_string(kw_keys[i]));
     }
     
     // 3. Prepare Values Array (Vector{Any})
     jl_vals = jl_alloc_array_1d(arg_array_type, nkw);
     
     for (int i = 0; i < nkw; i++) {
-        jl_arrayset(jl_vals, (jl_value_t*)kw_vals[i], i);
+        jl_array_ptr_set(jl_vals, i, (jl_value_t*)kw_vals[i]);
     }
     
     // 4. Call Helper

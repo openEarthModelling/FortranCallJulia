@@ -34,6 +34,10 @@ jl_function_t* FuncMakeUnitRange = NULL;
 static pthread_t main_thread_id;
 static char last_error_msg[2048] = "No error";
 
+// Lifecycle state machine
+enum { FJ_UNINIT = 0, FJ_READY = 1, FJ_SHUTDOWN = 2 };
+static int fj_state = 0;
+
 // --- Helper Functions ---
 
 void set_error(const char* msg) {
@@ -44,9 +48,16 @@ const char* fj_get_last_error() {
     return last_error_msg;
 }
 
+int fj_ready(void) {
+    return fj_state == FJ_READY;
+}
+
 int check_thread() {
     if (pthread_self() != main_thread_id) {
-        set_error("Thread Error: Julia functions called from wrong thread.");
+        char msg[256];
+        snprintf(msg, sizeof(msg), "Thread Error: Julia called from thread %p, runtime owned by thread %p",
+                 (void*)pthread_self(), (void*)main_thread_id);
+        set_error(msg);
         return 0; // Fail
     }
     return 1; // OK
@@ -160,5 +171,30 @@ void fj_init(const char* image_path) {
 }
 
 void fj_shutdown() {
+    fj_state = FJ_SHUTDOWN;
+
+    // Invalidate cached handles so post-shutdown calls hit the fj_ready guard
+    FortranBridgeMod = NULL;
+    FuncRetain = NULL;
+    FuncRelease = NULL;
+    FuncRegister = NULL;
+    FuncRegisterStr = NULL;
+    FuncGetField = NULL;
+    FuncSetField = NULL;
+    FuncGetIndex = NULL;
+    FuncSetIndex = NULL;
+    FuncCallKwargs = NULL;
+
+    FuncGetIndex2D = NULL;
+    FuncSetIndex2D = NULL;
+    FuncGetIndex3D = NULL;
+    FuncSetIndex3D = NULL;
+    FuncGetIndexString = NULL;
+    FuncSetIndexString = NULL;
+    FuncLength = NULL;
+    FuncNdims = NULL;
+    FuncSize = NULL;
+    FuncMakeUnitRange = NULL;
+
     jl_atexit_hook(0);
 }

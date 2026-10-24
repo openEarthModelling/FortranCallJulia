@@ -40,6 +40,9 @@ void* fj_get_function_pointer(const char* func_name, const char* ret_type, const
 // --- Error Handling ---
 const char* fj_get_last_error();
 
+// Returns 1 if the runtime is initialized and ready, 0 otherwise
+int fj_ready(void);
+
 // --- Boxing (C primitive -> Julia Object) ---
 void* fj_box_float64(double val);
 void* fj_box_int32(int val);

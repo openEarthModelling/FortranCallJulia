@@ -3,6 +3,7 @@
 // --- Object Management ---
 
 void* fj_retain(jl_value_t* val) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     if (val == NULL) return NULL;
     
@@ -27,6 +28,7 @@ void* fj_retain(jl_value_t* val) {
 }
 
 void fj_release(void* ptr) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
     if (!check_thread()) return;
     if (ptr == NULL) return;
     
