@@ -2,11 +2,21 @@ module FunctionRegistry
 
 export register_f2, register_f2_string, helper_call_kwargs
 
+# Root the CFunction objects created by the runtime @cfunction path so that
+# the GC cannot collect them while Fortran still holds their addresses.
+const CFUNCS = Dict{String, Any}()
+
 # --- Fast Path Registration Helpers ---
 
 function register_f2(func::Function, name::String)
     ptr = @cfunction($func, Float64, (Float64, Float64))
     println("[FortranBridge] Registered ", name, " at ", ptr)
+    try
+        cf_obj = unsafe_pointer_to_objref(ptr)
+        CFUNCS[String(name)] = (func, cf_obj)   # keep both the function and the trampoline alive
+    catch
+        println("[FortranBridge] Warning: could not root CFunction object for ", name)
+    end
     return ptr
 end
 
@@ -48,7 +58,14 @@ function register_f2_string(func_name::String, ret_type_str::String, arg_types_s
         
         # 4. Evaluate the constructed expression in the module scope
         cfunc_ptr = eval(cfunc_expr)
-        
+
+        try
+            cf_obj = unsafe_pointer_to_objref(cfunc_ptr)
+            CFUNCS[String(func_name)] = (func, cf_obj)   # keep both the function and the trampoline alive
+        catch
+            println("[FortranBridge] Warning: could not root CFunction object for ", func_name)
+        end
+
         return cfunc_ptr
 
     catch e
