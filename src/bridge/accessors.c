@@ -78,9 +78,13 @@ void fj_set_index_i(void* obj, long long idx, void* val) {
 void* fj_get_index_ii(void* obj, long long i, long long j) {
     if (!check_thread()) return NULL;
     jl_value_t *v_obj = (jl_value_t*)obj;
-    JL_GC_PUSH1(&v_obj);
-    
-    jl_value_t *ret = jl_call3(FuncGetIndex2D, v_obj, jl_box_int64(i), jl_box_int64(j));
+    jl_value_t *v_i = NULL;
+    jl_value_t *v_j = NULL;
+    JL_GC_PUSH3(&v_obj, &v_i, &v_j);
+
+    v_i = jl_box_int64(i);
+    v_j = jl_box_int64(j);
+    jl_value_t *ret = jl_call3(FuncGetIndex2D, v_obj, v_i, v_j);
     if (check_julia_exception()) { JL_GC_POP(); return NULL; }
     
     JL_GC_POP();
@@ -91,10 +95,14 @@ void fj_set_index_ii(void* obj, long long i, long long j, void* val) {
     if (!check_thread()) return;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_val = (jl_value_t*)val;
-    JL_GC_PUSH2(&v_obj, &v_val);
-    
+    jl_value_t *v_i = NULL;
+    jl_value_t *v_j = NULL;
+    JL_GC_PUSH4(&v_obj, &v_val, &v_i, &v_j);
+
     // jl_call4 does not exist, use jl_call with array
-    jl_value_t *args[4] = { v_obj, jl_box_int64(i), jl_box_int64(j), v_val };
+    v_i = jl_box_int64(i);
+    v_j = jl_box_int64(j);
+    jl_value_t *args[4] = { v_obj, v_i, v_j, v_val };
     jl_call(FuncSetIndex2D, args, 4);
     
     check_julia_exception();
@@ -104,9 +112,15 @@ void fj_set_index_ii(void* obj, long long i, long long j, void* val) {
 void* fj_get_index_iii(void* obj, long long i, long long j, long long k) {
     if (!check_thread()) return NULL;
     jl_value_t *v_obj = (jl_value_t*)obj;
-    JL_GC_PUSH1(&v_obj);
-    
-    jl_value_t *args[4] = { v_obj, jl_box_int64(i), jl_box_int64(j), jl_box_int64(k) };
+    jl_value_t *v_i = NULL;
+    jl_value_t *v_j = NULL;
+    jl_value_t *v_k = NULL;
+    JL_GC_PUSH4(&v_obj, &v_i, &v_j, &v_k);
+
+    v_i = jl_box_int64(i);
+    v_j = jl_box_int64(j);
+    v_k = jl_box_int64(k);
+    jl_value_t *args[4] = { v_obj, v_i, v_j, v_k };
     jl_value_t *ret = jl_call(FuncGetIndex3D, args, 4);
     
     if (check_julia_exception()) { JL_GC_POP(); return NULL; }
@@ -118,9 +132,15 @@ void fj_set_index_iii(void* obj, long long i, long long j, long long k, void* va
     if (!check_thread()) return;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_val = (jl_value_t*)val;
-    JL_GC_PUSH2(&v_obj, &v_val);
-    
-    jl_value_t *args[5] = { v_obj, jl_box_int64(i), jl_box_int64(j), jl_box_int64(k), v_val };
+    jl_value_t *v_i = NULL;
+    jl_value_t *v_j = NULL;
+    jl_value_t *v_k = NULL;
+    JL_GC_PUSH5(&v_obj, &v_val, &v_i, &v_j, &v_k);
+
+    v_i = jl_box_int64(i);
+    v_j = jl_box_int64(j);
+    v_k = jl_box_int64(k);
+    jl_value_t *args[5] = { v_obj, v_i, v_j, v_k, v_val };
     jl_call(FuncSetIndex3D, args, 5);
     
     check_julia_exception();
@@ -182,8 +202,10 @@ long long fj_ndims(void* obj) {
 long long fj_size(void* obj, int dim) {
     if (!check_thread()) return -1;
     jl_value_t *v_obj = (jl_value_t*)obj;
-    JL_GC_PUSH1(&v_obj);
-    jl_value_t *ret = jl_call2(FuncSize, v_obj, jl_box_int64(dim));
+    jl_value_t *v_dim = NULL;
+    JL_GC_PUSH2(&v_obj, &v_dim);
+    v_dim = jl_box_int64(dim);
+    jl_value_t *ret = jl_call2(FuncSize, v_obj, v_dim);
     if (check_julia_exception()) { JL_GC_POP(); return -1; }
     long long sz = jl_unbox_int64(ret);
     JL_GC_POP();
@@ -192,7 +214,13 @@ long long fj_size(void* obj, int dim) {
 
 void* fj_make_unitrange(long long start, long long stop) {
     if (!check_thread()) return NULL;
-    jl_value_t *ret = jl_call2(FuncMakeUnitRange, jl_box_int64(start), jl_box_int64(stop));
-    if (check_julia_exception()) return NULL;
+    jl_value_t *v_start = NULL;
+    jl_value_t *v_stop = NULL;
+    JL_GC_PUSH2(&v_start, &v_stop);
+    v_start = jl_box_int64(start);
+    v_stop = jl_box_int64(stop);
+    jl_value_t *ret = jl_call2(FuncMakeUnitRange, v_start, v_stop);
+    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
+    JL_GC_POP();
     return ret;
 }
