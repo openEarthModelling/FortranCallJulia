@@ -57,14 +57,21 @@ int check_thread() {
 #endif
 
 int check_julia_exception() {
-    if (jl_exception_occurred()) {
-        jl_value_t *ex = jl_exception_occurred();
+    jl_value_t *ex = jl_exception_occurred();
+    if (ex) {
+        JL_GC_PUSH1(&ex);
+        jl_exception_clear(); // Clear immediately so one exception does not poison later calls
+
         jl_function_t *sprint = jl_get_function(jl_base_module, "sprint");
         jl_function_t *showerror = jl_get_function(jl_base_module, "showerror");
-        
+
         if (sprint && showerror) {
             jl_value_t *err_str_val = jl_call2(sprint, showerror, ex);
-            if (jl_is_string(err_str_val)) {
+            if (jl_exception_occurred()) {
+                // Formatting itself raised a new exception; clear it too
+                jl_exception_clear();
+                set_error("Julia Exception Occurred (sprint failed)");
+            } else if (err_str_val && jl_is_string(err_str_val)) {
                 set_error(jl_string_ptr(err_str_val));
             } else {
                 set_error("Julia Exception Occurred (sprint failed)");
@@ -73,6 +80,7 @@ int check_julia_exception() {
             fprintf(stderr, "Julia Exception: %s\n", jl_typeof_str(ex));
             set_error("Julia Exception Occurred (sprint/showerror not found)");
         }
+        JL_GC_POP();
         return 1; // Exception occurred
     }
     return 0; // No exception
@@ -84,7 +92,7 @@ void fj_init(const char* image_path) {
     main_thread_id = pthread_self();
 
     if (image_path != NULL) {
-        jl_init_with_image(JULIA_BINDIR, image_path);
+        jl_init_with_image_file(JULIA_BINDIR, image_path);
     } else {
         jl_init();
     }
