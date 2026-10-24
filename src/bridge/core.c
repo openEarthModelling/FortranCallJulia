@@ -98,14 +98,16 @@ int check_julia_exception() {
 }
 
 void fj_init(const char* image_path) {
-    if (jl_is_initialized()) return;
+    if (fj_state == FJ_READY) return; // Already initialized by us
 
-    main_thread_id = pthread_self();
+    if (main_thread_id == 0) main_thread_id = pthread_self();
 
-    if (image_path != NULL) {
-        jl_init_with_image_file(JULIA_BINDIR, image_path);
-    } else {
-        jl_init();
+    if (!jl_is_initialized()) {
+        if (image_path != NULL) {
+            jl_init_with_image_file(JULIA_BINDIR, image_path);
+        } else {
+            jl_init();
+        }
     }
 
     jl_value_t* mod_check = jl_eval_string("isdefined(Main, :FortranBridge)");
@@ -168,6 +170,8 @@ void fj_init(const char* image_path) {
         fprintf(stderr, "Error: Could not load FortranBridge module.\n");
         exit(1);
     }
+
+    fj_state = FJ_READY;
 }
 
 void fj_shutdown() {
