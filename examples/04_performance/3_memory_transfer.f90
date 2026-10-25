@@ -7,7 +7,7 @@ program memory_transfer
     integer, parameter :: N = 3000
     real(8), allocatable :: matrix(:,:)
     type(JuliaValue) :: wrapped_array, res, julia
-    real(8) :: t1, t2
+    real(8) :: t1, t2, v0, vlast
     integer :: i
 
     print *, "--- Performance Test 2: Memory Transfer (Deep Copy vs Zero-Copy) ---"
@@ -57,6 +57,11 @@ program memory_transfer
     print *, "2. Zero-Copy (In-Place)..."
     call cpu_time(t1)
     
+    ! Remember two elements so the in-place effect can be verified
+    ! deterministically (random_number returns [0,1), so 2x lands in [0,2)).
+    v0 = matrix(1, 1)
+    vlast = matrix(N, N)
+
     ! Step 1: Wrap (O(1))
     ! Note: pass explicit dimensions as int64
     wrapped_array = julia_wrap_array_2d(matrix, int(N, 8), int(N, 8))
@@ -70,11 +75,17 @@ program memory_transfer
     call cpu_time(t2)
     print "(A, F10.6, A)", "   Time: ", t2 - t1, " s"
     
-    ! Verify result (quick check)
-    if (matrix(1,1) > 1.0) then
-         print *, "   [Verification] Matrix updated successfully."
+    ! Deterministic check: in-place scaling must exactly double the two
+    ! sampled elements. (The old check, matrix(1,1) > 1.0, was a coin flip
+    ! on the random draw: it "warned" on roughly half of the CORRECT runs,
+    ! since 2*x for x in [0,1) exceeds 1.0 only when x > 0.5.)
+    if (abs(matrix(1,1) - 2.0d0*v0) <= 1.0d-12 * max(abs(v0), 1.0d-300) .and. &
+        abs(matrix(N,N) - 2.0d0*vlast) <= 1.0d-12 * max(abs(vlast), 1.0d-300)) then
+         print *, "   [Verification] Matrix updated successfully (elements (1,1) and (N,N) exactly doubled)."
     else
-         print *, "   [Verification] Warning: Matrix values unexpected."
+         print *, "   [Verification] FAILED: matrix(1,1)=", matrix(1,1), &
+              " expected ", 2.0d0*v0, "; matrix(N,N)=", matrix(N,N), " expected ", 2.0d0*vlast
+         error stop 1
     end if
 
     print *, "--- Conclusion ---"
