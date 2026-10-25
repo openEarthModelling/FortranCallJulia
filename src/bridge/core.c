@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <sys/stat.h>
 #include "bridge_internal.h"
 
 // C-side GC root set for fj_retain/fj_release (implemented in memory.c)
@@ -101,23 +103,132 @@ int check_julia_exception() {
     return 0; // No exception
 }
 
-void fj_init(const char* image_path) {
-    if (fj_state == FJ_READY) return; // Already initialized by us
+// --- Project resolution (fj_init_ex) ---
+
+// Returns 1 if dir exists and contains a Project.toml file.
+static int fj_is_project_dir(const char* dir) {
+    char buf[4096];
+    struct stat st;
+    if (dir == NULL || dir[0] == '\0') return 0;
+    snprintf(buf, sizeof(buf), "%s/Project.toml", dir);
+    return stat(buf, &st) == 0 && S_ISREG(st.st_mode);
+}
+
+// Resolve the FortranBridge project directory (must contain Project.toml).
+// Probe order when no explicit path is given:
+//   1. $JULIA_FJ_PROJECT
+//   2. a directory named FortranBridge next to the running executable
+//      (resolved via /proc/self/exe)
+//   3. $JULIA_PROJECT
+// Returns a pointer to a static buffer (valid until the next call), or NULL
+// if no candidate validates.
+static const char* fj_resolve_project(const char* explicit_path) {
+    static char exe_dir_buf[4096];
+    static char candidate[4096];
+    const char* env;
+
+    if (explicit_path != NULL && explicit_path[0] != '\0') {
+        return fj_is_project_dir(explicit_path) ? explicit_path : NULL;
+    }
+
+    env = getenv("JULIA_FJ_PROJECT");
+    if (fj_is_project_dir(env)) return env;
+
+    ssize_t n = readlink("/proc/self/exe", exe_dir_buf, sizeof(exe_dir_buf) - 1);
+    if (n > 0) {
+        char* slash;
+        exe_dir_buf[n] = '\0';
+        slash = strrchr(exe_dir_buf, '/');
+        if (slash != NULL) {
+            slash[1] = '\0'; /* truncate to directory, keep trailing '/' */
+            snprintf(candidate, sizeof(candidate), "%sFortranBridge", exe_dir_buf);
+            if (fj_is_project_dir(candidate)) return candidate;
+        }
+    }
+
+    env = getenv("JULIA_PROJECT");
+    if (fj_is_project_dir(env)) return env;
+
+    return NULL;
+}
+
+// Make project_dir the active project environment so that
+// `using FortranBridge` resolves to the package it contains.
+// Returns 0 on success, -1 (with the last error set) on failure.
+static int fj_activate_project(const char* project_dir) {
+    jl_value_t* dir_str = jl_cstr_to_string(project_dir);
+    jl_function_t* set_active_project;
+    JL_GC_PUSH1(&dir_str);
+    set_active_project = jl_get_function(jl_base_module, "set_active_project");
+    if (set_active_project == NULL) {
+        JL_GC_POP();
+        set_error("Base.set_active_project not found in this Julia build");
+        return -1;
+    }
+    jl_call1(set_active_project, dir_str);
+    JL_GC_POP();
+    return check_julia_exception() ? -1 : 0;
+}
+
+int fj_init_ex(const fj_options_t* opts) {
+    static const fj_options_t defaults = { NULL, NULL, 0, 1 };
+
+    if (opts == NULL) opts = &defaults;
+
+    if (fj_state == FJ_READY) return 0; // Already initialized by us
+    if (fj_state == FJ_SHUTDOWN) {
+        set_error("fj_init_ex: runtime was already shut down; re-initialization is not supported");
+        return -1;
+    }
+
+    if (opts->project_path != NULL && opts->project_path[0] != '\0' &&
+        !fj_is_project_dir(opts->project_path)) {
+        set_error("fj_init_ex: project_path is set but contains no Project.toml");
+        return -1;
+    }
 
     if (main_thread_id == 0) main_thread_id = pthread_self();
 
     if (!jl_is_initialized()) {
-        if (image_path != NULL) {
-            jl_init_with_image_file(JULIA_BINDIR, image_path);
+        // Startup control must happen before jl_init*:
+        //  - threads: Julia reads JULIA_NUM_THREADS from the environment at
+        //    init time (verified against the embedded 1.12.7 runtime)
+        //  - signal handling: Julia installs its handlers during init based
+        //    on jl_options.handle_signals; setting it to OFF before init
+        //    leaves signal disposition with the embedding process, which MPI
+        //    runtimes require. (There is no JULIA_HANDLE_SIGNALS env var, so
+        //    jl_options is the only reliable mechanism.)
+        if (opts->nthreads > 0) {
+            char nthreads_buf[32];
+            snprintf(nthreads_buf, sizeof(nthreads_buf), "%d", opts->nthreads);
+            setenv("JULIA_NUM_THREADS", nthreads_buf, 1);
+        }
+        jl_options.handle_signals = (opts->handle_signals != 0)
+                                        ? JL_OPTIONS_HANDLE_SIGNALS_ON
+                                        : JL_OPTIONS_HANDLE_SIGNALS_OFF;
+
+        if (opts->sysimage_path != NULL) {
+            jl_init_with_image_file(JULIA_BINDIR, opts->sysimage_path);
         } else {
             jl_init();
         }
+    }
+
+    if (check_julia_exception()) {
+        fprintf(stderr, "Error: Julia runtime initialization failed.\nLast Error: %s\n", fj_get_last_error());
+        exit(1);
     }
 
     jl_value_t* mod_check = jl_eval_string("isdefined(Main, :FortranBridge)");
     int is_loaded = (mod_check && jl_unbox_bool(mod_check));
 
     if (!is_loaded) {
+        /* INTERMEDIATE STATE (pre-cutover): loading still goes through the
+         * HEAD-style middleware.jl include chain. The packaging cutover
+         * (project activation via Base.set_active_project + `using
+         * FortranBridge`) replaces this block in the final core.c; the
+         * helpers above (fj_resolve_project/fj_activate_project) are
+         * unused in this state. */
         jl_eval_string("include(\"middleware.jl\")");
         if (check_julia_exception()) {
              fprintf(stderr, "Error loading middleware.jl: %s\n", fj_get_last_error());
@@ -125,6 +236,7 @@ void fj_init(const char* image_path) {
         }
         jl_eval_string("using .FortranBridge");
     } else {
+        // Module already present (e.g. baked into a custom sysimage)
         jl_eval_string("using Main.FortranBridge");
     }
 
@@ -182,6 +294,16 @@ void fj_init(const char* image_path) {
     }
 
     fj_state = FJ_READY;
+    return 0;
+}
+
+void fj_init(const char* image_path) {
+    fj_options_t opts;
+    opts.sysimage_path = image_path;
+    opts.project_path = NULL;
+    opts.nthreads = 0;
+    opts.handle_signals = 1;
+    fj_init_ex(&opts);
 }
 
 void fj_shutdown() {

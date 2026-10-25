@@ -414,6 +414,38 @@ end subroutine copy_jv
         call fj_init(c_loc(c_path))
     end subroutine julia_init_with_image
 
+    ! Startup control: mirrors C fj_init_ex (bridge.h). An omitted argument
+    ! selects the C-side default (c_null_ptr for paths, 0 threads = Julia
+    ! default, handle_signals = 1 = Julia installs its signal handlers).
+    subroutine julia_init_ex(image_path, project_path, nthreads, handle_signals)
+        character(len=*), intent(in), optional :: image_path
+        character(len=*), intent(in), optional :: project_path
+        integer, intent(in), optional :: nthreads
+        integer, intent(in), optional :: handle_signals
+
+        type(FjOptions), target :: opts
+        character(kind=c_char, len=1024), target :: c_image_path
+        character(kind=c_char, len=1024), target :: c_project_path
+
+        opts%sysimage_path = c_null_ptr
+        opts%project_path = c_null_ptr
+        opts%nthreads = 0_c_int
+        opts%handle_signals = 1_c_int
+
+        if (present(image_path)) then
+            c_image_path = to_c_string(image_path)
+            opts%sysimage_path = c_loc(c_image_path)
+        end if
+        if (present(project_path)) then
+            c_project_path = to_c_string(project_path)
+            opts%project_path = c_loc(c_project_path)
+        end if
+        if (present(nthreads)) opts%nthreads = int(nthreads, kind=c_int)
+        if (present(handle_signals)) opts%handle_signals = int(handle_signals, kind=c_int)
+
+        call fj_init_ex(c_loc(opts))
+    end subroutine julia_init_ex
+
     subroutine julia_shutdown()
         call fj_shutdown()
     end subroutine julia_shutdown

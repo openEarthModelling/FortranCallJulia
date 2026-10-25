@@ -3,8 +3,44 @@
 
 #include <julia.h>
 
-// Initialize Julia Runtime
+// Initialize Julia Runtime (historical entry point; thin wrapper over
+// fj_init_ex with all defaults: no explicit project, Julia default threads,
+// Julia installs its signal handlers).
 void fj_init(const char* image_path);
+
+// Startup options for fj_init_ex.
+//   sysimage_path  : Julia sysimage file to load (NULL = default sysimage).
+//   project_path   : directory containing the FortranBridge package's
+//                    Project.toml (NULL = probe chain, see fj_init_ex).
+//   nthreads       : if > 0, the runtime is started with this many threads
+//                    (JULIA_NUM_THREADS is set before init); 0 = Julia default.
+//   handle_signals : nonzero = Julia installs its signal handlers during init
+//                    (historical behavior); 0 = leave signal disposition to
+//                    the embedding process (recommended for MPI).
+typedef struct fj_options {
+    const char* sysimage_path;
+    const char* project_path;
+    int nthreads;
+    int handle_signals;
+} fj_options_t;
+
+// Initialize the Julia runtime with explicit startup control.
+// Returns 0 on success, nonzero on failure (see fj_get_last_error()).
+// The options are consumed as follows:
+//   - nthreads and handle_signals take effect only when this call performs
+//     the Julia initialization itself (they are applied before jl_init /
+//     jl_init_with_image_file).
+//   - project_path (or its probe chain) is activated after init via
+//     Base.set_active_project, then the FortranBridge package is loaded
+//     with `using FortranBridge`.
+// Probe order when project_path == NULL:
+//   1. $JULIA_FJ_PROJECT (must contain Project.toml)
+//   2. a directory named FortranBridge containing Project.toml next to the
+//      running executable (resolved via /proc/self/exe)
+//   3. $JULIA_PROJECT (must contain Project.toml)
+// A NULL opts pointer is equivalent to all defaults
+// {NULL, NULL, 0, 1} (historical fj_init behavior).
+int fj_init_ex(const fj_options_t* opts);
 
 // Shutdown Julia Runtime
 void fj_shutdown();

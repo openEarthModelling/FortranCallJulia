@@ -2,12 +2,25 @@ module julia_low_level
     use iso_c_binding
     implicit none
 
+    ! Mirrors C struct fj_options_t (bridge.h); field order and types must match.
+    type, bind(c) :: FjOptions
+        type(c_ptr) :: sysimage_path
+        type(c_ptr) :: project_path
+        integer(kind=c_int) :: nthreads
+        integer(kind=c_int) :: handle_signals
+    end type FjOptions
+
     ! --- C Interface Definitions ---
     interface
         subroutine fj_init(image_path) bind(c, name="fj_init")
             import :: c_char, c_ptr
             type(c_ptr), value :: image_path
         end subroutine fj_init
+
+        subroutine fj_init_ex(opts) bind(c, name="fj_init_ex")
+            import :: c_ptr
+            type(c_ptr), value :: opts
+        end subroutine fj_init_ex
 
         subroutine fj_shutdown() bind(c, name="fj_shutdown")
         end subroutine fj_shutdown
