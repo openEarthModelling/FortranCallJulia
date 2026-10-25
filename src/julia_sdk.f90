@@ -3,6 +3,7 @@ module julia_high_level
     use, intrinsic :: iso_fortran_env, only: error_unit
     use julia_low_level
     implicit none
+    private :: copy_jv
 
     type :: JuliaKwargs
         integer :: n = 0
@@ -13,6 +14,10 @@ module julia_high_level
         final :: kw_destructor
     end type JuliaKwargs
 
+    ! JuliaValue ownership rule: assignment (=) is a retaining copy
+    ! (copy_jv: fj_retain + pointer copy, pure C via the root set, no
+    ! Julia round trip). The finalizer releases each owned reference
+    ! exactly once.
     type :: JuliaValue
         type(c_ptr) :: ptr = c_null_ptr
     contains
@@ -73,7 +78,7 @@ module julia_high_level
         procedure :: ndims
         procedure :: size_dim
         
-        ! Assignment Overload for Ref Counting
+        ! Assignment Overload for Retaining-Copy Ref Counting
         generic :: assignment(=) => copy_julia_value
         procedure :: copy_julia_value
         final :: destructor
@@ -113,16 +118,26 @@ contains
 
     ! --- Internal Management ---
     
-    subroutine copy_julia_value(dest, src)
-        class(JuliaValue), intent(out) :: dest
-        class(JuliaValue), intent(in) :: src
-        type(c_ptr) :: dummy
-        
-        dest%ptr = src%ptr
-        if (c_associated(dest%ptr)) then
-            dummy = fj_retain(dest%ptr)
-        end if
-    end subroutine copy_julia_value
+    ! Defined assignment = retaining copy via the C-side root set
+! (fj_retain is a pure C operation, no Julia round trip). Standard
+! Fortran requires INTENT(IN) for the second dummy of a defined
+! assignment, so true move semantics cannot be expressed here.
+subroutine copy_julia_value(dest, src)
+class(JuliaValue), intent(out) :: dest
+class(JuliaValue), intent(in) :: src
+call copy_jv(dest, src)
+end subroutine copy_julia_value
+
+    ! Real (retaining) copy of a JuliaValue reference.
+    subroutine copy_jv(dst, src)
+class(JuliaValue), intent(out) :: dst
+class(JuliaValue), intent(in) :: src
+if (c_associated(src%ptr)) then
+dst%ptr = fj_retain(src%ptr)
+else
+dst%ptr = c_null_ptr
+end if
+end subroutine copy_jv
 
     subroutine destructor(self)
         type(JuliaValue), intent(inout) :: self
@@ -594,6 +609,9 @@ contains
         else
             allocate(new_keys(self%n + 1))
             allocate(new_vals(self%n + 1))
+            ! Copy elements into the new arrays (retaining via the C
+            ! root set); move_alloc then swaps them in. The old array's
+            ! finalizers release the old references.
             do i = 1, self%n
                 new_keys(i) = self%keys(i)
                 new_vals(i) = self%values(i)
@@ -603,7 +621,8 @@ contains
         end if
         self%n = self%n + 1
         self%keys(self%n) = key
-        self%values(self%n) = val
+        ! Explicit copy: plain assignment would MOVE the caller's value.
+        call copy_jv(self%values(self%n), val)
     end subroutine add_kwarg
 
     subroutine kw_destructor(self)
