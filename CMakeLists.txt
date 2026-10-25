@@ -76,8 +76,15 @@ target_compile_definitions(fj_middleware PRIVATE JULIA_BINDIR="${JULIA_BINDIR}")
 
 target_compile_options(fj_middleware PRIVATE 
     $<$<COMPILE_LANGUAGE:C>:${JULIA_CFLAGS}>
-    $<$<COMPILE_LANGUAGE:Fortran>:-fno-underscoring>
 )
+
+# -fno-underscoring is GNU-only (gfortran): it disables gfortran's default
+# trailing-underscore name mangling so C-side symbol lookups match.
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(fj_middleware PRIVATE
+        $<$<COMPILE_LANGUAGE:Fortran>:-fno-underscoring>
+    )
+endif()
 
 # Link Options
 target_link_options(fj_middleware INTERFACE ${JULIA_LDFLAGS})
