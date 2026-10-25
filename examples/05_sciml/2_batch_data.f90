@@ -44,22 +44,22 @@ program ex_sciml_batch_data
     end if
     print *, 'EX_BATCH_OK_NESTED rbuf=', rbuf(1), rbuf(2)
 
-    ! 3. Dict property: d["a"] via %property + %to_fortran (real buffer)
-    d = julia_eval(' Dict("a" => [7.0,8.0,9.0]) ')
+    ! 3. NamedTuple property: nt.a via %property + %to_fortran (real buffer)
+    d = julia_eval(' (a = [7.0,8.0,9.0],) ')
     if (.not. d%is_valid()) &
-        call fail('julia_eval dict failed')
+        call fail('julia_eval NamedTuple failed')
     a = d%property("a")
     if (.not. a%is_valid()) &
         call fail('property("a") failed: ' // get_last_error_message())
     rc = a%to_fortran(rbuf, 3_c_int64_t)
     if (rc /= 0) &
-        call fail('to_fortran on dict property failed: ' // get_last_error_message())
+        call fail('to_fortran on NamedTuple property failed: ' // get_last_error_message())
     do i = 1, 3
         if (abs(rbuf(i) - real(i + 6, kind=c_double)) > 1.0e-12_c_double) then
-            call fail('dict property values mismatch')
+            call fail('NamedTuple property values mismatch')
         end if
     end do
-    print *, 'EX_BATCH_OK_DICT rbuf=', rbuf(1), rbuf(2), rbuf(3)
+    print *, 'EX_BATCH_OK_NT rbuf=', rbuf(1), rbuf(2), rbuf(3)
 
     ! 4. Complex array: %to_fortran into a complex(c_double) buffer
     cx = julia_eval("ComplexF64[1.0im, 2.0im, 3.0im]")
