@@ -300,6 +300,49 @@ module julia_low_level
             type(c_ptr), value :: val
         end subroutine fj_set_index_s
 
+        ! --- Fast Real Element Accessors ---
+        function fj_get_real(obj, idx) bind(c, name="fj_get_real") result(val)
+            import :: c_ptr, c_int64_t, c_double
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: idx
+            real(kind=c_double) :: val
+        end function fj_get_real
+
+        subroutine fj_set_real(obj, idx, val) bind(c, name="fj_set_real")
+            import :: c_ptr, c_int64_t, c_double
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: idx
+            real(kind=c_double), value :: val
+        end subroutine fj_set_real
+
+        function fj_get_real2(obj, i, j) bind(c, name="fj_get_real2") result(val)
+            import :: c_ptr, c_int64_t, c_double
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: i, j
+            real(kind=c_double) :: val
+        end function fj_get_real2
+
+        subroutine fj_set_real2(obj, i, j, val) bind(c, name="fj_set_real2")
+            import :: c_ptr, c_int64_t, c_double
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: i, j
+            real(kind=c_double), value :: val
+        end subroutine fj_set_real2
+
+        function fj_get_real3(obj, i, j, k) bind(c, name="fj_get_real3") result(val)
+            import :: c_ptr, c_int64_t, c_double
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: i, j, k
+            real(kind=c_double) :: val
+        end function fj_get_real3
+
+        subroutine fj_set_real3(obj, i, j, k, val) bind(c, name="fj_set_real3")
+            import :: c_ptr, c_int64_t, c_double
+            type(c_ptr), value :: obj
+            integer(kind=c_int64_t), value :: i, j, k
+            real(kind=c_double), value :: val
+        end subroutine fj_set_real3
+
         ! --- Introspection ---
         function fj_length(obj) bind(c, name="fj_length") result(res)
             import :: c_ptr, c_int64_t

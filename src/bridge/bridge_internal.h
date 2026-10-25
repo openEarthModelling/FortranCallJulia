@@ -28,6 +28,15 @@ extern jl_function_t* FuncNdims;
 extern jl_function_t* FuncSize;
 extern jl_function_t* FuncMakeUnitRange;
 
+// Native Float64 array element accessors (direct jl_array_data, no boxing;
+// 1-based indices, column-major layout). Bound by the Fortran SDK.
+double fj_get_real(void* arr, long long i);
+void fj_set_real(void* arr, long long i, double v);
+double fj_get_real2(void* arr, long long i, long long j);
+void fj_set_real2(void* arr, long long i, long long j, double v);
+double fj_get_real3(void* arr, long long i, long long j, long long k);
+void fj_set_real3(void* arr, long long i, long long j, long long k, double v);
+
 // Helpers
 void set_error(const char* msg);
 int check_thread();

@@ -52,6 +52,16 @@ module julia_high_level
         generic :: at => at_1d, at_2d, at_3d, at_string
         generic :: set_at => set_at_1d, set_at_2d, set_at_3d, set_at_string
 
+        ! Fast real element accessors (no JuliaValue temp, no retain per element)
+        procedure :: at_real_1d
+        procedure :: at_real_2d
+        procedure :: at_real_3d
+        procedure :: set_at_real_1d
+        procedure :: set_at_real_2d
+        procedure :: set_at_real_3d
+        generic :: at_real => at_real_1d, at_real_2d, at_real_3d
+        generic :: set_at_real => set_at_real_1d, set_at_real_2d, set_at_real_3d
+
         ! Generic Call Interface (Modern Fortran)
         generic :: call => call_method_generic_dispatch_0, &
                            call_method_generic_dispatch_1, &
@@ -573,6 +583,50 @@ end subroutine copy_jv
         type(JuliaValue), intent(in) :: val
         call fj_set_index_s(self%ptr, to_c_string(key), val%ptr)
     end subroutine set_at_string
+
+    ! --- Fast Real Element Accessors ---
+
+    function at_real_1d(self, idx) result(val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: idx
+        real(kind=c_double) :: val
+        val = fj_get_real(self%ptr, idx)
+    end function at_real_1d
+
+    subroutine set_at_real_1d(self, idx, val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: idx
+        real(kind=c_double), intent(in) :: val
+        call fj_set_real(self%ptr, idx, val)
+    end subroutine set_at_real_1d
+
+    function at_real_2d(self, i, j) result(val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: i, j
+        real(kind=c_double) :: val
+        val = fj_get_real2(self%ptr, i, j)
+    end function at_real_2d
+
+    subroutine set_at_real_2d(self, i, j, val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: i, j
+        real(kind=c_double), intent(in) :: val
+        call fj_set_real2(self%ptr, i, j, val)
+    end subroutine set_at_real_2d
+
+    function at_real_3d(self, i, j, k) result(val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: i, j, k
+        real(kind=c_double) :: val
+        val = fj_get_real3(self%ptr, i, j, k)
+    end function at_real_3d
+
+    subroutine set_at_real_3d(self, i, j, k, val)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: i, j, k
+        real(kind=c_double), intent(in) :: val
+        call fj_set_real3(self%ptr, i, j, k, val)
+    end subroutine set_at_real_3d
 
     function length(self) result(res)
         class(JuliaValue), intent(in) :: self

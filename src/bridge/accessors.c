@@ -224,3 +224,149 @@ void* fj_make_unitrange(long long start, long long stop) {
     JL_GC_POP();
     return ret;
 }
+
+// --- Native Float64 Array Access (direct jl_array_data, no boxing) ---
+// Reads/writes Array{Float64,N} data in place: no boxing, no helper call, no
+// per-element retain. Indices are 1-based (Fortran order); memory layout is
+// 0-based column-major, matching both Julia and Fortran.
+
+// Cached Array{Float64,N} type objects. jl_apply_array_type returns immortal
+// cache-owned instances for concrete element types, so they are safe as C
+// statics without GC rooting; do NOT push them. Small per-file duplicates are
+// intentional (arrays.c keeps its own). Lazy init is safe because all bridge
+// calls run on the init thread (see check_thread).
+static jl_value_t *arr_f64_1d = NULL, *arr_f64_2d = NULL, *arr_f64_3d = NULL;
+
+// Lazily build the Array{Float64,N} type and verify obj is exactly that type.
+// Returns obj as jl_array_t* on success, NULL (with error set) on failure.
+static jl_array_t* check_f64_array(void* obj, int rank, jl_value_t** cache, const char* api) {
+    if (!*cache) {
+        jl_value_t *t = jl_apply_array_type((jl_value_t*)jl_float64_type, rank);
+        if (check_julia_exception()) return NULL;
+        *cache = t;
+    }
+    if (!jl_typeis((jl_value_t*)obj, *cache)) {
+        char err[128];
+        snprintf(err, sizeof(err), "%s: object is not Array{Float64,%d}", api, rank);
+        set_error(err);
+        return NULL;
+    }
+    return (jl_array_t*)obj;
+}
+
+double fj_get_real(void* arr, long long i) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
+    if (!check_thread()) return 0.0;
+    if (!arr) { set_error("fj_get_real: NULL array"); return 0.0; }
+
+    jl_value_t *v_arr = (jl_value_t*)arr;
+    JL_GC_PUSH1(&v_arr);
+
+    jl_array_t *a = check_f64_array(arr, 1, &arr_f64_1d, "fj_get_real");
+    if (!a) { JL_GC_POP(); return 0.0; }
+
+    long long n = (long long)jl_array_nrows(a);
+    if (i < 1 || i > n) { set_error("fj_get_real: index out of bounds"); JL_GC_POP(); return 0.0; }
+
+    double v = jl_array_data(a, double)[i - 1];
+    JL_GC_POP();
+    return v;
+}
+
+void fj_set_real(void* arr, long long i, double v) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
+    if (!check_thread()) return;
+    if (!arr) { set_error("fj_set_real: NULL array"); return; }
+
+    jl_value_t *v_arr = (jl_value_t*)arr;
+    JL_GC_PUSH1(&v_arr);
+
+    jl_array_t *a = check_f64_array(arr, 1, &arr_f64_1d, "fj_set_real");
+    if (!a) { JL_GC_POP(); return; }
+
+    long long n = (long long)jl_array_nrows(a);
+    if (i < 1 || i > n) { set_error("fj_set_real: index out of bounds"); JL_GC_POP(); return; }
+
+    jl_array_data(a, double)[i - 1] = v;
+    JL_GC_POP();
+}
+
+double fj_get_real2(void* arr, long long i, long long j) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
+    if (!check_thread()) return 0.0;
+    if (!arr) { set_error("fj_get_real2: NULL array"); return 0.0; }
+
+    jl_value_t *v_arr = (jl_value_t*)arr;
+    JL_GC_PUSH1(&v_arr);
+
+    jl_array_t *a = check_f64_array(arr, 2, &arr_f64_2d, "fj_get_real2");
+    if (!a) { JL_GC_POP(); return 0.0; }
+
+    long long d1 = (long long)jl_array_dim(a, 0);
+    long long d2 = (long long)jl_array_dim(a, 1);
+    if (i < 1 || i > d1 || j < 1 || j > d2) { set_error("fj_get_real2: index out of bounds"); JL_GC_POP(); return 0.0; }
+
+    double v = jl_array_data(a, double)[(i - 1) + (j - 1) * d1];
+    JL_GC_POP();
+    return v;
+}
+
+void fj_set_real2(void* arr, long long i, long long j, double v) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
+    if (!check_thread()) return;
+    if (!arr) { set_error("fj_set_real2: NULL array"); return; }
+
+    jl_value_t *v_arr = (jl_value_t*)arr;
+    JL_GC_PUSH1(&v_arr);
+
+    jl_array_t *a = check_f64_array(arr, 2, &arr_f64_2d, "fj_set_real2");
+    if (!a) { JL_GC_POP(); return; }
+
+    long long d1 = (long long)jl_array_dim(a, 0);
+    long long d2 = (long long)jl_array_dim(a, 1);
+    if (i < 1 || i > d1 || j < 1 || j > d2) { set_error("fj_set_real2: index out of bounds"); JL_GC_POP(); return; }
+
+    jl_array_data(a, double)[(i - 1) + (j - 1) * d1] = v;
+    JL_GC_POP();
+}
+
+double fj_get_real3(void* arr, long long i, long long j, long long k) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
+    if (!check_thread()) return 0.0;
+    if (!arr) { set_error("fj_get_real3: NULL array"); return 0.0; }
+
+    jl_value_t *v_arr = (jl_value_t*)arr;
+    JL_GC_PUSH1(&v_arr);
+
+    jl_array_t *a = check_f64_array(arr, 3, &arr_f64_3d, "fj_get_real3");
+    if (!a) { JL_GC_POP(); return 0.0; }
+
+    long long d1 = (long long)jl_array_dim(a, 0);
+    long long d2 = (long long)jl_array_dim(a, 1);
+    long long d3 = (long long)jl_array_dim(a, 2);
+    if (i < 1 || i > d1 || j < 1 || j > d2 || k < 1 || k > d3) { set_error("fj_get_real3: index out of bounds"); JL_GC_POP(); return 0.0; }
+
+    double v = jl_array_data(a, double)[(i - 1) + (j - 1) * d1 + (k - 1) * d1 * d2];
+    JL_GC_POP();
+    return v;
+}
+
+void fj_set_real3(void* arr, long long i, long long j, long long k, double v) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
+    if (!check_thread()) return;
+    if (!arr) { set_error("fj_set_real3: NULL array"); return; }
+
+    jl_value_t *v_arr = (jl_value_t*)arr;
+    JL_GC_PUSH1(&v_arr);
+
+    jl_array_t *a = check_f64_array(arr, 3, &arr_f64_3d, "fj_set_real3");
+    if (!a) { JL_GC_POP(); return; }
+
+    long long d1 = (long long)jl_array_dim(a, 0);
+    long long d2 = (long long)jl_array_dim(a, 1);
+    long long d3 = (long long)jl_array_dim(a, 2);
+    if (i < 1 || i > d1 || j < 1 || j > d2 || k < 1 || k > d3) { set_error("fj_set_real3: index out of bounds"); JL_GC_POP(); return; }
+
+    jl_array_data(a, double)[(i - 1) + (j - 1) * d1 + (k - 1) * d1 * d2] = v;
+    JL_GC_POP();
+}
