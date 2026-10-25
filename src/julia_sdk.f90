@@ -494,6 +494,14 @@ end subroutine copy_jv
         character(len=*), intent(in) :: cmd
         type(c_ptr) :: raw_res
         raw_res = fj_eval_string(to_c_string(cmd))
+        if (.not. c_associated(raw_res)) then
+            ! Do not swallow the failure: eval errors used to vanish here and
+            ! downstream unbox calls silently returned 0 (wrong answers that
+            ! looked like success). Report loudly and keep the process alive
+            ! -- the caller decides whether to stop.
+            write(error_unit, '(a)') 'julia_eval_string: evaluation failed: ' // trim(cmd)
+            write(error_unit, '(a)') 'julia_eval_string: ' // trim(get_last_error_message())
+        end if
     end subroutine julia_eval_string
 
     ! Absolute directory of the running executable (no trailing slash), or
