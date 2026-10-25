@@ -51,22 +51,34 @@ end
 end
 # --- Keyword Arguments Support ---
 
+# OPT-6: cache the resolved function AND the precomputed names
+# Tuple{Vararg{Symbol}} per (func_name, kw key set), so repeated calls skip
+# the isdefined/getfield lookup, the Symbol.(kw_keys) construction and the
+# names Tuple build. Key: func_name * "\0" * join(kw_keys, "\u0001")
+const KW_CACHE = Dict{String, Any}()
+
 function helper_call_kwargs(func_name::String, args::Vector{Any}, kw_keys::Vector{String}, kw_vals::Vector{Any})
-    if !isdefined(Main, Symbol(func_name))
-        error("Function $func_name not found")
+    key = func_name * "\0" * join(kw_keys, "\u0001")
+    cached = get(KW_CACHE, key, nothing)
+    if cached === nothing
+        if !isdefined(Main, Symbol(func_name))
+            error("Function $func_name not found")
+        end
+        func = getfield(Main, Symbol(func_name))
+
+        # Convert keys to Symbols (precomputed once per key set)
+        names = Tuple(Symbol.(kw_keys))
+        cached = (func, names)
+        KW_CACHE[key] = cached
     end
-    func = getfield(Main, Symbol(func_name))
-    
-    # Construct NamedTuple for kwargs
-    # 1. Convert keys to Symbols
-    syms = Tuple(Symbol.(kw_keys))
-    # 2. Convert values to Tuple
+    func, names = cached
+
+    # Per call, only build the values NamedTuple
     vals = Tuple(kw_vals)
-    # 3. Create NamedTuple
-    kw_nt = NamedTuple{syms}(vals)
-    
+    nt = NamedTuple{names}(vals)
+
     # Call
-    return func(args...; kw_nt...)
+    return func(args...; nt...)
 end
 
 end # module

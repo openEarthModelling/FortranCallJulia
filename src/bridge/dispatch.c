@@ -240,36 +240,43 @@ void* fj_get_function_pointer(const char* func_name, const char* ret_type, const
 
 // --- Keyword Argument Calls ---
 
-jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs, 
+// OPT-6: Vector{Any}/Vector{String} array types are immortal type-cache
+// objects; build them once (lazily, on the first kwargs call) instead of on
+// every call. Single-thread contract: only the init thread touches these.
+static jl_value_t* kwarg_any_array_type = NULL;
+static jl_value_t* kwarg_str_array_type = NULL;
+
+jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
                            const char** kw_keys, void** kw_vals, int32_t nkw) {
     if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
-    
+
+    if (!kwarg_any_array_type) kwarg_any_array_type = jl_apply_array_type((jl_value_t*)jl_any_type, 1);
+    if (!kwarg_str_array_type) kwarg_str_array_type = jl_apply_array_type((jl_value_t*)jl_string_type, 1);
+
     jl_array_t *jl_args = NULL;
     jl_array_t *jl_keys = NULL;
     jl_array_t *jl_vals = NULL;
     jl_value_t *v_func_name = NULL;
-    
+
     JL_GC_PUSH4(&jl_args, &jl_keys, &jl_vals, &v_func_name);
-    
+
     // 1. Prepare Arguments Array (Vector{Any})
-    jl_value_t *arg_array_type = jl_apply_array_type((jl_value_t*)jl_any_type, 1);
-    jl_args = jl_alloc_array_1d(arg_array_type, nargs);
+    jl_args = jl_alloc_array_1d(kwarg_any_array_type, nargs);
     
     for (int i = 0; i < nargs; i++) {
         jl_array_ptr_set(jl_args, i, (jl_value_t*)args[i]);
     }
     
     // 2. Prepare Keys Array (Vector{String})
-    jl_value_t *str_array_type = jl_apply_array_type((jl_value_t*)jl_string_type, 1);
-    jl_keys = jl_alloc_array_1d(str_array_type, nkw);
+    jl_keys = jl_alloc_array_1d(kwarg_str_array_type, nkw);
     
     for (int i = 0; i < nkw; i++) {
         jl_array_ptr_set(jl_keys, i, jl_cstr_to_string(kw_keys[i]));
     }
     
     // 3. Prepare Values Array (Vector{Any})
-    jl_vals = jl_alloc_array_1d(arg_array_type, nkw);
+    jl_vals = jl_alloc_array_1d(kwarg_any_array_type, nkw);
     
     for (int i = 0; i < nkw; i++) {
         jl_array_ptr_set(jl_vals, i, (jl_value_t*)kw_vals[i]);
