@@ -103,8 +103,8 @@ void* fj_resolve_function(const char* func_name);
 jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs);
 
 // Free the C-side function-name cache, releasing the GC root of each entry.
-// Not wired into fj_shutdown: call it manually before shutdown, or let the
-// cache live until process exit.
+// Wired into fj_shutdown (called first, while the runtime can still honor
+// fj_release); calling it manually remains valid at any time.
 void fj_clear_function_cache(void);
 
 // True when the handle refers to a Julia Function object (used by the SDK to

@@ -370,3 +370,12 @@ void fj_set_real3(void* arr, long long i, long long j, long long k, double v) {
     jl_array_data(a, double)[(i - 1) + (j - 1) * d1 + (k - 1) * d1 * d2] = v;
     JL_GC_POP();
 }
+
+// Invalidate the module caches. Called from fj_shutdown: the pointers are
+// only tombstoned (the objects die with the runtime at jl_atexit_hook(0));
+// see the lifecycle note in bridge_internal.h.
+void fj_accessors_clear_cache(void) {
+    arr_f64_1d = NULL;
+    arr_f64_2d = NULL;
+    arr_f64_3d = NULL;
+}

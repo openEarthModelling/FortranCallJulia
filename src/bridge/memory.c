@@ -325,3 +325,10 @@ void fj_release(void* ptr) {
     check_julia_exception();
     JL_GC_POP();
 }
+
+// Invalidate the module caches. Called from fj_shutdown: the pointer is
+// only tombstoned (the object dies with the runtime at jl_atexit_hook(0));
+// see the lifecycle note in bridge_internal.h.
+void fj_memory_clear_cache(void) {
+    fj_nothing = NULL;
+}

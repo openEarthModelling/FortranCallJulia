@@ -10,9 +10,9 @@
 // Julia-side root set (GCManager.PTR_CACHE) keeps it alive. Keys are heap
 // copies; fj_clear_function_cache() frees the keys and releases the roots.
 //
-// Lifetime: fj_shutdown() lives in core.c and does not touch this cache; it
-// is cleared manually via fj_clear_function_cache() (call before shutdown) or
-// simply lives until process exit.
+// Lifetime: fj_shutdown() clears this cache first (freeing the keys and
+// releasing the roots) before tombstoning any C statics; calling
+// fj_clear_function_cache() manually remains valid at any time.
 //
 // Threading: all bridge calls run on the init thread (check_thread enforces
 // this), so the statics below need no locking.

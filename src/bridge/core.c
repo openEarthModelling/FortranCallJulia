@@ -385,6 +385,11 @@ void fj_init(const char* image_path) {
 }
 
 void fj_shutdown() {
+    // Drop the function-name cache FIRST, while the runtime can still honor
+    // fj_release (it frees the C-side keys and releases the GC roots).
+    // Everything below only tombstones C statics.
+    fj_clear_function_cache();
+
     fj_state = FJ_SHUTDOWN;
 
     // Invalidate cached handles so post-shutdown calls hit the fj_ready guard
@@ -409,6 +414,13 @@ void fj_shutdown() {
     FuncNdims = NULL;
     FuncSize = NULL;
     FuncMakeUnitRange = NULL;
+
+    // P2-era module caches: same tombstoning as the core caches above.
+    fj_callbacks_clear_cache();
+    fj_extract_clear_cache();
+    fj_arrays_clear_cache();
+    fj_accessors_clear_cache();
+    fj_memory_clear_cache();
 
     // Drop the C-side root-set bookkeeping (Main.FJ_ROOTS dies with the runtime)
     fj_roots_teardown();

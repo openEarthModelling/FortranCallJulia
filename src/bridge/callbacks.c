@@ -85,3 +85,11 @@ void* fj_create_callback(void* fnptr, void* ctx) {
     JL_GC_POP();
     return handle;
 }
+
+// Invalidate the module caches. Called from fj_shutdown: the pointers are
+// only tombstoned (the objects die with the runtime at jl_atexit_hook(0));
+// see the lifecycle note in bridge_internal.h.
+void fj_callbacks_clear_cache(void) {
+    FuncCreateCallback = NULL;
+    FuncBindCallback = NULL;
+}

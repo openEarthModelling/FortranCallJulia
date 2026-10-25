@@ -157,3 +157,13 @@ void* fj_copy_array_3d(void* data, long dim1, long dim2, long dim3) {
     JL_GC_POP();
     return (void*)arr;
 }
+
+// Invalidate the module caches. Called from fj_shutdown: the pointers are
+// only tombstoned (the objects die with the runtime at jl_atexit_hook(0));
+// see the lifecycle note in bridge_internal.h.
+void fj_arrays_clear_cache(void) {
+    arr_f64_1d = NULL;
+    arr_f64_2d = NULL;
+    arr_f64_3d = NULL;
+    tuple_func = NULL;
+}

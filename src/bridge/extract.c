@@ -182,3 +182,12 @@ void* fj_get_property(void* handle, const char* name) {
     JL_GC_POP();
     return out;
 }
+
+// Invalidate the module caches. Called from fj_shutdown: the pointers are
+// only tombstoned (the objects die with the runtime at jl_atexit_hook(0));
+// see the lifecycle note in bridge_internal.h.
+void fj_extract_clear_cache(void) {
+    complex_f64_type = NULL;
+    FuncGetProperty = NULL;
+    FuncGetElement = NULL;
+}
