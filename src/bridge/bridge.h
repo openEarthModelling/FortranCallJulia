@@ -29,6 +29,23 @@ jl_value_t* fj_eval_string(const char* cmd);
 // Call a Julia function with N arguments
 jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs);
 
+// --- Function Handle API (cached name -> function resolution) ---
+
+// Resolve a function by name using the internal function-name cache.
+// Returns an opaque handle, or NULL (with the last error set) on failure.
+// The handle stays valid only while the cache holds it (the cache entry is
+// its GC root), i.e. until fj_clear_function_cache() is called.
+void* fj_resolve_function(const char* func_name);
+
+// Call a function handle obtained from fj_resolve_function.
+// Handles nargs == 0 with a possibly NULL args pointer.
+jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs);
+
+// Free the C-side function-name cache, releasing the GC root of each entry.
+// Not wired into fj_shutdown: call it manually before shutdown, or let the
+// cache live until process exit.
+void fj_clear_function_cache(void);
+
 // Call with Keyword Arguments
 jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs, 
                            const char** kw_keys, void** kw_vals, int32_t nkw);

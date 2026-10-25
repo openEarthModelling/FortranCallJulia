@@ -1,12 +1,101 @@
 #include <stdio.h>
 #include "bridge_internal.h"
 
+// --- Function Name Cache (OPT-2) ---
+// Caches func_name -> jl_function_t* so repeated calls skip jl_get_function
+// and, for dotted names, the per-call jl_eval_string parse+eval.
+//
+// GC safety: a C static is NOT a GC root, so every cached function is routed
+// through fj_retain() before it becomes reachable from the table below; the
+// Julia-side root set (GCManager.PTR_CACHE) keeps it alive. Keys are heap
+// copies; fj_clear_function_cache() frees the keys and releases the roots.
+//
+// Lifetime: fj_shutdown() lives in core.c and does not touch this cache; it
+// is cleared manually via fj_clear_function_cache() (call before shutdown) or
+// simply lives until process exit.
+//
+// Threading: all bridge calls run on the init thread (check_thread enforces
+// this), so the statics below need no locking.
+#define FJ_FUNC_CACHE_CAP 256
+
+typedef struct {
+    char*          name;   // NULL => empty slot
+    jl_function_t* func;
+} fj_func_cache_slot_t;
+
+static fj_func_cache_slot_t fj_func_cache[FJ_FUNC_CACHE_CAP];
+
+static unsigned fj_func_cache_hash(const char* s) {
+    unsigned h = 2166136261u; // FNV-1a
+    while (*s) {
+        h ^= (unsigned char)*s++;
+        h *= 16777619u;
+    }
+    return h;
+}
+
+static jl_function_t* fj_func_cache_find(const char* name) {
+    unsigned idx = fj_func_cache_hash(name) % FJ_FUNC_CACHE_CAP;
+    for (int i = 0; i < FJ_FUNC_CACHE_CAP; i++) {
+        fj_func_cache_slot_t *slot = &fj_func_cache[(idx + i) % FJ_FUNC_CACHE_CAP];
+        if (slot->name == NULL) return NULL; // empty slot: name not cached
+        if (strcmp(slot->name, name) == 0) return slot->func;
+    }
+    return NULL; // table full, no match
+}
+
+// Insert name->func. Roots func via fj_retain before storing. Ordering is:
+// probe for a slot, copy the key, then retain -- so every failure path leaves
+// nothing behind and the pointer is rooted the moment the table can reach it.
+// Returns 1 on success; 0 if the table is full (eviction-free: the name just
+// stays uncached), the key copy cannot be allocated, or fj_retain fails
+// (error set by it) -- then the caller must treat func as unrooted, exactly
+// as before the cache existed.
+static int fj_func_cache_insert(const char* name, jl_function_t* func) {
+    unsigned idx = fj_func_cache_hash(name) % FJ_FUNC_CACHE_CAP;
+    fj_func_cache_slot_t *slot = NULL;
+    for (int i = 0; i < FJ_FUNC_CACHE_CAP; i++) {
+        fj_func_cache_slot_t *s = &fj_func_cache[(idx + i) % FJ_FUNC_CACHE_CAP];
+        if (s->name == NULL) { slot = s; break; }
+        if (strcmp(s->name, name) == 0) return 1; // already cached
+    }
+    if (!slot) return 0;
+    slot->name = (char*)malloc(strlen(name) + 1);
+    if (!slot->name) return 0;
+    strcpy(slot->name, name);
+    void* rooted = fj_retain((jl_value_t*)func);
+    if (!rooted) {
+        free(slot->name);
+        slot->name = NULL;
+        return 0;
+    }
+    slot->func = (jl_function_t*)rooted;
+    return 1;
+}
+
+void fj_clear_function_cache(void) {
+    for (int i = 0; i < FJ_FUNC_CACHE_CAP; i++) {
+        if (fj_func_cache[i].name != NULL) {
+            free(fj_func_cache[i].name);
+            fj_func_cache[i].name = NULL;
+            if (fj_func_cache[i].func != NULL) {
+                fj_release((void*)fj_func_cache[i].func);
+                fj_func_cache[i].func = NULL;
+            }
+        }
+    }
+}
+
 // --- Internal Lookup Helper ---
 
 static jl_function_t* lookup_function(const char* func_name) {
+    // OPT-2: consult the function-name cache first.
+    jl_function_t *cached = fj_func_cache_find(func_name);
+    if (cached) return cached;
+
     jl_function_t *func = jl_get_function(jl_main_module, func_name);
     if (!func) func = jl_get_function(FortranBridgeMod, func_name);
-    
+
     // Fallback: If name contains dots, it might be a module-qualified name.
     // We use jl_eval_string to resolve it.
     if (!func && strchr(func_name, '.')) {
@@ -15,6 +104,10 @@ static jl_function_t* lookup_function(const char* func_name) {
             func = (jl_function_t*)val;
         }
     }
+
+    // Cache fill on miss: fj_func_cache_insert retains func before it becomes
+    // reachable from the static table (a C global is not a GC root).
+    if (func) fj_func_cache_insert(func_name, func);
     return func;
 }
 
@@ -88,6 +181,35 @@ jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs) {
         char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
     }
     jl_value_t* ret = jl_call(func, (jl_value_t**)args, nargs);
+    if (check_julia_exception()) return NULL;
+    return ret;
+}
+
+// --- Function Handle API (OPT-2) ---
+
+void* fj_resolve_function(const char* func_name) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+    if (!check_thread()) return NULL;
+    jl_function_t *func = lookup_function(func_name);
+    if (!func) {
+        char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
+    }
+    // The returned handle is the cache's retained copy; its cache entry is
+    // the GC root keeping it alive.
+    return (void*)func;
+}
+
+jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs) {
+    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+    if (!check_thread()) return NULL;
+    if (!func_handle) { set_error("fj_call_function: NULL function handle"); return NULL; }
+    jl_function_t *func = (jl_function_t*)func_handle;
+    jl_value_t* ret;
+    if (nargs == 0) {
+        ret = jl_call0(func); // args may be NULL here
+    } else {
+        ret = jl_call(func, (jl_value_t**)args, nargs);
+    }
     if (check_julia_exception()) return NULL;
     return ret;
 }

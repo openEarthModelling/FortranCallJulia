@@ -59,6 +59,14 @@ module julia_high_level
         procedure, private :: call_method_generic_dispatch_2
         procedure, private :: call_method_generic_dispatch_3
         procedure, private :: call_method_generic_dispatch_4
+
+        ! Cached Function-Object Calls
+        generic :: call_value => call_value_0, call_value_1, call_value_2, call_value_3, call_value_4
+        procedure, private :: call_value_0
+        procedure, private :: call_value_1
+        procedure, private :: call_value_2
+        procedure, private :: call_value_3
+        procedure, private :: call_value_4
         
         ! Introspection
         procedure :: length
@@ -776,5 +784,104 @@ contains
         raw_res = fj_call_general(to_c_string(func_name), raw_args, 4_c_int32_t)
         res%ptr = fj_retain(raw_res)
     end function call_method_generic_dispatch_4
+
+    ! --- Cached Function Handles ---
+
+    function julia_function(func_name) result(v)
+        character(len=*), intent(in) :: func_name
+        type(JuliaValue) :: v
+        ! fj_resolve_function returns an owned (retained) reference; do not retain again.
+        v%ptr = fj_resolve_function(to_c_string(func_name))
+    end function julia_function
+
+    function call_value_0(self) result(res)
+        class(JuliaValue), intent(in) :: self
+        type(JuliaValue) :: res
+        type(c_ptr) :: no_args(1)
+        type(c_ptr) :: raw_res
+
+        no_args(1) = c_null_ptr
+        raw_res = fj_call_function(self%ptr, no_args, 0_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_value_0
+
+    function call_value_1(self, arg1) result(res)
+        class(JuliaValue), intent(in) :: self
+        class(*), intent(in) :: arg1
+        type(JuliaValue) :: res
+
+        type(JuliaValue) :: boxed_args(1)
+        type(c_ptr) :: raw_args(1)
+        type(c_ptr) :: raw_res
+
+        boxed_args(1) = box_argument(arg1)
+        raw_args(1) = boxed_args(1)%ptr
+
+        raw_res = fj_call_function(self%ptr, raw_args, 1_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_value_1
+
+    function call_value_2(self, arg1, arg2) result(res)
+        class(JuliaValue), intent(in) :: self
+        class(*), intent(in) :: arg1, arg2
+        type(JuliaValue) :: res
+
+        type(JuliaValue) :: boxed_args(2)
+        type(c_ptr) :: raw_args(2)
+        type(c_ptr) :: raw_res
+
+        boxed_args(1) = box_argument(arg1)
+        boxed_args(2) = box_argument(arg2)
+
+        raw_args(1) = boxed_args(1)%ptr
+        raw_args(2) = boxed_args(2)%ptr
+
+        raw_res = fj_call_function(self%ptr, raw_args, 2_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_value_2
+
+    function call_value_3(self, arg1, arg2, arg3) result(res)
+        class(JuliaValue), intent(in) :: self
+        class(*), intent(in) :: arg1, arg2, arg3
+        type(JuliaValue) :: res
+
+        type(JuliaValue) :: boxed_args(3)
+        type(c_ptr) :: raw_args(3)
+        type(c_ptr) :: raw_res
+
+        boxed_args(1) = box_argument(arg1)
+        boxed_args(2) = box_argument(arg2)
+        boxed_args(3) = box_argument(arg3)
+
+        raw_args(1) = boxed_args(1)%ptr
+        raw_args(2) = boxed_args(2)%ptr
+        raw_args(3) = boxed_args(3)%ptr
+
+        raw_res = fj_call_function(self%ptr, raw_args, 3_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_value_3
+
+    function call_value_4(self, arg1, arg2, arg3, arg4) result(res)
+        class(JuliaValue), intent(in) :: self
+        class(*), intent(in) :: arg1, arg2, arg3, arg4
+        type(JuliaValue) :: res
+
+        type(JuliaValue) :: boxed_args(4)
+        type(c_ptr) :: raw_args(4)
+        type(c_ptr) :: raw_res
+
+        boxed_args(1) = box_argument(arg1)
+        boxed_args(2) = box_argument(arg2)
+        boxed_args(3) = box_argument(arg3)
+        boxed_args(4) = box_argument(arg4)
+
+        raw_args(1) = boxed_args(1)%ptr
+        raw_args(2) = boxed_args(2)%ptr
+        raw_args(3) = boxed_args(3)%ptr
+        raw_args(4) = boxed_args(4)%ptr
+
+        raw_res = fj_call_function(self%ptr, raw_args, 4_c_int32_t)
+        res%ptr = fj_retain(raw_res)
+    end function call_value_4
 
 end module julia_high_level

@@ -70,6 +70,21 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call_kwargs
 
+        ! --- Cached Function Handles ---
+        function fj_resolve_function(name) bind(c, name="fj_resolve_function") result(res)
+            import :: c_char, c_ptr
+            character(kind=c_char), dimension(*), intent(in) :: name
+            type(c_ptr) :: res
+        end function fj_resolve_function
+
+        function fj_call_function(func, args, nargs) bind(c, name="fj_call_function") result(res)
+            import :: c_ptr, c_int32_t
+            type(c_ptr), value :: func
+            type(c_ptr), dimension(*), intent(in) :: args
+            integer(kind=c_int32_t), value :: nargs
+            type(c_ptr) :: res
+        end function fj_call_function
+
         function fj_eval_string(cmd) bind(c, name="fj_eval_string") result(res)
             import :: c_char, c_ptr
             character(kind=c_char), dimension(*), intent(in) :: cmd
