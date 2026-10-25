@@ -927,6 +927,21 @@ end subroutine copy_jv
         v%ptr = fj_resolve_function(to_c_string(func_name))
     end function julia_function
 
+    ! --- SciML Callbacks (Wave B) ---
+
+    function julia_callback(fnptr, ctx) result(v)
+        type(c_funptr), intent(in) :: fnptr
+        type(c_ptr), intent(in) :: ctx
+        type(JuliaValue) :: v
+        ! fj_create_callback returns an owned (retained) reference
+        ! routed through fj_retain (C-side root set); do not retain
+        ! again, same pattern as julia_function. The C side also binds
+        ! the callable to Main.FJ_CALLBACK for eval-ed solver code.
+        ! c_funptr and c_ptr share the same representation, so the
+        ! transfer adapts c_funloc(fn) to the C void* parameter.
+        v%ptr = fj_create_callback(transfer(fnptr, c_null_ptr), ctx)
+    end function julia_callback
+
     function call_value_0(self) result(res)
         class(JuliaValue), intent(in) :: self
         type(JuliaValue) :: res

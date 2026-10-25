@@ -174,3 +174,11 @@ if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
 else()
     message(STATUS "MPI Not Found: Skipping ex_hpc_mpi_bootstrap")
 endif()
+
+# ==============================================================================
+# 6. SciML-Style Integration (Wave B)
+# ==============================================================================
+
+# Fortran bind(c) RHS wrapped into a Julia-side callable f(du,u,p,t)
+add_fj_example(ex_sciml_callback        05_sciml/1_callback.f90)
+

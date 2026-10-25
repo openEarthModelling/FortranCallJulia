@@ -60,6 +60,7 @@ add_library(fj_middleware STATIC
     src/bridge/accessors.c
     src/bridge/types.c
     src/bridge/arrays.c
+    src/bridge/callbacks.c
     src/julia_binding.f90
     src/julia_sdk.f90
 )

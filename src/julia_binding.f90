@@ -386,6 +386,21 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_make_unitrange
 
+        ! --- SciML Callbacks (Wave B) ---
+        ! Wraps a Fortran bind(c) RHS into a Julia callable
+        ! f(du, u, p, t) that ignores p and invokes the Fortran RHS
+        ! through ccall (zero-copy raw element pointers; err /= 0
+        ! throws on the Julia side). The result is routed through
+        ! fj_retain (C-side root set) and also bound to global
+        ! Main.FJ_CALLBACK (latest created wins). NULL + last_error on
+        ! failure.
+        function fj_create_callback(fnptr, ctx) bind(c, name="fj_create_callback") result(res)
+            import :: c_ptr
+            type(c_ptr), value :: fnptr
+            type(c_ptr), value :: ctx
+            type(c_ptr) :: res
+        end function fj_create_callback
+
     end interface
 
     contains

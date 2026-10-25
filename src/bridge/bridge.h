@@ -107,6 +107,27 @@ jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
 // --- Fast Path (Low-Level API) ---
 void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types);
 
+// --- Callback Bridge (Fortran RHS -> Julia callable) ---
+
+// Wrap a Fortran bind(c) RHS subroutine pointer into a Julia callable
+// f(du, u, p, t):
+//   fnptr : pointer to the Fortran RHS
+//             subroutine rhs(ctx, n, u, du, t, err) bind(c)
+//           with ctx = type(c_ptr), value; n = integer(kind=c_int64_t),
+//           value; u and du = type(c_ptr), value (raw Float64 element
+//           pointers into Julia heap memory, zero-copy, n elements each);
+//           t = real(kind=c_double), value; err = integer(kind=c_int),
+//           intent(out). err /= 0 makes the Julia side throw.
+//   ctx   : opaque user context passed through to every RHS invocation
+//           (may be NULL).
+// The callable ignores p. As a side effect the SAME closure object that the
+// returned handle points at is bound to Main.FJ_CALLBACK (latest created
+// wins), so eval-ed solver code can reach it by name.
+// Returns an opaque handle -- already routed through the fj_retain root
+// set, release with fj_release -- or NULL with fj_get_last_error() set on
+// failure.
+void* fj_create_callback(void* fnptr, void* ctx);
+
 // --- Error Handling ---
 const char* fj_get_last_error();
 

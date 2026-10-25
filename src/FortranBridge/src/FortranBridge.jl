@@ -7,6 +7,7 @@ include("GCManager.jl")
 include("FunctionRegistry.jl")
 include("Accessors.jl")
 include("Utilities.jl")
+include("Callbacks.jl")
 
 # Re-export symbols so the interface remains unchanged for the Fortran side and C bridge
 
@@ -27,5 +28,9 @@ export helper_getindex_string, helper_setindex_string
 # Utilities
 using .Utilities
 export print_array_info, print_matrix_info, helper_length, helper_ndims, helper_size, helper_make_unitrange
+
+# Callbacks
+using .Callbacks
+export create_callback, bind_callback
 
 end # module
