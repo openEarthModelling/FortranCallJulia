@@ -6,8 +6,8 @@ project(FortranCallJuliaExamples LANGUAGES Fortran C)
 # ==============================================================================
 
 if(TARGET fj_middleware)
-    # Built as part of main project
-    set(MW_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../src/middleware.jl")
+    # Built as part of main project: the Julia runtime is the in-repo package
+    set(FJ_RUNTIME_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../src/FortranBridge")
 else()
     # Standalone build (User installed SDK)
     find_library(FJ_LIB NAMES fj_middleware REQUIRED)
@@ -27,24 +27,33 @@ else()
         INTERFACE_INCLUDE_DIRECTORIES "${FJ_INCLUDE_DIR};${FJ_MOD_DIR}"
         INTERFACE_LINK_LIBRARIES "${JULIA_LDLIBS} ${JULIA_LDFLAGS}"
     )
-    
-    find_file(MW_SOURCE middleware.jl PATHS ${FJ_INCLUDE_DIR}/../share/FortranCallJulia REQUIRED)
+
+    # Installed SDK: the FortranBridge package directory (contains Project.toml)
+    find_path(FJ_RUNTIME_SOURCE
+        NAMES Project.toml
+        PATHS "${FJ_INCLUDE_DIR}/../share/FortranCallJulia/FortranBridge"
+              "${FJ_INCLUDE_DIR}/../share/FortranBridge"
+        NO_DEFAULT_PATH
+    )
+    if(NOT FJ_RUNTIME_SOURCE)
+        message(FATAL_ERROR "FortranBridge Julia package (Project.toml) not found in the installed SDK")
+    endif()
 endif()
 
 # ==============================================================================
 # Helper Macro
 # ==============================================================================
 
-# Serialized copy of shared Julia runtime sources: per-example POST_BUILD
-# copies of the same paths raced under -jN ("Error copying directory").
-if(NOT TARGET fj_copy_middleware)
-add_custom_target(fj_copy_middleware
-COMMAND ${CMAKE_COMMAND} -E copy_if_different
-${MW_SOURCE}
-${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
+# Serialized copy of the shared Julia runtime (the FortranBridge package) plus
+# examples_lib.jl: one custom target performs all copies; fj_init_ex resolves
+# the package via the exe-adjacent probe (FortranBridge/Project.toml next to
+# the executable). Per-example POST_BUILD copies of the same paths raced
+# under -jN ("Error copying directory").
+if(NOT TARGET fj_copy_runtime)
+add_custom_target(fj_copy_runtime
 COMMAND ${CMAKE_COMMAND} -E copy_directory
-${CMAKE_CURRENT_SOURCE_DIR}/../src/middleware
-${CMAKE_CURRENT_BINARY_DIR}/middleware
+${FJ_RUNTIME_SOURCE}
+${CMAKE_CURRENT_BINARY_DIR}/FortranBridge
 COMMAND ${CMAKE_COMMAND} -E copy_if_different
 ${CMAKE_CURRENT_SOURCE_DIR}/examples_lib.jl
 ${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
@@ -63,7 +72,7 @@ macro(add_fj_example name source)
         endif()
     endif()
 
-    add_dependencies(${name} fj_copy_middleware)
+    add_dependencies(${name} fj_copy_runtime)
 endmacro()
 
 # ==============================================================================
@@ -86,6 +95,7 @@ add_fj_example(ex_inter_kwargs          02_intermediate/2_kwargs.f90)
 # ==============================================================================
 
 add_fj_example(ex_deploy_sysimage       03_deployment/1_custom_sysimage.f90)
+add_fj_example(ex_init_options          03_deployment/ex_init_options.f90)
 
 # ==============================================================================
 # 4. Performance (Optimization)
@@ -107,13 +117,8 @@ if(MYLIB_LIB)
     target_link_libraries(ex_perf_startup_aot PRIVATE ${MYLIB_LIB} fj_middleware)
     target_compile_options(ex_perf_startup_aot PRIVATE -fno-underscoring -DCOMPILED_MODE -cpp)
     # Include headers for MyLib if any (implicit in this case)
-    
-    # Standard copies
-    add_custom_command(TARGET ex_perf_startup_aot POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${MW_SOURCE}
-        ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
-    )
+
+    add_dependencies(ex_perf_startup_aot fj_copy_runtime)
 else()
     message(STATUS "MyLib not found. Skipping ex_perf_startup_aot. (Build 03_deployment/2_compiled_library first)")
 endif()
@@ -142,7 +147,7 @@ if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
     add_executable(ex_hpc_mpi_bootstrap 05_hpc_parallel/2_mpi_bootstrap.f90)
     target_link_libraries(ex_hpc_mpi_bootstrap PRIVATE fj_middleware MPI::MPI_Fortran)
     target_compile_options(ex_hpc_mpi_bootstrap PRIVATE -fno-underscoring)
-    
+
     # In-tree module support
     if(TARGET fj_middleware)
         get_target_property(MOD_DIR fj_middleware Fortran_MODULE_DIRECTORY)
@@ -151,22 +156,8 @@ if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
         endif()
     endif()
 
-    # Copy runtime files
-    add_custom_command(TARGET ex_hpc_mpi_bootstrap POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${MW_SOURCE}
-        ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
-    )
-    add_custom_command(TARGET ex_hpc_mpi_bootstrap POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/middleware
-        ${CMAKE_CURRENT_BINARY_DIR}/middleware
-    )
-    add_custom_command(TARGET ex_hpc_mpi_bootstrap POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/examples_lib.jl
-        ${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
-    )
+    # Runtime files are covered by the shared fj_copy_runtime target
+    add_dependencies(ex_hpc_mpi_bootstrap fj_copy_runtime)
 else()
     message(STATUS "MPI Not Found: Skipping ex_hpc_mpi_bootstrap")
 endif()

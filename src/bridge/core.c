@@ -223,18 +223,14 @@ int fj_init_ex(const fj_options_t* opts) {
     int is_loaded = (mod_check && jl_unbox_bool(mod_check));
 
     if (!is_loaded) {
-        /* INTERMEDIATE STATE (pre-cutover): loading still goes through the
-         * HEAD-style middleware.jl include chain. The packaging cutover
-         * (project activation via Base.set_active_project + `using
-         * FortranBridge`) replaces this block in the final core.c; the
-         * helpers above (fj_resolve_project/fj_activate_project) are
-         * unused in this state. */
-        jl_eval_string("include(\"middleware.jl\")");
-        if (check_julia_exception()) {
-             fprintf(stderr, "Error loading middleware.jl: %s\n", fj_get_last_error());
-             exit(1);
+        // Activate the project environment, then load the package.
+        const char* project_dir = fj_resolve_project(opts->project_path);
+        if (project_dir != NULL && fj_activate_project(project_dir) != 0) {
+            fprintf(stderr, "Error: Could not activate FortranBridge project (%s).\nLast Error: %s\n",
+                    project_dir, fj_get_last_error());
+            exit(1);
         }
-        jl_eval_string("using .FortranBridge");
+        jl_eval_string("using FortranBridge");
     } else {
         // Module already present (e.g. baked into a custom sysimage)
         jl_eval_string("using Main.FortranBridge");
