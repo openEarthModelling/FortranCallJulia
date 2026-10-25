@@ -1,0 +1,6 @@
+name = "FortranBridge"
+uuid = "5f7c3a1e-9b2d-4c68-8a4f-0d3e5f7a9b1c"
+version = "0.1.0"
+
+[compat]
+julia = "1.12"
