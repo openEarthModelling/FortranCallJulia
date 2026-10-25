@@ -119,9 +119,10 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
     FILES_MATCHING PATTERN "*.mod"
 )
 
-# Install Middleware Julia Script
-install(FILES src/middleware.jl DESTINATION ${CMAKE_INSTALL_DATADIR}/FortranCallJulia)
-install(DIRECTORY src/middleware DESTINATION ${CMAKE_INSTALL_DATADIR}/FortranCallJulia)
+# Install the FortranBridge Julia package (Project.toml + src/). Lands in
+# <prefix>/share/FortranCallJulia/FortranBridge, the location the standalone
+# examples build probes via find_path(Project.toml).
+install(DIRECTORY src/FortranBridge DESTINATION ${CMAKE_INSTALL_DATADIR}/FortranCallJulia)
 
 # ==============================================================================
 # AOT Sysimage (Optional)

@@ -3,7 +3,7 @@ using PackageCompiler
 
 # Define paths
 project_root = joinpath(@__DIR__, "..")
-middleware_path = joinpath(project_root, "src", "middleware.jl")
+package_path = joinpath(project_root, "src", "FortranBridge")
 precompile_path = joinpath(project_root, "scripts", "precompile.jl")
 build_dir = joinpath(project_root, "build")
 
@@ -17,16 +17,15 @@ lib_name = "libfj_sysimage.so"
 output_path = joinpath(build_dir, lib_name)
 
 println("--- Starting Sysimage Build ---")
-println("Script included: $middleware_path")
+println("Package:         $package_path")
 println("Precompile run:  $precompile_path")
 println("Output location: $output_path")
 
-# Create the sysimage
-# We don't specify 'packages' because we are not baking in a registered package,
-# but rather a local script module.
+# Create the sysimage from the FortranBridge package (src/FortranBridge).
 create_sysimage(
+    :FortranBridge,
+    project = package_path,
     sysimage_path = output_path,
-    script = middleware_path,
     precompile_execution_file = precompile_path,
     cpu_target = PackageCompiler.default_app_cpu_target() # Ensure portability if needed
 )
