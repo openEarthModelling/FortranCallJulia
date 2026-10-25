@@ -62,7 +62,11 @@ endif()
 macro(add_fj_example name source)
     add_executable(${name} ${source})
     target_link_libraries(${name} PRIVATE fj_middleware)
-    target_compile_options(${name} PRIVATE -fno-underscoring)
+    # -fno-underscoring and -cpp are GNU-only flags; non-GNU compilers need
+    # their own equivalents (e.g. -fpp instead of -cpp for Intel).
+    if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(${name} PRIVATE -fno-underscoring)
+    endif()
 
     # If built in-tree, add module dir
     if(TARGET fj_middleware)
@@ -104,7 +108,9 @@ add_fj_example(ex_init_options          03_deployment/ex_init_options.f90)
 # 4.1. Startup Comparison (JIT vs AOT)
 # Target A: Dynamic (JIT)
 add_fj_example(ex_perf_startup_jit      04_performance/1_jit_vs_aot.f90)
-target_compile_options(ex_perf_startup_jit PRIVATE -cpp)
+if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(ex_perf_startup_jit PRIVATE -cpp)
+endif()
 
 # Target B: Static (Compiled Library)
 # We only build this if the user has built the library in 03_deployment/2_compiled_library
@@ -115,7 +121,11 @@ if(MYLIB_LIB)
     message(STATUS "Found MyLib (Compiled Mode): ${MYLIB_LIB}")
     add_executable(ex_perf_startup_aot 04_performance/1_jit_vs_aot.f90)
     target_link_libraries(ex_perf_startup_aot PRIVATE ${MYLIB_LIB} fj_middleware)
-    target_compile_options(ex_perf_startup_aot PRIVATE -fno-underscoring -DCOMPILED_MODE -cpp)
+    target_compile_options(ex_perf_startup_aot PRIVATE -DCOMPILED_MODE)
+    # -fno-underscoring / -cpp are GNU-only; non-GNU compilers need their own.
+    if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(ex_perf_startup_aot PRIVATE -fno-underscoring -cpp)
+    endif()
     # Include headers for MyLib if any (implicit in this case)
 
     add_dependencies(ex_perf_startup_aot fj_copy_runtime)
@@ -146,7 +156,10 @@ if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
     message(STATUS "MPI Found: Enabling ex_hpc_mpi_bootstrap")
     add_executable(ex_hpc_mpi_bootstrap 05_hpc_parallel/2_mpi_bootstrap.f90)
     target_link_libraries(ex_hpc_mpi_bootstrap PRIVATE fj_middleware MPI::MPI_Fortran)
-    target_compile_options(ex_hpc_mpi_bootstrap PRIVATE -fno-underscoring)
+    # -fno-underscoring is GNU-only; non-GNU compilers need their own flags.
+    if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
+        target_compile_options(ex_hpc_mpi_bootstrap PRIVATE -fno-underscoring)
+    endif()
 
     # In-tree module support
     if(TARGET fj_middleware)
