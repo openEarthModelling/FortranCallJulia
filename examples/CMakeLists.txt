@@ -35,6 +35,21 @@ endif()
 # Helper Macro
 # ==============================================================================
 
+# Serialized copy of shared Julia runtime sources: per-example POST_BUILD
+# copies of the same paths raced under -jN ("Error copying directory").
+if(NOT TARGET fj_copy_middleware)
+add_custom_target(fj_copy_middleware
+COMMAND ${CMAKE_COMMAND} -E copy_if_different
+${MW_SOURCE}
+${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
+COMMAND ${CMAKE_COMMAND} -E copy_directory
+${CMAKE_CURRENT_SOURCE_DIR}/../src/middleware
+${CMAKE_CURRENT_BINARY_DIR}/middleware
+COMMAND ${CMAKE_COMMAND} -E copy_if_different
+${CMAKE_CURRENT_SOURCE_DIR}/examples_lib.jl
+${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
+)
+endif()
 macro(add_fj_example name source)
     add_executable(${name} ${source})
     target_link_libraries(${name} PRIVATE fj_middleware)
@@ -48,26 +63,7 @@ macro(add_fj_example name source)
         endif()
     endif()
 
-    # Copy middleware.jl (runtime requirement)
-    add_custom_command(TARGET ${name} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${MW_SOURCE}
-        ${CMAKE_CURRENT_BINARY_DIR}/middleware.jl
-    )
-
-    # Copy middleware/ directory (runtime requirement for submodules)
-    add_custom_command(TARGET ${name} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_CURRENT_SOURCE_DIR}/../src/middleware
-        ${CMAKE_CURRENT_BINARY_DIR}/middleware
-    )
-
-    # Copy examples_lib.jl (runtime requirement for examples)
-    add_custom_command(TARGET ${name} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${CMAKE_CURRENT_SOURCE_DIR}/examples_lib.jl
-        ${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
-    )
+    add_dependencies(${name} fj_copy_middleware)
 endmacro()
 
 # ==============================================================================
