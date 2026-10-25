@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-# 设置路径
+# 设置路径（脚本假定从仓库根目录运行）
 ROOT_DIR=$(pwd)
-EXAMPLE_DIR="examples/10_compiled_library"
+EXAMPLE_DIR="examples/03_deployment/2_compiled_library"
 DIST_DIR="$EXAMPLE_DIR/dist"
 LIB_DIR="$DIST_DIR/lib"
 INCLUDE_DIR="$DIST_DIR/include"
@@ -16,12 +16,15 @@ mkdir -p "$BUILD_DIR"
 echo "=== FortranCallJulia: Compiled Library Demo (Refactored) ==="
 
 # 1. 检查并编译 Julia 库
+# JULIA_BIN 默认钉死自含 1.12.7：juliaup 的 julia shim 是 1.13，建出的库
+# 与本仓库嵌入的 1.12.7 运行时不适配（见 CLAUDE 教训：sysimage 必须同版本）。
+JULIA_BIN="${JULIA_BIN:-$HOME/julia-1.12.7/bin/julia}"
 if [ -f "$LIB_DIR/libmylib.so" ]; then
     echo "[Info] Library found at $LIB_DIR/libmylib.so."
     echo "[Info] Skipping Julia compilation."
 else
-    echo "[Build] Compiling Julia library (this may take 3-5 minutes)..."
-    julia --project=. "$EXAMPLE_DIR/build_lib.jl"
+    echo "[Build] Compiling Julia library with $JULIA_BIN (this may take 3-5 minutes)..."
+    "$JULIA_BIN" --project="$EXAMPLE_DIR/MyLib" "$EXAMPLE_DIR/build_lib.jl"
 fi
 
 # 2. 编译公共支持模块 (src/lib_support)
@@ -53,7 +56,7 @@ gfortran -o "$EXAMPLE_DIR/demo_app" \
     -I "$INCLUDE_DIR" \
     -L "$LIB_DIR" \
     -lmylib \
-    -Wl,-rpath,"$ORIGIN/dist/lib" 
+    -Wl,-rpath,'$ORIGIN/dist/lib' 
 
 echo "[Build] Fortran compilation successful."
 

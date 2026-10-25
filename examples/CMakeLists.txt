@@ -115,7 +115,7 @@ endif()
 # Target B: Static (Compiled Library)
 # We only build this if the user has built the library in 03_deployment/2_compiled_library
 set(MYLIB_DIR "${CMAKE_CURRENT_SOURCE_DIR}/03_deployment/2_compiled_library/dist/lib")
-find_library(MYLIB_LIB NAMES MyLib PATHS ${MYLIB_DIR} NO_DEFAULT_PATH)
+find_library(MYLIB_LIB NAMES mylib MyLib PATHS ${MYLIB_DIR} NO_DEFAULT_PATH)
 
 if(MYLIB_LIB)
     message(STATUS "Found MyLib (Compiled Mode): ${MYLIB_LIB}")
@@ -127,6 +127,16 @@ if(MYLIB_LIB)
         target_compile_options(ex_perf_startup_aot PRIVATE -fno-underscoring -cpp)
     endif()
     # Include headers for MyLib if any (implicit in this case)
+
+    # Same in-tree module-dir wiring the add_fj_example macro applies;
+    # this target was never compiled before (MyLib was not found), so it
+    # silently lacked it.
+    if(TARGET fj_middleware)
+        get_target_property(MOD_DIR fj_middleware Fortran_MODULE_DIRECTORY)
+        if(MOD_DIR)
+            target_include_directories(ex_perf_startup_aot PRIVATE ${MOD_DIR})
+        endif()
+    endif()
 
     add_dependencies(ex_perf_startup_aot fj_copy_runtime)
 else()

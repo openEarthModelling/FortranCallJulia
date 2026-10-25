@@ -25,6 +25,24 @@ program jit_vs_aot
             real(c_double), value :: x, y
             real(c_double) :: my_add_float
         end function
+
+        ! Lifecycle of the runtime embedded in libmylib.so. The SDK's
+        ! julia_init() must NOT be used in this mode: linking libmylib.so
+        ! makes its bundled libjulia satisfy libjulia.so.1 for the whole
+        ! process, and a bare jl_init() would then look for a default
+        ! sys.so that the bundled layout does not ship (the sysimage is
+        ! compiled INTO libmylib.so and only init_julia() knows how to
+        ! load it, with an explicit bindir).
+        subroutine init_julia(argc, argv) bind(c, name="init_julia")
+            use iso_c_binding
+            integer(c_int), value :: argc
+            type(c_ptr), value :: argv
+        end subroutine
+
+        subroutine shutdown_julia(retcode) bind(c, name="shutdown_julia")
+            use iso_c_binding
+            integer(c_int), value :: retcode
+        end subroutine
     end interface
     print *, "--- Performance: Startup & Latency (Compiled Library) ---"
 #else
@@ -36,11 +54,9 @@ program jit_vs_aot
     call cpu_time(t1)
     
 #ifdef COMPILED_MODE
-    ! In compiled mode, the library is statically linked. 
-    ! We typically still need to initialize the runtime embedded in the library.
-    ! For this demo, we use the standard SDK's julia_init which works 
-    ! if we are just calling functions from a shared lib that is loaded.
-    call julia_init() 
+    ! Initialize the runtime embedded in libmylib.so (NOT the SDK runtime;
+    ! see the interface note above).
+    call init_julia(0_c_int, c_null_ptr)
 #else
     if (command_argument_count() > 0) then
         call get_command_argument(1, sysimage_path, arg_len)
@@ -124,5 +140,9 @@ program jit_vs_aot
 #endif
     print *, "================================================="
 
+#ifdef COMPILED_MODE
+    call shutdown_julia(0_c_int)
+#else
     call julia_shutdown()
+#endif
 end program
