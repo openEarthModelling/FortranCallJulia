@@ -421,6 +421,13 @@ end subroutine copy_jv
     ! never touched). The legacy julia_init / julia_init_with_image wrappers
     ! go through C fj_init, which pins handle_signals = 1, so their
     ! historical behavior is unchanged.
+    !
+    ! Paths are copied into fixed character(len=4096) buffers handed to the
+    ! C side as raw pointers. A provided path that does not fit (together
+    ! with its trailing c_null_char, i.e. len_trim >= 4096) would be
+    ! silently truncated by the assignment; it is rejected instead: a
+    ! diagnostic goes to error_unit and the routine returns WITHOUT
+    ! initializing the runtime (fj_init_ex is never called).
     subroutine julia_init_ex(image_path, project_path, nthreads, handle_signals)
         character(len=*), intent(in), optional :: image_path
         character(len=*), intent(in), optional :: project_path
@@ -428,8 +435,9 @@ end subroutine copy_jv
         integer, intent(in), optional :: handle_signals
 
         type(FjOptions), target :: opts
-        character(kind=c_char, len=1024), target :: c_image_path
-        character(kind=c_char, len=1024), target :: c_project_path
+        character(kind=c_char, len=4096), target :: c_image_path
+        character(kind=c_char, len=4096), target :: c_project_path
+        integer :: path_len
 
         opts%sysimage_path = c_null_ptr
         opts%project_path = c_null_ptr
@@ -437,10 +445,26 @@ end subroutine copy_jv
         opts%handle_signals = 0_c_int
 
         if (present(image_path)) then
+            path_len = len_trim(image_path)
+            if (path_len >= len(c_image_path)) then
+                ! Does not fit (path + c_null_char): reject, do not truncate.
+                write(error_unit, '(a,i0,a)') &
+                    'julia_init_ex: image_path too long (max ', &
+                    len(c_image_path) - 1, ' chars), not initializing: ' // trim(image_path)
+                return
+            end if
             c_image_path = to_c_string(image_path)
             opts%sysimage_path = c_loc(c_image_path)
         end if
         if (present(project_path)) then
+            path_len = len_trim(project_path)
+            if (path_len >= len(c_project_path)) then
+                ! Does not fit (path + c_null_char): reject, do not truncate.
+                write(error_unit, '(a,i0,a)') &
+                    'julia_init_ex: project_path too long (max ', &
+                    len(c_project_path) - 1, ' chars), not initializing: ' // trim(project_path)
+                return
+            end if
             c_project_path = to_c_string(project_path)
             opts%project_path = c_loc(c_project_path)
         end if
