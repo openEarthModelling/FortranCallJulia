@@ -115,6 +115,28 @@ static int fj_is_project_dir(const char* dir) {
     return stat(buf, &st) == 0 && S_ISREG(st.st_mode);
 }
 
+// Resolve the directory of the running executable via /proc/self/exe.
+// Writes the absolute directory path (no trailing slash, NUL-terminated)
+// into buf (bufsize bytes including the terminator). Returns buf on
+// success, NULL if the platform cannot resolve it or buf is too small.
+// This is the anchor of every exe-adjacent lookup: fj_init_ex probes
+// FortranBridge/ next to it, and the Fortran SDK's
+// julia_include_exe_relative resolves data files against it, so shipped
+// files keep working from any working directory.
+char* fj_get_executable_dir(char* buf, size_t bufsize) {
+    char exe_path[4096];
+    char* slash;
+    ssize_t n = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    if (n <= 0) return NULL;
+    exe_path[n] = '\0';
+    slash = strrchr(exe_path, '/');
+    if (slash == NULL) return NULL;
+    slash[0] = '\0'; /* truncate to directory */
+    if ((size_t)(slash - exe_path) + 1 > bufsize) return NULL;
+    memcpy(buf, exe_path, (size_t)(slash - exe_path) + 1);
+    return buf;
+}
+
 // Resolve the FortranBridge project directory (must contain Project.toml).
 // Probe order when no explicit path is given:
 //   1. $JULIA_FJ_PROJECT
@@ -135,16 +157,9 @@ static const char* fj_resolve_project(const char* explicit_path) {
     env = getenv("JULIA_FJ_PROJECT");
     if (fj_is_project_dir(env)) return env;
 
-    ssize_t n = readlink("/proc/self/exe", exe_dir_buf, sizeof(exe_dir_buf) - 1);
-    if (n > 0) {
-        char* slash;
-        exe_dir_buf[n] = '\0';
-        slash = strrchr(exe_dir_buf, '/');
-        if (slash != NULL) {
-            slash[1] = '\0'; /* truncate to directory, keep trailing '/' */
-            snprintf(candidate, sizeof(candidate), "%sFortranBridge", exe_dir_buf);
-            if (fj_is_project_dir(candidate)) return candidate;
-        }
+    if (fj_get_executable_dir(exe_dir_buf, sizeof(exe_dir_buf)) != NULL) {
+        snprintf(candidate, sizeof(candidate), "%s/FortranBridge", exe_dir_buf);
+        if (fj_is_project_dir(candidate)) return candidate;
     }
 
     env = getenv("JULIA_PROJECT");

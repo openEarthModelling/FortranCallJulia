@@ -62,6 +62,14 @@ int fj_init_ex(const fj_options_t* opts);
 // Shutdown Julia Runtime
 void fj_shutdown();
 
+// --- Environment ---
+// Absolute directory of the running executable (no trailing slash),
+// resolved via /proc/self/exe. Written into buf (bufsize bytes including
+// the terminator); returns buf, or NULL if the platform cannot resolve it
+// or buf is too small. Use it to locate data files shipped next to the
+// binary -- the Fortran SDK's julia_include_exe_relative is built on it.
+char* fj_get_executable_dir(char* buf, size_t bufsize);
+
 // --- Object Management (High-Level API) ---
 
 // Retain a Julia object (prevent GC). Returns a raw pointer that can be stored in Fortran.

@@ -496,6 +496,57 @@ end subroutine copy_jv
         raw_res = fj_eval_string(to_c_string(cmd))
     end subroutine julia_eval_string
 
+    ! Absolute directory of the running executable (no trailing slash), or
+    ! an empty string if it cannot be resolved (see fj_get_last_error).
+    function julia_executable_dir() result(dir)
+        character(len=:), allocatable :: dir
+        character(kind=c_char), dimension(4096) :: buf
+        type(c_ptr) :: ok
+        integer :: i, nul
+        ok = fj_get_executable_dir(buf, int(size(buf), kind=c_size_t))
+        if (.not. c_associated(ok)) then
+            dir = ''
+            return
+        end if
+        nul = 0
+        do i = 1, size(buf)
+            if (buf(i) == c_null_char) then
+                nul = i - 1
+                exit
+            end if
+        end do
+        allocate(character(len=max(nul, 0)) :: dir)
+        do i = 1, nul
+            dir(i:i) = buf(i)
+        end do
+    end function julia_executable_dir
+
+    ! Include a Julia source file located next to the running executable --
+    ! the same anchor fj_init_ex uses to probe for the FortranBridge
+    ! package. Examples load examples_lib.jl through this so they behave
+    ! identically from any working directory. A leading '/' in relname is
+    ! treated as an absolute path and passed through unchanged.
+    subroutine julia_include_exe_relative(relname)
+        character(len=*), intent(in) :: relname
+        character(len=:), allocatable :: dir, path
+        if (len_trim(relname) == 0) then
+            write(error_unit, '(a)') 'julia_include_exe_relative: empty file name'
+            return
+        end if
+        if (relname(1:1) == '/') then
+            path = trim(relname)
+        else
+            dir = julia_executable_dir()
+            if (len(dir) == 0) then
+                write(error_unit, '(a)') 'julia_include_exe_relative: cannot resolve executable directory: ' // &
+                    trim(get_last_error_message())
+                return
+            end if
+            path = dir // '/' // trim(relname)
+        end if
+        call julia_eval_string('include("' // path // '")')
+    end subroutine julia_include_exe_relative
+
     function julia_eval(cmd) result(res)
         character(len=*), intent(in) :: cmd
         type(JuliaValue) :: res

@@ -126,6 +126,13 @@ module julia_low_level
             import :: c_ptr
             type(c_ptr) :: c_str
         end function fj_get_last_error
+
+        function fj_get_executable_dir(buf, bufsize) bind(c, name="fj_get_executable_dir") result(res)
+            import :: c_char, c_size_t, c_ptr
+            character(kind=c_char), dimension(*), intent(out) :: buf
+            integer(kind=c_size_t), value :: bufsize
+            type(c_ptr) :: res
+        end function fj_get_executable_dir
         
         ! --- Array Wrappers ---
         function fj_wrap_array_1d(data, length) bind(c, name="fj_wrap_array_1d") result(res)
