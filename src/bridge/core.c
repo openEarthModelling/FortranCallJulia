@@ -5,6 +5,10 @@
 #include <pthread.h>
 #include "bridge_internal.h"
 
+// C-side GC root set for fj_retain/fj_release (implemented in memory.c)
+extern int fj_roots_init(void);
+extern void fj_roots_teardown(void);
+
 // Define this only once in the executable/main library
 JULIA_DEFINE_FAST_TLS
 
@@ -171,6 +175,12 @@ void fj_init(const char* image_path) {
         exit(1);
     }
 
+    // C-side GC root set for fast fj_retain/fj_release (memory.c). Failure is
+    // non-fatal: those calls then use the retain_obj/release_obj fallback path.
+    if (fj_roots_init() != 0) {
+        fprintf(stderr, "Warning: C-side root set unavailable, falling back to retain_obj/release_obj: %s\n", fj_get_last_error());
+    }
+
     fj_state = FJ_READY;
 }
 
@@ -199,6 +209,9 @@ void fj_shutdown() {
     FuncNdims = NULL;
     FuncSize = NULL;
     FuncMakeUnitRange = NULL;
+
+    // Drop the C-side root-set bookkeeping (Main.FJ_ROOTS dies with the runtime)
+    fj_roots_teardown();
 
     jl_atexit_hook(0);
 }
