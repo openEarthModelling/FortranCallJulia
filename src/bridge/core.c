@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <signal.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -171,7 +172,9 @@ static int fj_activate_project(const char* project_dir) {
 }
 
 int fj_init_ex(const fj_options_t* opts) {
-    static const fj_options_t defaults = { NULL, NULL, 0, 1 };
+    // NULL-opts default: "no takeover" (handle_signals = 0). Safe only
+    // because of the post-init signal() reset below.
+    static const fj_options_t defaults = { NULL, NULL, 0, 0 };
 
     if (opts == NULL) opts = &defaults;
 
@@ -193,20 +196,14 @@ int fj_init_ex(const fj_options_t* opts) {
         // Startup control must happen before jl_init*:
         //  - threads: Julia reads JULIA_NUM_THREADS from the environment at
         //    init time (verified against the embedded 1.12.7 runtime)
-        //  - signal handling: Julia installs its handlers during init based
-        //    on jl_options.handle_signals; setting it to OFF before init
-        //    leaves signal disposition with the embedding process, which MPI
-        //    runtimes require. (There is no JULIA_HANDLE_SIGNALS env var, so
-        //    jl_options is the only reliable mechanism.)
+        //  - signal handling: jl_options.handle_signals is NEVER touched
+        //    (always left at its default ON); see the handle_signals block
+        //    below for how "no takeover" is implemented instead.
         if (opts->nthreads > 0) {
             char nthreads_buf[32];
             snprintf(nthreads_buf, sizeof(nthreads_buf), "%d", opts->nthreads);
             setenv("JULIA_NUM_THREADS", nthreads_buf, 1);
         }
-        jl_options.handle_signals = (opts->handle_signals != 0)
-                                        ? JL_OPTIONS_HANDLE_SIGNALS_ON
-                                        : JL_OPTIONS_HANDLE_SIGNALS_OFF;
-
         if (opts->sysimage_path != NULL) {
             jl_init_with_image_file(JULIA_BINDIR, opts->sysimage_path);
         } else {
@@ -217,6 +214,26 @@ int fj_init_ex(const fj_options_t* opts) {
     if (check_julia_exception()) {
         fprintf(stderr, "Error: Julia runtime initialization failed.\nLast Error: %s\n", fj_get_last_error());
         exit(1);
+    }
+
+    if (opts->handle_signals == 0) {
+        // "No takeover" (the default): jl_init above ran with
+        // jl_options.handle_signals left at its default ON, so Julia has
+        // installed its full handler set -- including the SIGSEGV handler
+        // that GC safepoint polling requires. Hand interactive termination
+        // back to the embedding process by resetting SIGINT and SIGTERM to
+        // SIG_DFL; GC-critical handlers (SIGSEGV/SIGBUS/SIGFPE) stay intact,
+        // so MPI runtimes own the signals they need without losing runtime
+        // safety.
+        //
+        // Why not jl_options.handle_signals = OFF? Setting it before jl_init
+        // suppresses that SIGSEGV handler, and the embedded 1.12.7 runtime
+        // then crashes in GC safepoint polling: measured 14/15 runs rc=139
+        // with nthreads=2 and 10/15 with nthreads=0, vs 0/30 crashes with
+        // the handlers left on (crash frame: ijl_gc_safepoint). The
+        // post-init signal() reset is the only safe "no takeover" mechanism.
+        signal(SIGINT, SIG_DFL);
+        signal(SIGTERM, SIG_DFL);
     }
 
     jl_value_t* mod_check = jl_eval_string("isdefined(Main, :FortranBridge)");
@@ -294,6 +311,8 @@ int fj_init_ex(const fj_options_t* opts) {
 }
 
 void fj_init(const char* image_path) {
+    // Historical contract: Julia's signal handlers stay in place
+    // (handle_signals = 1), independent of the fj_init_ex default.
     fj_options_t opts;
     opts.sysimage_path = image_path;
     opts.project_path = NULL;

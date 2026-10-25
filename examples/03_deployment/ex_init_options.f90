@@ -13,7 +13,8 @@ program ex_init_options
     !    - project_path: the FortranBridge package copied next to this
     !      executable by the build (exe-adjacent probe also works without it)
     !    - nthreads = 2
-    !    - handle_signals = 0 (MPI-friendly: Julia installs no signal handlers)
+    !    - handle_signals = 0 ("no takeover": SIGINT/SIGTERM are reset to
+    !      SIG_DFL after init; GC-critical handlers stay intact -- bridge.h)
     call julia_init_ex(project_path="FortranBridge", nthreads=2, handle_signals=0)
 
     ! 2. Load your Julia Code (relative to the current working directory)

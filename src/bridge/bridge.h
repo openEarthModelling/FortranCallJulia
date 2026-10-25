@@ -4,8 +4,9 @@
 #include <julia.h>
 
 // Initialize Julia Runtime (historical entry point; thin wrapper over
-// fj_init_ex with all defaults: no explicit project, Julia default threads,
-// Julia installs its signal handlers).
+// fj_init_ex with: no explicit project, Julia default threads, and
+// handle_signals pinned to 1 -- Julia's signal handlers stay in place,
+// matching the historical behavior).
 void fj_init(const char* image_path);
 
 // Startup options for fj_init_ex.
@@ -14,9 +15,19 @@ void fj_init(const char* image_path);
 //                    Project.toml (NULL = probe chain, see fj_init_ex).
 //   nthreads       : if > 0, the runtime is started with this many threads
 //                    (JULIA_NUM_THREADS is set before init); 0 = Julia default.
-//   handle_signals : nonzero = Julia installs its signal handlers during init
-//                    (historical behavior); 0 = leave signal disposition to
-//                    the embedding process (recommended for MPI).
+//   handle_signals : signal-disposition control. jl_options.handle_signals
+//                    is NEVER touched by the bridge (always left at its
+//                    default ON: Julia needs its SIGSEGV handler for GC
+//                    safepoint polling; turning it OFF crashes the embedded
+//                    runtime). Instead:
+//                    0 = "no takeover" (the DEFAULT): after a successful
+//                        Julia init, SIGINT and SIGTERM are reset to SIG_DFL
+//                        via signal(), so Julia no longer intercepts
+//                        interactive termination (MPI-friendly);
+//                        GC-critical handlers (SIGSEGV/SIGBUS/SIGFPE) stay
+//                        intact.
+//                    nonzero = leave everything at Julia's post-init
+//                        defaults (historical fj_init behavior).
 typedef struct fj_options {
     const char* sysimage_path;
     const char* project_path;
@@ -38,8 +49,9 @@ typedef struct fj_options {
 //   2. a directory named FortranBridge containing Project.toml next to the
 //      running executable (resolved via /proc/self/exe)
 //   3. $JULIA_PROJECT (must contain Project.toml)
-// A NULL opts pointer is equivalent to all defaults
-// {NULL, NULL, 0, 1} (historical fj_init behavior).
+// A NULL opts pointer is equivalent to the defaults {NULL, NULL, 0, 0}
+// (no explicit project/sysimage, Julia default threads, no signal
+// takeover -- safe only because of the post-init signal reset).
 int fj_init_ex(const fj_options_t* opts);
 
 // Shutdown Julia Runtime

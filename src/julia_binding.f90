@@ -3,6 +3,10 @@ module julia_low_level
     implicit none
 
     ! Mirrors C struct fj_options_t (bridge.h); field order and types must match.
+    ! handle_signals: 0 = "no takeover" (the C-side DEFAULT; after init
+    !   SIGINT/SIGTERM are reset to SIG_DFL, GC-critical handlers stay
+    !   intact), nonzero = leave Julia's signal handlers in place
+    !   (historical behavior). jl_options.handle_signals is never touched.
     type, bind(c) :: FjOptions
         type(c_ptr) :: sysimage_path
         type(c_ptr) :: project_path

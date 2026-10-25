@@ -416,7 +416,11 @@ end subroutine copy_jv
 
     ! Startup control: mirrors C fj_init_ex (bridge.h). An omitted argument
     ! selects the C-side default (c_null_ptr for paths, 0 threads = Julia
-    ! default, handle_signals = 1 = Julia installs its signal handlers).
+    ! default, handle_signals = 0 = "no takeover": after a successful init,
+    ! SIGINT/SIGTERM are reset to SIG_DFL; jl_options.handle_signals is
+    ! never touched). The legacy julia_init / julia_init_with_image wrappers
+    ! go through C fj_init, which pins handle_signals = 1, so their
+    ! historical behavior is unchanged.
     subroutine julia_init_ex(image_path, project_path, nthreads, handle_signals)
         character(len=*), intent(in), optional :: image_path
         character(len=*), intent(in), optional :: project_path
@@ -430,7 +434,7 @@ end subroutine copy_jv
         opts%sysimage_path = c_null_ptr
         opts%project_path = c_null_ptr
         opts%nthreads = 0_c_int
-        opts%handle_signals = 1_c_int
+        opts%handle_signals = 0_c_int
 
         if (present(image_path)) then
             c_image_path = to_c_string(image_path)
