@@ -184,3 +184,7 @@ add_fj_example(ex_sciml_callback        05_sciml/1_callback.f90)
 
 # Batch extraction: 1-based element / getproperty / bulk to_fortran
 add_fj_example(ex_sciml_batch_data      05_sciml/2_batch_data.f90)
+
+# End-to-end acceptance demo: Fortran bind(c) RHS -> Main.FJ_CALLBACK ->
+# OrdinaryDiffEq solve -> extraction of the final state vs analytic solution
+add_fj_example(ex_sciml_demo            05_sciml/3_sciml_demo.f90)
