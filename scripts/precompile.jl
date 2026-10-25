@@ -34,3 +34,44 @@ print_array_info([1.0, 2.0, 3.0])
 julia_add(10.0, 20.0)
 
 println("Precompilation complete.")
+
+# 5. SciML solve path and the Fortran callback dispatch path
+# PrecompileTools workloads execute only while an image is being generated;
+# PackageCompiler runs this file inside the incremental sysimage build, so
+# everything compiled here is baked into libfj_sysimage.
+using PrecompileTools
+
+# Julia-native stand-in for the Fortran-backed RHS. fj_create_callback installs
+# the real function under the global name Main.FJ_CALLBACK at runtime (latest
+# created wins), so precompiling the same-signature dispatch through that
+# global is what the eval-ed solver code hits; the placeholder binding created
+# below is re-bound away on the first fj_create_callback call.
+function precompile_rhs!(du, u, p, t)
+    du[1] = u[2]
+    du[2] = -u[1]
+    return nothing
+end
+
+PrecompileTools.@setup_workload begin
+    using OrdinaryDiffEq: ODEProblem, solve, Tsit5
+    using SciMLBase: ReturnCode
+
+    PrecompileTools.@compile_workload begin
+        # (a) One real (small) ODE solve: harmonic oscillator via Tsit5
+        #     (~20 adaptive steps). Compiles the OrdinaryDiffEq solve path
+        #     that Fortran clients exercise at runtime.
+        prob = ODEProblem(precompile_rhs!, [1.0, 0.0], (0.0, 2.0))
+        sol = solve(prob, Tsit5(); save_everystep = false)
+        sol.retcode == ReturnCode.Success ||
+            error("precompile workload ODE solve failed: $(sol.retcode)")
+
+        # (b) The Main.FJ_CALLBACK binding fj_create_callback maintains:
+        #     install a same-signature stand-in and invoke it once so the
+        #     call-site shape (du, u, p, t) through the global is compiled.
+        Core.eval(Main, :(FJ_CALLBACK = $precompile_rhs!))
+        fj_cb = getfield(Main, :FJ_CALLBACK)
+        du = zeros(2)
+        fj_cb(du, [1.0, 0.0], nothing, 0.0)
+        du[2] == -1.0 || error("precompile workload callback did not run")
+    end
+end

@@ -5,7 +5,7 @@ project(FortranCallJulia LANGUAGES C Fortran)
 # Options
 # ==============================================================================
 option(BUILD_EXAMPLES "Build the example applications" OFF)
-option(BUILD_SYSIMAGE "Build the AOT sysimage target" OFF)
+option(FJ_BUILD_SYSIMAGE "Build libfj_sysimage via PackageCompiler" OFF)
 
 # ==============================================================================
 # Find Julia and Configuration
@@ -61,6 +61,7 @@ add_library(fj_middleware STATIC
     src/bridge/types.c
     src/bridge/arrays.c
     src/bridge/callbacks.c
+    src/bridge/extract.c
     src/julia_binding.f90
     src/julia_sdk.f90
 )
@@ -126,13 +127,65 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
 install(DIRECTORY src/FortranBridge DESTINATION ${CMAKE_INSTALL_DATADIR}/FortranCallJulia)
 
 # ==============================================================================
-# AOT Sysimage (Optional)
+# AOT Sysimage via PackageCompiler (Optional)
 # ==============================================================================
-if(BUILD_SYSIMAGE)
-    add_custom_target(sysimage
-        COMMAND ${JULIA_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/build_sysimage.jl
-        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-        COMMENT "Building Julia Sysimage (AOT)..."
+if(FJ_BUILD_SYSIMAGE)
+    # The sysimage must be built by the same Julia minor version that embeds
+    # it. Resolve shims/symlinks first: a juliaup shim defaulting to another
+    # version (e.g. 1.13) reports that version and produces a load-crashing
+    # artifact for the embedded 1.12.7 runtime.
+    get_filename_component(JULIA_SYSIMAGE_EXE "${JULIA_EXECUTABLE}" REALPATH)
+    execute_process(
+        COMMAND ${JULIA_SYSIMAGE_EXE} --version
+        RESULT_VARIABLE FJ_JULIA_VERSION_RES
+        OUTPUT_VARIABLE FJ_JULIA_VERSION
+        ERROR_VARIABLE FJ_JULIA_VERSION_ERR
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        ERROR_STRIP_TRAILING_WHITESPACE
+    )
+    if(NOT FJ_JULIA_VERSION_RES EQUAL 0)
+        message(FATAL_ERROR
+            "FJ_BUILD_SYSIMAGE: failed to run \"${JULIA_SYSIMAGE_EXE} --version\": "
+            "${FJ_JULIA_VERSION_ERR}")
+    endif()
+    if(NOT FJ_JULIA_VERSION MATCHES "^julia version 1\\.12\\.")
+        message(FATAL_ERROR
+            "FJ_BUILD_SYSIMAGE requires Julia 1.12.x, but \"${JULIA_SYSIMAGE_EXE} --version\" "
+            "reported: ${FJ_JULIA_VERSION}\n"
+            "The sysimage must be built by the same minor version that embeds it. "
+            "Reconfigure with -DJULIA_EXECUTABLE pointing at a 1.12.x Julia, e.g. "
+            "/home/redacted/julia-1.12.7/bin/julia (do not use the juliaup shim).")
+    endif()
+
+    # Scratch environment the image is built from (FortranBridge as a path dep
+    # plus SciMLBase, OrdinaryDiffEq, PrecompileTools, PackageCompiler).
+    # Created and instantiated once by scripts/install_sciml_env.jl.
+    set(FJ_SYSIMAGE_ENV "${CMAKE_CURRENT_SOURCE_DIR}/scripts/sysimage_env")
+    if(NOT EXISTS "${FJ_SYSIMAGE_ENV}/Project.toml")
+        message(FATAL_ERROR
+            "FJ_BUILD_SYSIMAGE: sysimage environment not found at ${FJ_SYSIMAGE_ENV}.\n"
+            "Set it up once before building:\n"
+            "  ${JULIA_SYSIMAGE_EXE} ${CMAKE_CURRENT_SOURCE_DIR}/scripts/install_sciml_env.jl")
+    endif()
+
+    # Platform-appropriate output extension.
+    if(WIN32)
+        set(FJ_SYSIMAGE_EXT ".dll")
+    elseif(APPLE)
+        set(FJ_SYSIMAGE_EXT ".dylib")
+    else()
+        set(FJ_SYSIMAGE_EXT ".so")
+    endif()
+    set(FJ_SYSIMAGE_OUTPUT "${CMAKE_BINARY_DIR}/libfj_sysimage${FJ_SYSIMAGE_EXT}")
+
+    add_custom_target(fj_sysimage
+        COMMAND ${JULIA_SYSIMAGE_EXE}
+            --project=${FJ_SYSIMAGE_ENV}
+            ${CMAKE_CURRENT_SOURCE_DIR}/scripts/build_sysimage.jl
+            ${FJ_SYSIMAGE_OUTPUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Building libfj_sysimage via PackageCompiler (minutes; downloads on first run)"
+        VERBATIM
     )
 endif()
 
