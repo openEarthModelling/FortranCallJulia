@@ -10,16 +10,23 @@ program ex_init_options
     print *, "--- Example: Startup Control via julia_init_ex ---"
 
     ! 1. Initialize the Julia runtime with explicit startup options:
-    !    - project_path: the FortranBridge package copied next to this
-    !      executable by the build (exe-adjacent probe also works without it)
+    !    - project_path: omitted on purpose -- the exe-adjacent probe finds
+    !      the FortranBridge package copied next to this executable by the
+    !      build, and an explicit RELATIVE path would be validated against
+    !      the CWD (breaking runs from any other directory)
     !    - nthreads = 2
     !    - handle_signals = 0 ("no takeover": SIGINT/SIGTERM are reset to
     !      SIG_DFL after init; GC-critical handlers stay intact -- bridge.h)
-    call julia_init_ex(project_path="FortranBridge", nthreads=2, handle_signals=0)
+    call julia_init_ex(nthreads=2, handle_signals=0)
 
-    ! 2. Load your Julia Code (relative to the current working directory)
-    call julia_eval_string('include("examples_lib.jl")')
+    ! 2. Load your Julia Code (from next to the executable, CWD-independent)
+    call julia_include_exe_relative("examples_lib.jl")
     call julia_eval_string('using .ExamplesLib')
+    block
+        type(JuliaValue) :: chk
+        chk = julia_eval('isdefined(Main, :ExamplesLib)')
+        if (.not. chk%as_logical()) error stop 'examples_lib.jl did not load: ExamplesLib undefined'
+    end block
 
     ! 3. Evaluate a trivial expression through the existing SDK
     res = julia_eval("ExamplesLib.add_numbers(40.0, 2.0)")

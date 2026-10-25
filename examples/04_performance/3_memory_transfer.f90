@@ -14,8 +14,13 @@ program memory_transfer
     print *, "Matrix Size: ", N, "x", N, " (approx ", real(N)*real(N)*8.0/1024.0/1024.0, " MB)"
 
     call julia_init()
-    call julia_eval_string('include("examples_lib.jl")')
+    call julia_include_exe_relative("examples_lib.jl")
     call julia_eval_string('using .ExamplesLib')
+    block
+        type(JuliaValue) :: chk
+        chk = julia_eval('isdefined(Main, :ExamplesLib)')
+        if (.not. chk%as_logical()) error stop 'examples_lib.jl did not load: ExamplesLib undefined'
+    end block
 
     allocate(matrix(N,N))
     call random_number(matrix)

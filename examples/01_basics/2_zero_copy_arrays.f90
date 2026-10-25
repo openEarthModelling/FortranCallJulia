@@ -14,8 +14,13 @@ program ex02_zero_copy_arrays
     print *, "--- Example 2: Zero-Copy Array Sharing ---"
     call julia_init()
     
-    call julia_eval_string('include("examples_lib.jl")')
+    call julia_include_exe_relative("examples_lib.jl")
     call julia_eval_string('using .ExamplesLib')
+    block
+        type(JuliaValue) :: chk
+        chk = julia_eval('isdefined(Main, :ExamplesLib)')
+        if (.not. chk%as_logical()) error stop 'examples_lib.jl did not load: ExamplesLib undefined'
+    end block
 
     ! 1. Initialize Fortran Array
     simulation_grid = 0.0d0

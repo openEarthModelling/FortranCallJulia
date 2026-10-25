@@ -28,8 +28,13 @@ program call_overhead
     ! 1. Initialize Julia
     call julia_init()
     ! Load ExamplesLib relative to CWD (build/examples/)
-    call julia_eval_string('include("examples_lib.jl")')
+    call julia_include_exe_relative("examples_lib.jl")
     call julia_eval_string('using .ExamplesLib')
+    block
+        type(JuliaValue) :: chk
+        chk = julia_eval('isdefined(Main, :ExamplesLib)')
+        if (.not. chk%as_logical()) error stop 'examples_lib.jl did not load: ExamplesLib undefined'
+    end block
 
     ! 2. Baseline: Pure Fortran
     x = 10.0d0

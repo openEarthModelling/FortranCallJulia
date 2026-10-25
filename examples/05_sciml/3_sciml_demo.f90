@@ -10,12 +10,12 @@
 ! (%property / %element / %to_fortran) and compared against the analytic
 ! solution.
 !
-! Usage (run from build/examples):
+! Usage (runnable from any directory):
 !   ./ex_sciml_demo               JIT mode: julia_init_ex(project_path=...)
 !   ./ex_sciml_demo sysimage      AOT mode: + image_path=libfj_sysimage.so
 !
-! Paths default to the in-tree layout relative to the CWD and can be
-! overridden for other layouts:
+! Paths default to the in-tree layout relative to the executable (not the
+! CWD) and can be overridden for other layouts:
 !   FJ_SCIML_PROJECT   scratch env carrying SciMLBase + OrdinaryDiffEq
 !                      (default: ../../scripts/sysimage_env)
 !   FJ_SCIML_SYSIMAGE  built sysimage (default: ../../build/libfj_sysimage.so)
@@ -71,14 +71,18 @@ program ex_sciml_demo
     mode = 'jit'
     if (command_argument_count() >= 1) call get_command_argument(1, mode)
 
-    ! --- Path resolution: env override > CWD-relative default ---------------
-    call get_environment_variable('FJ_SCIML_PROJECT', project_path, status=st)
-    if (st /= 0 .or. len_trim(project_path) == 0) &
-        project_path = '../../scripts/sysimage_env'
-    image_path = '../../build/libfj_sysimage.so'
-    call get_environment_variable('FJ_SCIML_SYSIMAGE', image_path, status=st)
-    if (st /= 0 .or. len_trim(image_path) == 0) &
-        image_path = '../../build/libfj_sysimage.so'
+    ! --- Path resolution: env override > exe-relative default ---------------
+    block
+        character(len=:), allocatable :: exe_dir
+        exe_dir = julia_executable_dir()
+        call get_environment_variable('FJ_SCIML_PROJECT', project_path, status=st)
+        if (st /= 0 .or. len_trim(project_path) == 0) &
+            project_path = exe_dir // '/../../scripts/sysimage_env'
+        image_path = exe_dir // '/../../build/libfj_sysimage.so'
+        call get_environment_variable('FJ_SCIML_SYSIMAGE', image_path, status=st)
+        if (st /= 0 .or. len_trim(image_path) == 0) &
+            image_path = exe_dir // '/../../build/libfj_sysimage.so'
+    end block
 
     ! Absolute paths only: jl_init_with_image_file resolves a RELATIVE
     ! sysimage path against the Julia bindir (not the process CWD), which

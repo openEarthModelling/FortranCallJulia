@@ -32,8 +32,13 @@ program ex07_mpi_bootstrap
     call julia_init() 
 
     ! 3. Load Logic & Setup
-    call julia_eval_string('include("examples_lib.jl")')
+    call julia_include_exe_relative("examples_lib.jl")
     call julia_eval_string('using .ExamplesLib')
+    block
+        type(JuliaValue) :: chk
+        chk = julia_eval('isdefined(Main, :ExamplesLib)')
+        if (.not. chk%as_logical()) error stop 'examples_lib.jl did not load: ExamplesLib undefined'
+    end block
     call julia_eval_string('const calc_inverse = ExamplesLib.calc_inverse')
 
     ! 4. Local Computation (Verify Libraries work in MPI)

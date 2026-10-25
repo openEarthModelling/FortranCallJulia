@@ -25,8 +25,13 @@ program access_patterns
     print *, "Array Size: ", N
 
     call julia_init()
-    call julia_eval_string('include("examples_lib.jl")')
+    call julia_include_exe_relative("examples_lib.jl")
     call julia_eval_string('using .ExamplesLib')
+    block
+        type(JuliaValue) :: chk
+        chk = julia_eval('isdefined(Main, :ExamplesLib)')
+        if (.not. chk%as_logical()) error stop 'examples_lib.jl did not load: ExamplesLib undefined'
+    end block
 
     allocate(arr(N))
     call random_number(arr)

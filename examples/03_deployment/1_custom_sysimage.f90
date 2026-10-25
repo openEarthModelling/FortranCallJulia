@@ -41,8 +41,13 @@ program ex05_sysimage
     
     ! Load Library (if not baked into sysimage, this still costs time)
     ! If sysimage includes ExamplesLib, this is fast.
-    call julia_eval_string('include("examples_lib.jl")')
+    call julia_include_exe_relative("examples_lib.jl")
     call julia_eval_string('using .ExamplesLib')
+    block
+        type(JuliaValue) :: chk
+        chk = julia_eval('isdefined(Main, :ExamplesLib)')
+        if (.not. chk%as_logical()) error stop 'examples_lib.jl did not load: ExamplesLib undefined'
+    end block
     call julia_eval_string('const calc_inverse = ExamplesLib.calc_inverse')
     
     ! Prepare Data

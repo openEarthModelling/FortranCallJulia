@@ -15,8 +15,13 @@ program ex_inter_math_operations
 
     ! 1. Load the Helper Library (Standard Payload)
     print *, "[Fortran] Loading 'examples_lib.jl'..."
-    call julia_eval_string('include("examples_lib.jl")')
+    call julia_include_exe_relative("examples_lib.jl")
     call julia_eval_string('using .ExamplesLib')
+    block
+        type(JuliaValue) :: chk
+        chk = julia_eval('isdefined(Main, :ExamplesLib)')
+        if (.not. chk%as_logical()) error stop 'examples_lib.jl did not load: ExamplesLib undefined'
+    end block
 
     ! 2. Prepare Data in Fortran
     ! Let's create a symmetric positive definite matrix
