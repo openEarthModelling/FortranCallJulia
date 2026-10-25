@@ -71,7 +71,10 @@ target_include_directories(fj_middleware PUBLIC
 )
 
 # Apply Julia C Flags to bridge.c
-get_filename_component(JULIA_BINDIR ${JULIA_EXECUTABLE} DIRECTORY)
+# Resolve symlinks first so a juliaup shim path resolves to the real
+# versioned bin dir, then take its DIRECTORY.
+get_filename_component(JULIA_BINDIR "${JULIA_EXECUTABLE}" REALPATH)
+get_filename_component(JULIA_BINDIR "${JULIA_BINDIR}" DIRECTORY)
 target_compile_definitions(fj_middleware PRIVATE JULIA_BINDIR="${JULIA_BINDIR}")
 
 target_compile_options(fj_middleware PRIVATE 
