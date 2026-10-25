@@ -6,7 +6,9 @@
 // Initialize Julia Runtime (historical entry point; thin wrapper over
 // fj_init_ex with: no explicit project, Julia default threads, and
 // handle_signals pinned to 1 -- Julia's signal handlers stay in place,
-// matching the historical behavior).
+// matching the historical behavior). If fj_init_ex fails, the last error is
+// printed to stderr and the process exits(1); fj_init has no return value
+// to report through.
 void fj_init(const char* image_path);
 
 // Startup options for fj_init_ex.
@@ -36,7 +38,10 @@ typedef struct fj_options {
 } fj_options_t;
 
 // Initialize the Julia runtime with explicit startup control.
-// Returns 0 on success, nonzero on failure (see fj_get_last_error()).
+// Returns 0 on success. On EVERY failure path -- Julia init failure, project
+// activation failure, FortranBridge package load failure, missing registry
+// symbols, invalid arguments -- it returns nonzero with fj_get_last_error()
+// set; the process is never aborted.
 // The options are consumed as follows:
 //   - nthreads and handle_signals take effect only when this call performs
 //     the Julia initialization itself (they are applied before jl_init /

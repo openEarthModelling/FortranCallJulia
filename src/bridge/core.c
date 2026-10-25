@@ -212,8 +212,11 @@ int fj_init_ex(const fj_options_t* opts) {
     }
 
     if (check_julia_exception()) {
-        fprintf(stderr, "Error: Julia runtime initialization failed.\nLast Error: %s\n", fj_get_last_error());
-        exit(1);
+        char msg[3072];
+        snprintf(msg, sizeof(msg), "fj_init_ex: Julia runtime initialization failed: %s",
+                 fj_get_last_error());
+        set_error(msg);
+        return -1;
     }
 
     if (opts->handle_signals == 0) {
@@ -243,9 +246,11 @@ int fj_init_ex(const fj_options_t* opts) {
         // Activate the project environment, then load the package.
         const char* project_dir = fj_resolve_project(opts->project_path);
         if (project_dir != NULL && fj_activate_project(project_dir) != 0) {
-            fprintf(stderr, "Error: Could not activate FortranBridge project (%s).\nLast Error: %s\n",
-                    project_dir, fj_get_last_error());
-            exit(1);
+            char msg[4608];
+            snprintf(msg, sizeof(msg), "fj_init_ex: could not activate FortranBridge project (%s): %s",
+                     project_dir, fj_get_last_error());
+            set_error(msg);
+            return -1;
         }
         jl_eval_string("using FortranBridge");
     } else {
@@ -254,14 +259,19 @@ int fj_init_ex(const fj_options_t* opts) {
     }
 
     if (check_julia_exception()) {
-        fprintf(stderr, "Error: Julia initialization failed (Loading FortranBridge).\nLast Error: %s\n", fj_get_last_error());
-        exit(1);
+        char msg[3072];
+        snprintf(msg, sizeof(msg), "fj_init_ex: loading FortranBridge failed: %s", fj_get_last_error());
+        set_error(msg);
+        return -1;
     }
 
     jl_value_t* mod_val = jl_eval_string("FortranBridge");
     if (check_julia_exception()) {
-        fprintf(stderr, "Error: Julia initialization failed (Getting FortranBridge module).\nLast Error: %s\n", fj_get_last_error());
-        exit(1);
+        char msg[3072];
+        snprintf(msg, sizeof(msg), "fj_init_ex: getting the FortranBridge module failed: %s",
+                 fj_get_last_error());
+        set_error(msg);
+        return -1;
     }
     
     if (mod_val && jl_is_module(mod_val)) {
@@ -292,12 +302,45 @@ int fj_init_ex(const fj_options_t* opts) {
             !FuncGetIndex2D || !FuncSetIndex2D || !FuncGetIndex3D || !FuncSetIndex3D || 
             !FuncGetIndexString || !FuncSetIndexString ||
             !FuncLength || !FuncNdims || !FuncSize || !FuncMakeUnitRange) {
-             fprintf(stderr, "Error: One or more FortranBridge functions could not be loaded.\n");
-             exit(1);
+            // Name the missing symbols so a stale/mismatched package build
+            // is immediately diagnosable.
+            static const struct { jl_function_t** slot; const char* name; } required[] = {
+                { &FuncRetain, "retain_obj" },
+                { &FuncRelease, "release_obj" },
+                { &FuncRegister, "register_f2" },
+                { &FuncRegisterStr, "register_f2_string" },
+                { &FuncGetField, "helper_getfield" },
+                { &FuncSetField, "helper_setfield" },
+                { &FuncGetIndex, "helper_getindex" },
+                { &FuncSetIndex, "helper_setindex" },
+                { &FuncCallKwargs, "helper_call_kwargs" },
+                { &FuncGetIndex2D, "helper_getindex_2d" },
+                { &FuncSetIndex2D, "helper_setindex_2d" },
+                { &FuncGetIndex3D, "helper_getindex_3d" },
+                { &FuncSetIndex3D, "helper_setindex_3d" },
+                { &FuncGetIndexString, "helper_getindex_string" },
+                { &FuncSetIndexString, "helper_setindex_string" },
+                { &FuncLength, "helper_length" },
+                { &FuncNdims, "helper_ndims" },
+                { &FuncSize, "helper_size" },
+                { &FuncMakeUnitRange, "helper_make_unitrange" },
+            };
+            char missing[1024] = "";
+            char msg[1200];
+            size_t k;
+            for (k = 0; k < sizeof(required)/sizeof(required[0]); k++) {
+                if (*required[k].slot == NULL) {
+                    strncat(missing, " ", sizeof(missing) - strlen(missing) - 1);
+                    strncat(missing, required[k].name, sizeof(missing) - strlen(missing) - 1);
+                }
+            }
+            snprintf(msg, sizeof(msg), "fj_init_ex: FortranBridge functions not found:%s", missing);
+            set_error(msg);
+            return -1;
         }
     } else {
-        fprintf(stderr, "Error: Could not load FortranBridge module.\n");
-        exit(1);
+        set_error("fj_init_ex: could not load FortranBridge module (jl_eval_string(\"FortranBridge\") did not return a module)");
+        return -1;
     }
 
     // C-side GC root set for fast fj_retain/fj_release (memory.c). Failure is
@@ -312,13 +355,18 @@ int fj_init_ex(const fj_options_t* opts) {
 
 void fj_init(const char* image_path) {
     // Historical contract: Julia's signal handlers stay in place
-    // (handle_signals = 1), independent of the fj_init_ex default.
+    // (handle_signals = 1), independent of the fj_init_ex default; on
+    // failure the last error is printed to stderr and the process exits
+    // (fj_init has no return value to report through).
     fj_options_t opts;
     opts.sysimage_path = image_path;
     opts.project_path = NULL;
     opts.nthreads = 0;
     opts.handle_signals = 1;
-    fj_init_ex(&opts);
+    if (fj_init_ex(&opts) != 0) {
+        fprintf(stderr, "Error: fj_init failed.\nLast Error: %s\n", fj_get_last_error());
+        exit(1);
+    }
 }
 
 void fj_shutdown() {
