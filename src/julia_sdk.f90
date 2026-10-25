@@ -62,6 +62,18 @@ module julia_high_level
         generic :: at_real => at_real_1d, at_real_2d, at_real_3d
         generic :: set_at_real => set_at_real_1d, set_at_real_2d, set_at_real_3d
 
+        ! SciML-style batch extraction (Wave B). to_fortran bulk copies
+        ! a dense Float64 / ComplexF64 array into a Fortran buffer (the
+        ! real / complex specifics resolve by the buffer type). element
+        ! and property return handles already retained on the C side
+        ! (fj_get_element / fj_get_property): on failure the handle is
+        ! c_null_ptr (check is_valid / c_associated).
+        generic :: to_fortran => to_fortran_real, to_fortran_complex
+        procedure, private :: to_fortran_real
+        procedure, private :: to_fortran_complex
+        procedure :: element
+        procedure :: property
+
         ! Generic Call Interface (Modern Fortran)
         generic :: call => call_method_generic_dispatch_0, &
                            call_method_generic_dispatch_1, &
@@ -687,6 +699,40 @@ end subroutine copy_jv
         real(kind=c_double), intent(in) :: val
         call fj_set_real3(self%ptr, i, j, k, val)
     end subroutine set_at_real_3d
+
+    ! --- SciML Batch Extraction (Wave B) ---
+
+    function to_fortran_real(self, dest, n) result(rc)
+        class(JuliaValue), intent(in) :: self
+        real(kind=c_double), intent(out), target :: dest(*)
+        integer(kind=c_int64_t), intent(in) :: n
+        integer(kind=c_int) :: rc
+        rc = fj_to_fortran(self%ptr, c_loc(dest), n)
+    end function to_fortran_real
+
+    function to_fortran_complex(self, dest, n) result(rc)
+        class(JuliaValue), intent(in) :: self
+        complex(kind=c_double), intent(out), target :: dest(*)
+        integer(kind=c_int64_t), intent(in) :: n
+        integer(kind=c_int) :: rc
+        rc = fj_to_fortran(self%ptr, c_loc(dest), n)
+    end function to_fortran_complex
+
+    function element(self, idx) result(v)
+        class(JuliaValue), intent(in) :: self
+        integer(kind=c_int64_t), intent(in) :: idx
+        type(JuliaValue) :: v
+        ! fj_get_element returns a RETAINED handle; do not retain again.
+        v%ptr = fj_get_element(self%ptr, idx)
+    end function element
+
+    function property(self, name) result(v)
+        class(JuliaValue), intent(in) :: self
+        character(len=*), intent(in) :: name
+        type(JuliaValue) :: v
+        ! fj_get_property returns a RETAINED handle; do not retain again.
+        v%ptr = fj_get_property(self%ptr, to_c_string(name))
+    end function property
 
     function length(self) result(res)
         class(JuliaValue), intent(in) :: self

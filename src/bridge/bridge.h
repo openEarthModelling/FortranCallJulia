@@ -128,6 +128,23 @@ void* fj_get_function_pointer(const char* func_name, const char* ret_type, const
 // failure.
 void* fj_create_callback(void* fnptr, void* ctx);
 
+// --- Extraction (Julia object -> Fortran memory) ---
+
+// Copy the elements of an Array{Float64} or Array{ComplexF64} (any rank,
+// dense/contiguous) into dest, interpreted as double / double-complex of
+// size n. Returns 0 on success; -1 with fj_get_last_error() set if handle
+// is not such an array or n != length(handle).
+int fj_to_fortran(void* handle, void* dest, long long n);
+
+// 1-based linear array indexing. Returns a RETAINED handle for the boxed
+// element (release with fj_release), or NULL with fj_get_last_error() set
+// if handle is not an array or idx is out of bounds.
+void* fj_get_element(void* handle, long long idx);
+
+// getproperty(handle, name). Returns a RETAINED handle (release with
+// fj_release), or NULL with fj_get_last_error() set on failure.
+void* fj_get_property(void* handle, const char* name);
+
 // --- Error Handling ---
 const char* fj_get_last_error();
 

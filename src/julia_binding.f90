@@ -401,6 +401,40 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_create_callback
 
+        ! --- Bulk Extraction (Wave B) ---
+        ! Copies n elements of a dense Array{Float64} or
+        ! Array{ComplexF64} (any rank) into dest (interpreted as a
+        ! double / double-complex buffer of size n). Returns 0 on
+        ! success; -1 + last_error if handle is not such an array or
+        ! n /= length.
+        function fj_to_fortran(handle, dest, n) bind(c, name="fj_to_fortran") result(rc)
+            import :: c_ptr, c_int64_t, c_int
+            type(c_ptr), value :: handle
+            type(c_ptr), value :: dest
+            integer(kind=c_int64_t), value :: n
+            integer(kind=c_int) :: rc
+        end function fj_to_fortran
+
+        ! 1-based array indexing; returns a RETAINED handle (jl_arrayref
+        ! boxes numerics; retain through fj_retain before it becomes
+        ! reachable). NULL + last_error if not an array or idx out of
+        ! bounds.
+        function fj_get_element(handle, idx) bind(c, name="fj_get_element") result(res)
+            import :: c_ptr, c_int64_t
+            type(c_ptr), value :: handle
+            integer(kind=c_int64_t), value :: idx
+            type(c_ptr) :: res
+        end function fj_get_element
+
+        ! getproperty on the object; returns a RETAINED handle or
+        ! NULL + last_error.
+        function fj_get_property(handle, name) bind(c, name="fj_get_property") result(res)
+            import :: c_ptr, c_char
+            type(c_ptr), value :: handle
+            character(kind=c_char), dimension(*), intent(in) :: name
+            type(c_ptr) :: res
+        end function fj_get_property
+
     end interface
 
     contains
