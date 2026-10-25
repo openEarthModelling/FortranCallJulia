@@ -296,3 +296,15 @@ jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
     JL_GC_POP();
     return ret;
 }
+
+// --- %call Semantics Support ---
+
+// True when the handle is a Julia Function object. The Fortran SDK uses this
+// to route obj%call(...) on a function object to call_value(...) (true method
+// call) instead of the legacy name-based global lookup.
+int fj_is_function(void* handle) {
+    if (!fj_ready()) return 0;
+    if (!check_thread()) return 0;
+    if (!handle) return 0;
+    return jl_isa((jl_value_t*)handle, (jl_value_t*)jl_function_type) ? 1 : 0;
+}

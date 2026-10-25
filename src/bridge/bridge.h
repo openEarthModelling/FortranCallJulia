@@ -99,6 +99,10 @@ jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs);
 // cache live until process exit.
 void fj_clear_function_cache(void);
 
+// True when the handle refers to a Julia Function object (used by the SDK to
+// route %call on function objects through the call_value path).
+int fj_is_function(void* handle);
+
 // Call with Keyword Arguments
 jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs, 
                            const char** kw_keys, void** kw_vals, int32_t nkw);

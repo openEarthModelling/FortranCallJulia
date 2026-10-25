@@ -102,6 +102,12 @@ module julia_low_level
             type(c_ptr) :: res
         end function fj_call_function
 
+        function fj_is_function(handle) bind(c, name="fj_is_function") result(is)
+            import :: c_ptr, c_int
+            type(c_ptr), value :: handle
+            integer(kind=c_int) :: is
+        end function fj_is_function
+
         function fj_eval_string(cmd) bind(c, name="fj_eval_string") result(res)
             import :: c_char, c_ptr
             character(kind=c_char), dimension(*), intent(in) :: cmd

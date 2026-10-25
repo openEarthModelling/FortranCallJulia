@@ -877,6 +877,15 @@ end subroutine copy_jv
         type(c_ptr) :: raw_res
         
         ! Reuse existing call0 logic but consistent with this new pattern
+        ! %call on a function object is a true method call: func_name is
+        ! ignored (kept only for signature compatibility) and the call is
+        ! dispatched through call_value.
+        if (c_associated(self%ptr)) then
+            if (fj_is_function(self%ptr) /= 0) then
+                res = self%call_value_0()
+                return
+            end if
+        end if
         raw_res = fj_call0(to_c_string(func_name))
         res%ptr = fj_retain(raw_res)
     end function call_method_generic_dispatch_0
@@ -891,6 +900,15 @@ end subroutine copy_jv
         type(c_ptr) :: raw_args(1)
         type(c_ptr) :: raw_res
         
+        ! %call on a function object is a true method call: func_name is
+        ! ignored (kept only for signature compatibility) and the call is
+        ! dispatched through call_value.
+        if (c_associated(self%ptr)) then
+            if (fj_is_function(self%ptr) /= 0) then
+                res = self%call_value_1(arg1)
+                return
+            end if
+        end if
         boxed_args(1) = box_argument(arg1)
         raw_args(1) = boxed_args(1)%ptr
         
@@ -908,6 +926,15 @@ end subroutine copy_jv
         type(c_ptr) :: raw_args(2)
         type(c_ptr) :: raw_res
         
+        ! %call on a function object is a true method call: func_name is
+        ! ignored (kept only for signature compatibility) and the call is
+        ! dispatched through call_value.
+        if (c_associated(self%ptr)) then
+            if (fj_is_function(self%ptr) /= 0) then
+                res = self%call_value_2(arg1, arg2)
+                return
+            end if
+        end if
         boxed_args(1) = box_argument(arg1)
         boxed_args(2) = box_argument(arg2)
         
@@ -928,6 +955,15 @@ end subroutine copy_jv
         type(c_ptr) :: raw_args(3)
         type(c_ptr) :: raw_res
         
+        ! %call on a function object is a true method call: func_name is
+        ! ignored (kept only for signature compatibility) and the call is
+        ! dispatched through call_value.
+        if (c_associated(self%ptr)) then
+            if (fj_is_function(self%ptr) /= 0) then
+                res = self%call_value_3(arg1, arg2, arg3)
+                return
+            end if
+        end if
         boxed_args(1) = box_argument(arg1)
         boxed_args(2) = box_argument(arg2)
         boxed_args(3) = box_argument(arg3)
@@ -950,6 +986,15 @@ end subroutine copy_jv
         type(c_ptr) :: raw_args(4)
         type(c_ptr) :: raw_res
         
+        ! %call on a function object is a true method call: func_name is
+        ! ignored (kept only for signature compatibility) and the call is
+        ! dispatched through call_value.
+        if (c_associated(self%ptr)) then
+            if (fj_is_function(self%ptr) /= 0) then
+                res = self%call_value_4(arg1, arg2, arg3, arg4)
+                return
+            end if
+        end if
         boxed_args(1) = box_argument(arg1)
         boxed_args(2) = box_argument(arg2)
         boxed_args(3) = box_argument(arg3)
