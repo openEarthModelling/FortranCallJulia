@@ -193,5 +193,8 @@ endif()
 # Examples (Separated)
 # ==============================================================================
 if(BUILD_EXAMPLES)
+    # Vendored Clawpack classic 1D kernel: transport engine of the reacting-
+    # flow capstone example (only the examples need it).
+    add_subdirectory(third_party/clawpack1d)
     add_subdirectory(examples)
 endif()
