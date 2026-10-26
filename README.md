@@ -148,6 +148,21 @@ res = f_ptr(10.0d0, 20.0d0)            ! zero dispatch overhead
 See `examples/04_performance/2_call_overhead.f90` for the registered
 function pattern.
 
+The pointer is kept alive by the registry (the source function and the
+`@cfunction` result are rooted in `Main`), so GC lifetime is safe. The
+contract has hard edges -- misuse crashes the process with no Julia-side
+diagnostic:
+
+1. Register after the function's final definition; the trampoline is
+   compiled for the exact definition alive at registration.
+2. Re-registering a name invalidates earlier pointers for that name (the
+   old `@cfunction` object becomes collectable); discard them.
+3. The called function must not throw: an exception unwinds through the C
+   trampoline frame (undefined behavior, typically a segfault). Handle
+   errors inside Julia or return a sentinel value.
+4. `ret_type`/`arg_types` must match the method signature exactly
+   (bitstypes only); nothing is validated at registration.
+
 ### 4. Fortran callback as an ODE right-hand side
 
 ```fortran
@@ -188,6 +203,9 @@ tracked in git.
     points), so name-based calls observe top-level redefinitions. Julia-side
     evals that rebind names behind the bridge's back are not observed;
     `julia_clear_function_cache()` forces a drop when needed.
+*   The `get_function_pointer` fast path trades safety for speed; its
+    contract (final definition, no throwing, exact signatures) is spelled
+    out under "Fast path (function pointers)".
 *   Signal disposition: the bridge never touches `jl_options.handle_signals`
     (GC safepoint polling depends on Julia's SIGSEGV handler). "No takeover"
     resets SIGINT/SIGTERM to their defaults after init.

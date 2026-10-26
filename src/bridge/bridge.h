@@ -129,6 +129,22 @@ jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
 
 
 // --- Fast Path (Low-Level API) ---
+//
+// register_f2_string: returns a raw @cfunction pointer for direct calls at
+// native speed. The registry keeps the CFunction object alive (rooted in
+// Main), so GC lifetime is safe; the CONTRACT has hard edges, and misuse
+// crashes the process with no Julia-side diagnostic:
+//   1. Register after the function's FINAL definition: the trampoline is
+//      compiled for the exact definition alive at registration.
+//   2. Re-registering a name invalidates earlier pointers for that name
+//      (the previous CFunction becomes collectable, its code may be
+//      freed) -- discard previously obtained pointers.
+//   3. The called function must not throw: an exception unwinds through
+//      the C trampoline frame -- undefined behavior, typically a segfault.
+//      Handle errors inside Julia or return a sentinel value.
+//   4. ret_type/arg_types must exactly match the method signature
+//      (bitstypes only); nothing is validated at registration.
+//   5. The pointer is invalid after fj_shutdown (one runtime per process).
 void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types);
 
 // --- Callback Bridge (Fortran RHS -> Julia callable) ---

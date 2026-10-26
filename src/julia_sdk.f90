@@ -590,6 +590,19 @@ end subroutine copy_jv
         end do
     end function get_last_error_message
 
+    ! Fast path (register_f2_string): returns a raw @cfunction pointer for
+    ! direct calls at native speed. The registry keeps the CFunction alive
+    ! (rooted in Main), so GC lifetime is safe, but the contract has hard
+    ! edges -- misuse crashes the process with no Julia-side diagnostic:
+    !   1. register only after the function's FINAL definition (the
+    !      trampoline is compiled for the exact definition at registration);
+    !   2. re-registering a name invalidates earlier pointers for that name
+    !      (the old CFunction becomes collectable) -- discard them;
+    !   3. the called function must not throw (an exception unwinds through
+    !      the C trampoline frame: undefined behavior, typically a segfault);
+    !   4. ret_type/arg_types must exactly match the signature (bitstypes
+    !      only); nothing is validated at registration;
+    !   5. pointers are invalid after julia_shutdown.
     function get_function_pointer(func_name, ret_type, arg_types) result(funptr)
         character(len=*), intent(in) :: func_name, ret_type, arg_types
         type(c_funptr) :: funptr
