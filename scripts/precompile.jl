@@ -75,3 +75,29 @@ PrecompileTools.@setup_workload begin
         du[2] == -1.0 || error("precompile workload callback did not run")
     end
 end
+
+# 6. FjKinetics chemistry path of the capstone example. The Fortran driver
+# evals exactly this shape once per Strang half-step: buffers wrapped from
+# Fortran memory are ordinary Array{Float64} (unsafe_wrap), sliced by view
+# into the active set. The package's own workload covers plain and view
+# paths inside the package cache; this section additionally warms the
+# runtime expression shape (kwarg build, global re-binding) against Main.
+using FjKinetics
+
+fj_ks = FjKinetics.build_kinetics(A = 164180.0, Ea = 25.0, R_g = 1.0,
+                                  q = 25.0, cv = 2.5)
+FjKinetics.nspecies(fj_ks) == 2 || error("precompile workload: bad mechanism")
+
+# emulate the driver's persistent zero-copy buffers + active-set slicing
+const FJ_YBUF = zeros(8, 2)
+const FJ_TBUF = zeros(8)
+const FJ_RHOBUF = zeros(8)
+FJ_YBUF[:, 1] .= 1.0
+FJ_TBUF .= 17.0
+for n_active in (2, 8)
+    FjKinetics.step_chemistry!(fj_ks,
+        view(FJ_YBUF, 1:n_active, :), view(FJ_TBUF, 1:n_active),
+        view(FJ_RHOBUF, 1:n_active), 4.0e-4)
+end
+
+println("FjKinetics precompilation complete.")

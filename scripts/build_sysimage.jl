@@ -44,9 +44,13 @@ println("  output:          $output_path")
 # Per the PackageCompiler docs, create_sysimage takes the packages as the
 # first argument and resolves them against the `project` environment;
 # FortranBridge is found through its path dependency in that env. Everything
-# compiled by precompile_execution_file is traced into the image.
+# compiled by precompile_execution_file is traced into the image. FjKinetics
+# rides along for the capstone chemistry (its own PrecompileTools workload --
+# plain-array AND view-based step_chemistry! paths -- is baked in through its
+# package cache, so the per-half-step call the Fortran driver evals never
+# compiles at runtime).
 create_sysimage(
-    ["FortranBridge", "SciMLBase", "OrdinaryDiffEq"],
+    ["FortranBridge", "SciMLBase", "OrdinaryDiffEq", "FjKinetics"],
     project = sysimage_env,
     sysimage_path = output_path,
     precompile_execution_file = precompile_path,
