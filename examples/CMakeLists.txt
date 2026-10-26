@@ -60,7 +60,7 @@ ${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
 )
 endif()
 macro(add_fj_example name source)
-    add_executable(${name} ${source})
+    add_executable(${name} ${source} ${ARGN})
     target_link_libraries(${name} PRIVATE fj_middleware)
     # -fno-underscoring and -cpp are GNU-only flags; non-GNU compilers need
     # their own equivalents (e.g. -fpp instead of -cpp for Intel).
@@ -207,6 +207,6 @@ add_fj_example(ex_sciml_demo            05_sciml/3_sciml_demo.f90)
 # build. Chemistry arrives in later commits via the bridge -- this commit
 # validates the transport engine alone (Sod vs exact Riemann solution).
 if(TARGET clawpack1d)
-    add_fj_example(ex_reacting_flow      06_capstone/1_reacting_flow.f90)
+    add_fj_example(ex_reacting_flow      06_capstone/1_reacting_flow.f90 06_capstone/rp1_reacting.f90)
     target_link_libraries(ex_reacting_flow PRIVATE clawpack1d)
 endif()

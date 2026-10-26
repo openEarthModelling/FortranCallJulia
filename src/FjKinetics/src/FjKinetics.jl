@@ -189,6 +189,9 @@ PrecompileTools.@setup_workload begin
         T = fill(1500.0, 4)
         rho = fill(1.0, 4)
         step_chemistry!(ks, Y, T, rho, 1.0e-6)
+        # view-based active-set call path used by the capstone example:
+        # wrapped full-domain buffers are sliced in Julia
+        step_chemistry!(ks, view(Y, 1:2, :), view(T, 1:2), view(rho, 1:2), 1.0e-6)
     end
 end
 

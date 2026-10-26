@@ -15,14 +15,25 @@ const PROJECT_ROOT      = normpath(joinpath(@__DIR__, ".."))
 const FORTRANBRIDGE_PATH = joinpath(PROJECT_ROOT, "src", "FortranBridge")
 const SYSIMAGE_ENV      = joinpath(@__DIR__, "sysimage_env")
 
+# FjKinetics (capstone chemistry package) is also in-repo: dev it into the
+# same environment so `import FjKinetics` resolves wherever FortranBridge
+# does (the embedded runtime activates exactly one project).
+const FJKINETICS_PATH = joinpath(PROJECT_ROOT, "src", "FjKinetics")
+
 isfile(joinpath(FORTRANBRIDGE_PATH, "Project.toml")) ||
     error("FortranBridge package not found at $(FORTRANBRIDGE_PATH)")
 
 mkpath(SYSIMAGE_ENV)
 Pkg.activate(SYSIMAGE_ENV; io = stdout)
 
-# FortranBridge is an in-repo package: track it by path, not by registry.
+# In-repo packages are tracked by path, not by registry: FortranBridge
+# (bridge runtime) and FjKinetics (chemistry, pulls in the Catalyst/MTK
+# stack for the sysimage). FjKinetics's [compat] pins the solve stack
+# (OrdinaryDiffEq ~6.111): the 7.x line's step-size controller degrades the
+# per-cell reinit!/step! pattern ~700x (a frozen cell costs 982 internal
+# steps instead of 1), which is why this env must resolve through it.
 Pkg.develop(path = FORTRANBRIDGE_PATH)
+Pkg.develop(path = FJKINETICS_PATH)
 
 # SciML solve stack baked into the sysimage; PrecompileTools for the
 # precompile workload; PackageCompiler because build_sysimage.jl runs with
