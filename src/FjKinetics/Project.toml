@@ -1,0 +1,20 @@
+name = "FjKinetics"
+uuid = "931b181b-f631-444a-95c8-c66fcaa6254e"
+version = "0.1.0"
+
+[deps]
+Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
+OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
+StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
+SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
+
+[compat]
+julia = "1.12"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
