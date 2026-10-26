@@ -59,12 +59,14 @@ typedef struct fj_options {
 // takeover -- safe only because of the post-init signal reset).
 int fj_init_ex(const fj_options_t* opts);
 
-// Shutdown Julia Runtime. Must be called from the thread that initialized
-// the runtime (the bridge's single-thread contract, like every bridge
-// call): while the runtime is live, a call from any other thread is
-// refused with fj_get_last_error() set instead of racing the shutdown
-// state changes. Shutting down a never-initialized runtime is a benign
-// no-op (it only runs Julia's atexit hook).
+// Shutdown Julia Runtime. Must be called from the thread that owns the
+// runtime (the bridge's single-thread contract, like every bridge call):
+// while the runtime is live or still initializing, a call from any other
+// thread is refused with fj_get_last_error() set instead of racing the
+// shutdown state changes. Shutting down a runtime whose initialization was
+// never attempted still runs, and leaves the lifecycle state at SHUTDOWN
+// (a later fj_init_ex is refused, as after any shutdown); Julia itself is
+// untouched (its atexit hook no-ops when the runtime never initialized).
 void fj_shutdown();
 
 // --- Environment ---
@@ -90,9 +92,12 @@ jl_value_t* fj_call0(const char* func_name);
 jl_value_t* fj_call1_float64(const char* func_name, double arg1);
 jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj);
 jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2);
-// Evaluate Julia source. On success the redefinition-sensitive caches (the
-// function-name cache and the Julia-side kwargs cache) are invalidated, so
-// name-based calls made after the eval observe the current definitions.
+// Evaluate Julia source. The redefinition-sensitive name caches are
+// invalidated on every call (both outcome paths -- top-level expressions
+// commit as they evaluate, so a throwing eval can still have rebound
+// names), so name-based calls made after the eval observe the current
+// definitions. See fj_clear_function_cache for which rebinding paths this
+// covers.
 jl_value_t* fj_eval_string(const char* cmd);
 
 // Call a Julia function with N arguments
@@ -111,12 +116,17 @@ void* fj_resolve_function(const char* func_name);
 // Handles nargs == 0 with a possibly NULL args pointer.
 jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs);
 
-// Free the C-side function-name cache, releasing the GC root of each entry.
-// Wired into fj_shutdown (called first, while the runtime can still honor
-// fj_release) and called automatically after every successful fj_eval_string
-// (eval is the only redefinition entry point, so name lookups always observe
-// the current top-level definition). Calling it manually remains valid at
-// any time; the Fortran SDK exposes it as julia_clear_function_cache.
+// Drop the redefinition-sensitive name caches: the C-side function-name
+// cache (freeing keys, releasing GC roots) and -- when the loaded
+// FortranBridge provides clear_kw_cache! (a stale sysimage may not; then
+// the kwargs cache keeps the previous behavior) -- the Julia-side kwargs
+// cache. Wired into fj_shutdown (called first, while the runtime can still honor
+// fj_release) and into fj_eval_string (both outcome paths). Covers
+// rebinding through eval and include-reached-through-eval, the paths the
+// bridge intercepts; rebinding by other means (set_field/setproperty! on a
+// module, calling include() or a reload() helper BY NAME) is not observed
+// automatically -- call this after such operations. The Fortran SDK
+// exposes it as julia_clear_function_cache.
 void fj_clear_function_cache(void);
 
 // True when the handle refers to a Julia Function object (used by the SDK to
@@ -134,8 +144,12 @@ jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
 // native speed. The registry keeps the CFunction object alive (rooted in
 // Main), so GC lifetime is safe; the CONTRACT has hard edges, and misuse
 // crashes the process with no Julia-side diagnostic:
-//   1. Register after the function's FINAL definition: the trampoline is
-//      compiled for the exact definition alive at registration.
+//   1. The trampoline captures the function OBJECT resolved at
+//      registration, not a frozen method: an ordinary same-name method
+//      redefinition IS observed through old pointers, but rebinding the
+//      name to a new object (e.g. a closure) leaves old pointers calling
+//      the captured object -- register after the final definition or
+//      rebinding.
 //   2. Re-registering a name invalidates earlier pointers for that name
 //      (the previous CFunction becomes collectable, its code may be
 //      freed) -- discard previously obtained pointers.

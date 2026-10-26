@@ -153,8 +153,10 @@ The pointer is kept alive by the registry (the source function and the
 contract has hard edges -- misuse crashes the process with no Julia-side
 diagnostic:
 
-1. Register after the function's final definition; the trampoline is
-   compiled for the exact definition alive at registration.
+1. The trampoline captures the function object at registration: same-name
+   method redefinition is observed through old pointers, but rebinding the
+   name to a new object (e.g. a closure) leaves old pointers calling the
+   captured object. Register after the final definition or rebinding.
 2. Re-registering a name invalidates earlier pointers for that name (the
    old `@cfunction` object becomes collectable); discard them.
 3. The called function must not throw: an exception unwinds through the C
@@ -198,11 +200,14 @@ tracked in git.
 *   One runtime per process, initialized on the calling thread; all bridge
     calls must stay on that thread. Re-initialization after
     `julia_shutdown` is not supported.
-*   Name caches are invalidated automatically after every successful
-    `julia_eval_string` (eval and `include` are the only redefinition entry
-    points), so name-based calls observe top-level redefinitions. Julia-side
-    evals that rebind names behind the bridge's back are not observed;
-    `julia_clear_function_cache()` forces a drop when needed.
+*   Name caches are invalidated automatically after every
+    `julia_eval_string` (on both success and failure -- a throwing eval can
+    still have rebound names), so name-based calls observe top-level
+    redefinitions made through eval. Rebinding by other means --
+    `set_field`/`setproperty!` on a module, calling `include()` or a reload
+    helper by name, Julia-side evals -- is not observed automatically; call
+    `julia_clear_function_cache()` after such operations (it drops the name
+    cache and, in current FortranBridge builds, the kwargs cache).
 *   The `get_function_pointer` fast path trades safety for speed; its
     contract (final definition, no throwing, exact signatures) is spelled
     out under "Fast path (function pointers)".

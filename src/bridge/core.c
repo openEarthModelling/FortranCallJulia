@@ -391,15 +391,21 @@ void fj_init(const char* image_path) {
 }
 
 void fj_shutdown() {
-    // Shutdown must run on the thread that initialized the runtime (the
-    // same single-thread contract as every bridge call): it releases GC
-    // roots and tombstones cached bindings while the runtime is still
-        // alive, so racing it against anything would leave a concurrent
-    // reader dereferencing NULLed globals. A shutdown of a LIVE runtime from
-    // any other thread is refused with the last error set instead of
-    // racing; shutting down a runtime that was never initialized remains
-    // a benign no-op (Julia's atexit hook only).
-    if (fj_ready() && !check_thread()) return;
+    // Shutdown must run on the thread that owns the runtime (the same
+    // single-thread contract as every bridge call): it releases GC roots
+    // and tombstones cached bindings while the runtime is still alive, so
+    // racing it against anything would leave a concurrent reader
+    // dereferencing NULLed globals. Refuse with the last error set when
+    // called from any other thread while the runtime is live OR still
+    // initializing (fj_state stays FJ_UNINIT for the whole multi-second
+    // init, so an fj_ready() test alone would miss that window;
+    // main_thread_id is assigned before Julia init starts). Shutting a
+    // runtime whose initialization was never attempted is allowed from any
+    // thread: it leaves the state machine at FJ_SHUTDOWN -- a later
+    // fj_init_ex is refused, as after any shutdown -- and Julia itself is
+    // untouched (its atexit hook no-ops when the runtime never
+    // initialized).
+    if (main_thread_id != 0 && !check_thread()) return;
 
     // Drop the function-name cache FIRST, while the runtime can still honor
     // fj_release (it frees the C-side keys and releases the GC roots).

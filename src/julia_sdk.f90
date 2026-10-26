@@ -491,11 +491,13 @@ end subroutine copy_jv
     end subroutine julia_shutdown
 
     subroutine julia_clear_function_cache()
-        ! Explicitly drop the function-name / kwargs caches. Normally not
-        ! needed: every julia_eval_string call (which includes the
-        ! julia_include* helpers) invalidates them automatically, so
-        ! name-based calls always observe top-level redefinitions made
-        ! through eval. For explicit control only.
+        ! Explicitly drop the function-name cache and (when the loaded
+        ! FortranBridge provides clear_kw_cache!) the Julia-side kwargs
+        ! cache. Normally not needed: every julia_eval_string call (which
+        ! includes the julia_include* helpers) invalidates them
+        ! automatically on both outcome paths. Needed after rebinding
+        ! names by other means: set_field on a module, calling include()
+        ! or a reload helper by name, Julia-side evals.
         call fj_clear_function_cache()
     end subroutine julia_clear_function_cache
 
@@ -594,8 +596,11 @@ end subroutine copy_jv
     ! direct calls at native speed. The registry keeps the CFunction alive
     ! (rooted in Main), so GC lifetime is safe, but the contract has hard
     ! edges -- misuse crashes the process with no Julia-side diagnostic:
-    !   1. register only after the function's FINAL definition (the
-    !      trampoline is compiled for the exact definition at registration);
+    !   1. the trampoline captures the function OBJECT at registration:
+    !      same-name method redefinition is observed through old pointers,
+    !      but rebinding the name to a new object (closure) leaves old
+    !      pointers calling the captured object -- register after the final
+    !      definition or rebinding;
     !   2. re-registering a name invalidates earlier pointers for that name
     !      (the old CFunction becomes collectable) -- discard them;
     !   3. the called function must not throw (an exception unwinds through

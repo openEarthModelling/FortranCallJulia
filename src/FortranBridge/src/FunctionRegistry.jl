@@ -82,10 +82,13 @@ function helper_call_kwargs(func_name::String, args::Vector{Any}, kw_keys::Vecto
 end
 
 # --- Redefinition safety ---
-# Drop the cached (func, names) pairs. The C bridge calls this after every
-# successful fj_eval_string: eval (and include, which Fortran reaches
-# through eval) is the only way Fortran code can rebind a top-level name,
-# so clearing here keeps kwargs calls on the current definition. empty! is
+# Drop the cached (func, names) pairs. The C bridge calls this from
+# fj_clear_function_cache (after every fj_eval_string on both outcome
+# paths, and on manual clears): eval (and include reached through eval) is
+# the rebinding path the bridge intercepts, so clearing here keeps kwargs
+# calls on the current definition for that path. Rebinds by other means
+# (setproperty! on a module, include() called by name) need a manual
+# julia_clear_function_cache / clear_kw_cache!. empty! is
 # cheap (small dict); the cache refills on the next call.
 function clear_kw_cache!()
     empty!(KW_CACHE)
