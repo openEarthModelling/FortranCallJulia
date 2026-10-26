@@ -59,7 +59,12 @@ typedef struct fj_options {
 // takeover -- safe only because of the post-init signal reset).
 int fj_init_ex(const fj_options_t* opts);
 
-// Shutdown Julia Runtime
+// Shutdown Julia Runtime. Must be called from the thread that initialized
+// the runtime (the bridge's single-thread contract, like every bridge
+// call): while the runtime is live, a call from any other thread is
+// refused with fj_get_last_error() set instead of racing the shutdown
+// state changes. Shutting down a never-initialized runtime is a benign
+// no-op (it only runs Julia's atexit hook).
 void fj_shutdown();
 
 // --- Environment ---

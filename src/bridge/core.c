@@ -6,6 +6,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <stdatomic.h>
 #include "bridge_internal.h"
 
 // C-side GC root set for fj_retain/fj_release (implemented in memory.c)
@@ -41,9 +42,13 @@ jl_function_t* FuncMakeUnitRange = NULL;
 static pthread_t main_thread_id;
 static char last_error_msg[2048] = "No error";
 
-// Lifecycle state machine
+// Lifecycle state machine. fj_state is _Atomic (acquire loads / release
+// stores): fj_ready() may be polled from threads other than the init
+// thread, and a wrong-thread fj_shutdown must never race the state change
+// against in-flight mutations. Bridge CALLS remain init-thread-only
+// (check_thread enforces that at every entry point).
 enum { FJ_UNINIT = 0, FJ_READY = 1, FJ_SHUTDOWN = 2 };
-static int fj_state = 0;
+static _Atomic int fj_state = 0;
 
 // --- Helper Functions ---
 
@@ -56,7 +61,7 @@ const char* fj_get_last_error() {
 }
 
 int fj_ready(void) {
-    return fj_state == FJ_READY;
+    return atomic_load_explicit(&fj_state, memory_order_acquire) == FJ_READY;
 }
 
 int check_thread() {
@@ -193,8 +198,9 @@ int fj_init_ex(const fj_options_t* opts) {
 
     if (opts == NULL) opts = &defaults;
 
-    if (fj_state == FJ_READY) return 0; // Already initialized by us
-    if (fj_state == FJ_SHUTDOWN) {
+    int state = atomic_load_explicit(&fj_state, memory_order_acquire);
+    if (state == FJ_READY) return 0; // Already initialized by us
+    if (state == FJ_SHUTDOWN) {
         set_error("fj_init_ex: runtime was already shut down; re-initialization is not supported");
         return -1;
     }
@@ -364,7 +370,7 @@ int fj_init_ex(const fj_options_t* opts) {
         fprintf(stderr, "Warning: C-side root set unavailable, falling back to retain_obj/release_obj: %s\n", fj_get_last_error());
     }
 
-    fj_state = FJ_READY;
+    atomic_store_explicit(&fj_state, FJ_READY, memory_order_release);
     return 0;
 }
 
@@ -385,12 +391,22 @@ void fj_init(const char* image_path) {
 }
 
 void fj_shutdown() {
+    // Shutdown must run on the thread that initialized the runtime (the
+    // same single-thread contract as every bridge call): it releases GC
+    // roots and tombstones cached bindings while the runtime is still
+        // alive, so racing it against anything would leave a concurrent
+    // reader dereferencing NULLed globals. A shutdown of a LIVE runtime from
+    // any other thread is refused with the last error set instead of
+    // racing; shutting down a runtime that was never initialized remains
+    // a benign no-op (Julia's atexit hook only).
+    if (fj_ready() && !check_thread()) return;
+
     // Drop the function-name cache FIRST, while the runtime can still honor
     // fj_release (it frees the C-side keys and releases the GC roots).
     // Everything below only tombstones C statics.
     fj_clear_function_cache();
 
-    fj_state = FJ_SHUTDOWN;
+    atomic_store_explicit(&fj_state, FJ_SHUTDOWN, memory_order_release);
 
     // Invalidate cached handles so post-shutdown calls hit the fj_ready guard
     FortranBridgeMod = NULL;
