@@ -198,3 +198,15 @@ add_fj_example(ex_sciml_batch_data      05_sciml/2_batch_data.f90)
 # End-to-end acceptance demo: Fortran bind(c) RHS -> Main.FJ_CALLBACK ->
 # OrdinaryDiffEq solve -> extraction of the final state vs analytic solution
 add_fj_example(ex_sciml_demo            05_sciml/3_sciml_demo.f90)
+
+# ==============================================================================
+# 7. Capstone: Reacting Flow (Clawpack transport + embedded Julia chemistry)
+# ==============================================================================
+# The transport engine is the vendored Clawpack classic 1D kernel (see
+# third_party/clawpack1d/SOURCES.md); it only exists in the in-tree examples
+# build. Chemistry arrives in later commits via the bridge -- this commit
+# validates the transport engine alone (Sod vs exact Riemann solution).
+if(TARGET clawpack1d)
+    add_fj_example(ex_reacting_flow      06_capstone/1_reacting_flow.f90)
+    target_link_libraries(ex_reacting_flow PRIVATE clawpack1d)
+endif()
