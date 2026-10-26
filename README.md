@@ -183,8 +183,11 @@ tracked in git.
 *   One runtime per process, initialized on the calling thread; all bridge
     calls must stay on that thread. Re-initialization after
     `julia_shutdown` is not supported.
-*   The name-based function cache does not notice Julia-side redefinitions
-    of a function; call `fj_clear_function_cache()` after redefining.
+*   Name caches are invalidated automatically after every successful
+    `julia_eval_string` (eval and `include` are the only redefinition entry
+    points), so name-based calls observe top-level redefinitions. Julia-side
+    evals that rebind names behind the bridge's back are not observed;
+    `julia_clear_function_cache()` forces a drop when needed.
 *   Signal disposition: the bridge never touches `jl_options.handle_signals`
     (GC safepoint polling depends on Julia's SIGSEGV handler). "No takeover"
     resets SIGINT/SIGTERM to their defaults after init.

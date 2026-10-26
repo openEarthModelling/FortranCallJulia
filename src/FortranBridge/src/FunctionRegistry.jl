@@ -1,6 +1,6 @@
 module FunctionRegistry
 
-export register_f2, register_f2_string, helper_call_kwargs
+export register_f2, register_f2_string, helper_call_kwargs, clear_kw_cache!
 
 # Root the CFunction objects created by the runtime @cfunction path so that
 # the GC cannot collect them while Fortran still holds their addresses.
@@ -79,6 +79,17 @@ function helper_call_kwargs(func_name::String, args::Vector{Any}, kw_keys::Vecto
 
     # Call
     return func(args...; nt...)
+end
+
+# --- Redefinition safety ---
+# Drop the cached (func, names) pairs. The C bridge calls this after every
+# successful fj_eval_string: eval (and include, which Fortran reaches
+# through eval) is the only way Fortran code can rebind a top-level name,
+# so clearing here keeps kwargs calls on the current definition. empty! is
+# cheap (small dict); the cache refills on the next call.
+function clear_kw_cache!()
+    empty!(KW_CACHE)
+    return nothing
 end
 
 end # module

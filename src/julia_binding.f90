@@ -108,6 +108,13 @@ module julia_low_level
             integer(kind=c_int) :: is
         end function fj_is_function
 
+        ! Drops the C-side function-name cache (freeing its keys and
+        ! releasing its GC roots) and tombstones the Julia-side kwargs
+        ! cache hook. fj_eval_string does this automatically after every
+        ! successful eval; this binding exists for explicit control.
+        subroutine fj_clear_function_cache() bind(c, name="fj_clear_function_cache")
+        end subroutine fj_clear_function_cache
+
         function fj_eval_string(cmd) bind(c, name="fj_eval_string") result(res)
             import :: c_char, c_ptr
             character(kind=c_char), dimension(*), intent(in) :: cmd

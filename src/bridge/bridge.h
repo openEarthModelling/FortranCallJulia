@@ -90,6 +90,9 @@ jl_value_t* fj_call0(const char* func_name);
 jl_value_t* fj_call1_float64(const char* func_name, double arg1);
 jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj);
 jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2);
+// Evaluate Julia source. On success the redefinition-sensitive caches (the
+// function-name cache and the Julia-side kwargs cache) are invalidated, so
+// name-based calls made after the eval observe the current definitions.
 jl_value_t* fj_eval_string(const char* cmd);
 
 // Call a Julia function with N arguments
@@ -98,9 +101,10 @@ jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs);
 // --- Function Handle API (cached name -> function resolution) ---
 
 // Resolve a function by name using the internal function-name cache.
-// Returns an opaque handle, or NULL (with the last error set) on failure.
-// The handle stays valid only while the cache holds it (the cache entry is
-// its GC root), i.e. until fj_clear_function_cache() is called.
+// Returns an OWNED handle (rooted via fj_retain, independent of the name
+// cache), or NULL (with the last error set) on failure. The handle stays
+// valid across evals and cache invalidations; balance it with fj_release.
+// The Fortran SDK exposes this as julia_function; its finalizer releases.
 void* fj_resolve_function(const char* func_name);
 
 // Call a function handle obtained from fj_resolve_function.
@@ -109,7 +113,10 @@ jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs);
 
 // Free the C-side function-name cache, releasing the GC root of each entry.
 // Wired into fj_shutdown (called first, while the runtime can still honor
-// fj_release); calling it manually remains valid at any time.
+// fj_release) and called automatically after every successful fj_eval_string
+// (eval is the only redefinition entry point, so name lookups always observe
+// the current top-level definition). Calling it manually remains valid at
+// any time; the Fortran SDK exposes it as julia_clear_function_cache.
 void fj_clear_function_cache(void);
 
 // True when the handle refers to a Julia Function object (used by the SDK to

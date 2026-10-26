@@ -490,6 +490,15 @@ end subroutine copy_jv
         call fj_shutdown()
     end subroutine julia_shutdown
 
+    subroutine julia_clear_function_cache()
+        ! Explicitly drop the function-name / kwargs caches. Normally not
+        ! needed: every julia_eval_string call (which includes the
+        ! julia_include* helpers) invalidates them automatically, so
+        ! name-based calls always observe top-level redefinitions made
+        ! through eval. For explicit control only.
+        call fj_clear_function_cache()
+    end subroutine julia_clear_function_cache
+
     subroutine julia_eval_string(cmd)
         character(len=*), intent(in) :: cmd
         type(c_ptr) :: raw_res

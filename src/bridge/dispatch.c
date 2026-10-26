@@ -25,6 +25,12 @@ typedef struct {
 
 static fj_func_cache_slot_t fj_func_cache[FJ_FUNC_CACHE_CAP];
 
+// Julia-side counterpart of the invalidation below: FortranBridge.clear_kw_cache!
+// (empties FunctionRegistry.KW_CACHE). Resolved lazily; OPTIONAL -- an older
+// FortranBridge build (e.g. a stale sysimage without the export) simply keeps
+// the pre-change kwargs-cache behavior.
+static jl_function_t* FuncClearKwCache = NULL;
+
 static unsigned fj_func_cache_hash(const char* s) {
     unsigned h = 2166136261u; // FNV-1a
     while (*s) {
@@ -83,6 +89,30 @@ void fj_clear_function_cache(void) {
                 fj_func_cache[i].func = NULL;
             }
         }
+    }
+
+    // Tombstone the optional Julia-side invalidation hook along with the
+    // rest of this module's statics; it re-resolves lazily.
+    FuncClearKwCache = NULL;
+}
+
+// --- Redefinition cache invalidation ---
+//
+// Called by fj_eval_string after every successful eval: eval (and include,
+// which Fortran reaches through eval) is the only entry point that can
+// rebind a top-level name, so every successful eval invalidates the
+// redefinition-sensitive name caches -- the C-side cache above and the
+// Julia-side FunctionRegistry.KW_CACHE. Cheap relative to the eval itself;
+// both caches refill lazily on the next lookup. Exceptions from the
+// Julia-side clear are swallowed: invalidation must never fail an eval
+// that succeeded.
+static void fj_invalidate_redefinition_caches(void) {
+    fj_clear_function_cache();
+    if (FuncClearKwCache == NULL)
+        FuncClearKwCache = jl_get_function(FortranBridgeMod, "clear_kw_cache!");
+    if (FuncClearKwCache != NULL) {
+        jl_call0(FuncClearKwCache);
+        if (jl_exception_occurred()) jl_exception_clear();
     }
 }
 
@@ -194,9 +224,14 @@ void* fj_resolve_function(const char* func_name) {
     if (!func) {
         char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
     }
-    // The returned handle is the cache's retained copy; its cache entry is
-    // the GC root keeping it alive.
-    return (void*)func;
+    // Return an OWNED reference rooted independently in the C-side root set
+    // (fj_retain): eval-triggered cache invalidation releases the cache's
+    // root, so a handle kept alive only by its cache entry would dangle
+    // after any later eval. The caller owns this reference and balances it
+    // with fj_release (the Fortran SDK's JuliaValue finalizer does exactly
+    // that -- this now matches the SDK's documented ownership rule).
+    void* rooted = fj_retain((jl_value_t*)func);
+    return rooted;
 }
 
 jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs) {
@@ -214,11 +249,18 @@ jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs) {
     return ret;
 }
 
+// Evaluate Julia source. On success the redefinition-sensitive caches are
+// invalidated (see fj_invalidate_redefinition_caches above) so later
+// name-based calls observe any top-level rebinding the eval performed.
 jl_value_t* fj_eval_string(const char* cmd) {
     if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
-    jl_value_t *ret = jl_eval_string(cmd);
-    if (check_julia_exception()) return NULL;
+    jl_value_t *ret = NULL;
+    JL_GC_PUSH1(&ret); // the invalidation below can GC; keep the result rooted
+    ret = jl_eval_string(cmd);
+    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
+    fj_invalidate_redefinition_caches();
+    JL_GC_POP();
     return ret;
 }
 

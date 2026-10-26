@@ -17,7 +17,7 @@ export retain_obj, release_obj
 
 # Function Registry
 using .FunctionRegistry
-export register_f2, register_f2_string, helper_call_kwargs
+export register_f2, register_f2_string, helper_call_kwargs, clear_kw_cache!
 
 # Accessors
 using .Accessors
