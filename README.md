@@ -45,7 +45,12 @@ results come back through zero-copy or batch-extraction APIs.
 ├── examples/             # Progressive tutorial suite
 │   ├── 01_basics/ .. 04_performance/
 │   ├── 05_hpc_parallel/  # Multithreading, MPI bootstrap
-│   └── 05_sciml/         # Callbacks, batch data, end-to-end ODE demo
+│   ├── 05_sciml/         # Callbacks, batch data, end-to-end ODE demo
+│   └── 06_capstone/      # Reacting-flow capstone: Fortran Euler driver +
+│                         #   vendored Clawpack kernel, Strang-split
+│                         #   Catalyst chemistry over the bridge (JIT /
+│                         #   sysimage / AOT), CJ-detonation validated;
+│                         #   see PERFORMANCE.md
 ├── scripts/              # Sysimage pipeline (build_sysimage.jl,
 │                         #   precompile.jl, install_sciml_env.jl)
 └── CMakeLists.txt
@@ -177,6 +182,15 @@ res = cb%call_value(du_boxed, u_boxed, p_boxed, t_boxed)
 
 The full end-to-end demo (harmonic oscillator through Tsit5, analytic
 comparison at ~1e-9 error) is `examples/05_sciml/3_sciml_demo.f90`.
+
+The capstone (`examples/06_capstone/`) is the same idea at production
+scale: the Fortran driver owns a 1D reacting-Euler time loop over a
+vendored Clawpack wave-propagation kernel, and every Strang-split
+chemistry half-step crosses the bridge as ONE batched call into a
+precompiled FjKinetics package (no runtime compilation in any mode).
+It validates the HLW 2000 CJ detonation speed to 0.011% at nx=2700 and
+carries the full JIT / sysimage / AOT / native comparison in
+`examples/06_capstone/PERFORMANCE.md`.
 
 ### 5. Batch extraction
 

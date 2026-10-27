@@ -43,7 +43,7 @@ t_loop = @elapsed for _ in 1:NITER
     FjKinetics.step_chemistry!(ks, y, t, rho, DT)
 end
 
-@printf("first batched step (%d cells): %10.6f s\n", N, t_warm)
+@printf("first timed step (post-warm-up, %d cells): %10.6f s\n", N, t_warm)
 @printf("steady loop: %d calls x %d cells in %8.3f s\n", NITER, N, t_loop)
 @printf("per cell-step: %10.6f s\n", t_loop / (NITER * N))
 println("JULIA_REF_BENCH_DONE")

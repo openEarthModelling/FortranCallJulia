@@ -45,12 +45,30 @@ program aot_kinetics_bench
     print '(a)', 'AOT kinetics benchmark: standalone libkinetics.so'
     print '(a,es12.3,a)', 'library init: ', t_init, ' s'
 
+    ! error-code contract checks (review R2): a fresh library load must
+    ! start WITHOUT a solver -- the module __init__ clears the slot the
+    ! build-time workload filled -- so a step before build must refuse
+    ! with -2, and a bad n must refuse with -1 (before any deref).
+    ret = kinetics_step(c_loc(ybuf), c_loc(tbuf), c_loc(rhobuf), int(n, c_int), dt)
+    if (ret /= -2) then
+        print *, 'FATAL: step before build returned ', ret, '(expected -2)'
+        stop 1
+    end if
+    print '(a)', 'guard: step-before-build returned -2 (fresh load has no solver)'
+
     ret = kinetics_build(164180.0_c_double, 25.0_c_double, 1.0_c_double, &
                          25.0_c_double, 2.5_c_double)
     if (ret /= 2) then
         print *, 'FATAL: kinetics_build returned ', ret, '(expected 2 species)'
         stop 1
     end if
+
+    ret = kinetics_step(c_null_ptr, c_null_ptr, c_null_ptr, -1_c_int, dt)
+    if (ret /= -1) then
+        print *, 'FATAL: bad-n step returned ', ret, '(expected -1)'
+        stop 1
+    end if
+    print '(a)', 'guard: bad-n step returned -1'
 
     call reset_state()
     ret = kinetics_step(c_loc(ybuf), c_loc(tbuf), c_loc(rhobuf), int(n, c_int), dt)
@@ -59,7 +77,7 @@ program aot_kinetics_bench
         stop 1
     end if
     call system_clock(c1)
-    print '(a,es12.3,a)', 'build+first batched step (after init): ', &
+    print '(a,es12.3,a)', 'build+guards+first batched step (after init): ', &
         dble(c1 - c0)/dble(crate) - t_init, ' s'
 
     ! first timed call on a fresh state, then the steady loop
@@ -81,7 +99,7 @@ program aot_kinetics_bench
     call system_clock(c1)
     t_loop = dble(c1 - c0)/dble(crate)
 
-    print '(a,i0,a,es12.3,a)', 'first batched step (', n, ' cells): ', t_warm, ' s'
+    print '(a,i0,a,es12.3,a)', 'first timed step (post-warm-up, ', n, ' cells): ', t_warm, ' s'
     print '(a,i0,a,i0,a,es12.3,a)', 'steady loop: ', niter, ' calls x ', n, &
         ' cells in ', t_loop, ' s'
     print '(a,es12.3,a)', 'per cell-step: ', t_loop/(dble(niter)*n), ' s'

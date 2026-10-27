@@ -18,7 +18,7 @@ rc == 0 || error("aot precompile: step failed")
 
 # the view/active-set slicing shape used by the bridge driver
 # (FjKinetics is visible through KineticsAOT's own `using`)
-KineticsAOT.FjKinetics.step_chemistry!(KineticsAOT.KS[], view(y, 1:4, :),
+KineticsAOT.FjKinetics.step_chemistry!(KineticsAOT.KS[1], view(y, 1:4, :),
                                        view(t, 1:4), view(rho, 1:4), 4.0e-4)
 
 println("KineticsAOT precompilation complete.")

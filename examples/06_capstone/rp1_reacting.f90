@@ -169,6 +169,9 @@ subroutine rp1_reacting(maxmx,meqn,mwaves,maux,mbc,mx,ql,qr,auxl,auxr, &
         do m = 1, meqn
             amdq(m,i) = amdq(m,i) + s(2,i)*wave(m,2,i)
         end do
+        ! s(4) == s(2) by construction (the species contact rides the
+        ! 2-wave's Roe speed), so this branch fires exactly when the 2-wave
+        ! branch above does; kept separate for clarity, not correctness.
         if (s(4,i) < 0.d0) then
             do m = 1, meqn
                 amdq(m,i) = amdq(m,i) + s(4,i)*wave(m,4,i)

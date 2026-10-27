@@ -21,7 +21,7 @@ Pkg.instantiate()
 create_library("KineticsAOT", "dist";
     lib_name = "libkinetics",
     force = true,
-    header_files = ["KineticsAOT/src/KineticsAOT.jl"],
+    header_files = ["kinetics.h"],
     incremental = false,
     filter_stdlibs = true,
     # LinearSolve (SciML closure) probes MKL_jll, a lazy artifact, at

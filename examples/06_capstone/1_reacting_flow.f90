@@ -103,9 +103,10 @@ program ex_reacting_flow
     double precision :: K0, Ea, Rg       ! Arrhenius: k(T)=K0*exp(-Ea/(Rg*T))
     double precision, parameter :: t_cut = 1.5d0      ! active-set thresholds:
     double precision, parameter :: z_floor = 1.0d-12  ! frozen cells are skipped
-    ! (at T <= t_cut, k(T) = 3.6d-4 and the induction time exceeds the whole
-    !  simulation by orders of magnitude, so skipping them is exact to run
-    !  precision; cells are only skipped while chemically inert)
+    ! (at the cutoff T = 1.5, k(T) = K0*exp(-Ea/(Rg*T)) = 9.5d-3, so one
+    !  skipped half-step perturbs a cell by k*dt/2 ~ 2d-6 -- far below run
+    !  precision -- and the induction time 1/k ~ 100 dwarfs t_final = 0.3;
+    !  cells are only skipped while chemically inert)
 
     ! --- chemistry bridge state ------------------------------------------------
     logical :: chemistry_on
@@ -221,7 +222,9 @@ program ex_reacting_flow
             ! the value argument, so defaults are restored on st /= 0)
             ! the project must carry BOTH FortranBridge (the bridge loads
             ! it from the activated environment) and FjKinetics: the shared
-            ! scratch env scripts/sysimage_env dev's both
+            ! scratch env scripts/sysimage_env dev's both. In sysimage mode
+            ! FjKinetics need not be importable at runtime -- the image
+            ! binds Main.FjKinetics already (see the probe below)
             project_path = exe_dir // '/../../scripts/sysimage_env'
             image_path = exe_dir // '/../libfj_sysimage.so'
             call get_environment_variable('FJ_KINETICS_PROJECT', project_path, status=st)
@@ -268,8 +271,25 @@ program ex_reacting_flow
                 error stop 1
             end if
 
-            call julia_eval_string('import FjKinetics')
+            ! Bind FjKinetics in Main, both modes, loudly. In jit mode the
+            ! import does it. In sysimage mode the image already binds
+            ! Main.FjKinetics (the precompile workload did `using
+            ! FjKinetics` in Main) and a bare `import` actually FAILS
+            ! there (stderr noise, previously fire-and-forget) -- so probe
+            ! the binding first and import only when absent.
+            v_res = julia_eval('Int(isdefined(Main, :FjKinetics))')
             n_bridge = n_bridge + 1
+            if (v_res%is_valid() .and. v_res%as_integer() == 0) then
+                call julia_eval_string('import FjKinetics')
+                n_bridge = n_bridge + 1
+                v_res = julia_eval('Int(isdefined(Main, :FjKinetics))')
+                n_bridge = n_bridge + 1
+            end if
+            if (.not. v_res%is_valid() .or. v_res%as_integer() /= 1) then
+                msg = get_last_error_message()
+                write (error_unit, '(a)') 'FATAL: FjKinetics not bound in Main: ' // trim(msg)
+                error stop 1
+            end if
             ! cv = Rg/(gamma-1) keeps the mechanism exactly equivalent to the
             ! HLW constant-(rho,rho*u,E) chemical step (see FjKinetics.jl)
             write (expr, '(a,es24.16,a,es24.16,a,es24.16,a,es24.16,a,es24.16,a)') &
@@ -360,11 +380,11 @@ program ex_reacting_flow
         dt = min(cfl_target*dx/mineig, t_final - t)
 
         call chemistry(dt/2)
-        ! t_first_chem is clocked inside chemistry() itself (c_chem0 is its
-        ! entry stamp), so it covers pack + first-call JIT compilation
-        if (nchem == 1 .and. t_first_chem == 0.0d0) then
-            t_first_chem = t_chem_last
-        end if
+        ! t_first_chem is captured inside chemistry() at the first eval
+        ! (see there): the first NON-EMPTY half-step, which is the
+        ! post-transport one -- half-step 1 has an empty active set
+        ! (unburnt cells below t_cut, burnt driver cells below z_floor)
+        ! and never crosses the bridge at all.
 
         call bc1(meqn,mbc,mx,xlower,dx,q,1,aux,t,dt,mthbc)
         if (meqn == 4) then
@@ -422,16 +442,23 @@ program ex_reacting_flow
         print '(a,es11.3,a,es11.3)', 'momentum change vs pressure impulse (pL-pR)*t: ', &
              (sum1(2)-sum0(2))*dx, ' vs ', (p_l-p_r)*t
 
-        if (minval(q(1,1:mx)) <= 0.0d0) error stop 'FAIL: non-positive density'
-        if (l1rho > 2.0d-2) error stop 'FAIL: L1(rho) too large'
-        if (l1u  > 2.0d-2) error stop 'FAIL: L1(u) too large'
-        if (l1p  > 1.0d-2) error stop 'FAIL: L1(p) too large'
-        if (abs(fstar_residual) > 1.0d-10) error stop 'FAIL: star-state solve'
+        ! guards written as .not. (expr <= tol): every NaN comparison is
+        ! false, so a NaN payload fails the .not. test and dies loudly
+        ! instead of silently passing the tolerance check. The density
+        ! guard is elementwise any() for the same reason: minval's NaN
+        ! handling is processor-dependent (gfortran skips NaN elements),
+        ! so a localized NaN blob with a finite minimum elsewhere could
+        ! pass a minval guard; any(.not. (q > 0)) is NaN-fatal per cell
+        if (any(.not. (q(1,1:mx) > 0.0d0))) error stop 'FAIL: non-positive density'
+        if (.not. (l1rho <= 2.0d-2)) error stop 'FAIL: L1(rho) too large'
+        if (.not. (l1u  <= 2.0d-2)) error stop 'FAIL: L1(u) too large'
+        if (.not. (l1p  <= 1.0d-2)) error stop 'FAIL: L1(p) too large'
+        if (.not. (abs(fstar_residual) <= 1.0d-10)) error stop 'FAIL: star-state solve'
         ! mass and total energy are invariants; momentum is not (outflow
         ! boundaries exert the net pressure force): it must match the impulse
-        if (abs(sum1(1)-sum0(1)) > 1.0d-9*abs(sum0(1))) error stop 'FAIL: mass drift'
-        if (abs(sum1(3)-sum0(3)) > 1.0d-9*abs(sum0(3))) error stop 'FAIL: energy drift'
-        if (abs((sum1(2)-sum0(2))*dx - (p_l-p_r)*t) > 1.0d-2*(p_l-p_r)*t) &
+        if (.not. (abs(sum1(1)-sum0(1)) <= 1.0d-9*abs(sum0(1)))) error stop 'FAIL: mass drift'
+        if (.not. (abs(sum1(3)-sum0(3)) <= 1.0d-9*abs(sum0(3)))) error stop 'FAIL: energy drift'
+        if (.not. (abs((sum1(2)-sum0(2))*dx - (p_l-p_r)*t) <= 1.0d-2*(p_l-p_r)*t)) &
             error stop 'FAIL: momentum does not match pressure impulse'
         print '(a)', 'SOD_VALIDATION_PASS'
         print '(a)', '===================================================='
@@ -460,25 +487,30 @@ program ex_reacting_flow
         print '(a,i0,a,i0)', 'steps = ', nsteps, '  chemistry half-steps = ', nchem
         print '(a,i0,a)', 'active cells processed by chemistry: ', ncells_chem, &
             ' (frozen cells skipped, see t_cut)'
-        print '(a,es12.3,a,es12.3,a)', 'timing: init ', t_init, ' s, first chem half-step ', &
+        print '(a,es12.3,a,es12.3,a)', 'timing: init ', t_init, ' s, first non-empty chem call ', &
             t_first_chem, ' s'
         print '(a,es12.3,a,es12.3,a)', '        chemistry total ', t_chem, ' s, run total ', &
             t_total, ' s'
         print '(a,i0,a,i0,a,i0)', 'bridge calls: ', n_bridge + 1, ' (init/setup ', n_bridge_init, &
             ' + chemistry ', n_bridge_chem, ' + shutdown 1)'
 
-        if (minval(q(1,1:mx)) <= 0.0d0) error stop 'FAIL: non-positive density'
-        if (minval([(p_i(i), i=1,mx)]) <= 0.0d0) error stop 'FAIL: non-positive pressure'
-        if (.not. mark_set .or. xfa <= xlower) error stop 'FAIL: front never entered window'
-        if (xfb > xupper - 10.0d0*dx) error stop 'FAIL: front reached the right boundary'
-        if (abs(dspeed - scj) > 2.0d-2*scj) then
+        ! NaN-safe form (see the sod section): a NaN speed or state fails
+        ! these .not. (expr <= tol) tests loudly instead of passing them;
+        ! the density/pressure guards are elementwise any() because
+        ! minval's NaN handling is processor-dependent (gfortran skips
+        ! NaN elements) -- a localized NaN blob could pass a minval guard
+        if (any(.not. (q(1,1:mx) > 0.0d0))) error stop 'FAIL: non-positive density'
+        if (any(.not. ([(p_i(i), i=1,mx)] > 0.0d0))) error stop 'FAIL: non-positive pressure'
+        if (.not. mark_set .or. .not. (xfa > xlower)) error stop 'FAIL: front never entered window'
+        if (.not. (xfb <= xupper - 10.0d0*dx)) error stop 'FAIL: front reached the right boundary'
+        if (.not. (abs(dspeed - scj) <= 2.0d-2*scj)) then
             print '(a)', 'FAIL: detonation speed outside the 2% band (weak-detonation ' // &
                 'under-resolution? raise nx)'
             error stop 1
         end if
-        if (abs(q(1,i_s) - rho_cj) > 0.1d0*rho_cj .or. &
-            abs(q(2,i_s)/q(1,i_s) - u_cj) > 0.1d0*u_cj .or. &
-            abs(p_i(i_s) - p_cj) > 0.1d0*p_cj) then
+        if (.not. (abs(q(1,i_s) - rho_cj) <= 0.1d0*rho_cj .and. &
+                   abs(q(2,i_s)/q(1,i_s) - u_cj) <= 0.1d0*u_cj .and. &
+                   abs(p_i(i_s) - p_cj) <= 0.1d0*p_cj)) then
             error stop 'FAIL: burnt state deviates from CJ by more than 10%'
         end if
         print '(a)', 'DETONATION_VALIDATION_PASS'
@@ -585,6 +617,14 @@ contains
         call system_clock(c1)
         t_chem_last = dble(c1 - c_chem0)/dble(crate)
         t_chem = t_chem + t_chem_last
+        ! zero-JIT probe: the first NON-EMPTY half-step is the first call
+        ! that actually crosses the bridge (half-step 1 packs nothing --
+        ! unburnt cells sit below t_cut, burnt driver cells below z_floor
+        ! -- and makes no Julia call, so timing it measures only the loop
+        ! overhead). t_chem_last here spans pack + eval + write-back.
+        if (n_bridge_chem == 1 .and. t_first_chem == 0.0d0) then
+            t_first_chem = t_chem_last
+        end if
     end subroutine chemistry
 
     ! f_K(p): velocity jump across a shock (p > pK) or rarefaction (p <= pK)
