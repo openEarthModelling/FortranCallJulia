@@ -192,6 +192,15 @@ It validates the HLW 2000 CJ detonation speed to 0.011% at nx=2700 and
 carries the full JIT / sysimage / AOT / native comparison in
 `examples/06_capstone/PERFORMANCE.md`.
 
+The driver also writes plain-ASCII figure data (`output/sod_final.dat`,
+`det_final.dat`, `det_front.dat`, resolved relative to the executable) and
+`figures/plot_capstone.py` renders the four publication figures from it
+(PNG 600 dpi): Sod triptych vs the exact Riemann solution, the detonation
+structure quad with CJ reference lines and a reaction-layer inset, the
+front-trajectory secant, and the startup / steady-cost mode comparison.
+See `figures/FIGURES.md` for a per-figure walkthrough. Data files are
+gitignored; rerun the driver to regenerate them.
+
 ### 5. Batch extraction
 
 ```fortran

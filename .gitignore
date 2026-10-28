@@ -35,3 +35,5 @@ scripts/sysimage_env/
 examples/06_capstone/2_aot_kinetics/dist/
 examples/06_capstone/2_aot_kinetics/build/
 examples/06_capstone/2_aot_kinetics/aot_bench
+# figure data (regenerable: run the driver)
+examples/06_capstone/output/

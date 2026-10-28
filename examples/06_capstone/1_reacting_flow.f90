@@ -139,6 +139,10 @@ program ex_reacting_flow
     double precision :: l1rho, l1u, l1p, sum0(3), sum1(3), mineig
     double precision :: rho_ex, u_ex, p_ex
 
+    ! --- figure data output (ASCII; consumed by figures/plot_capstone.py) --------
+    integer :: u_out
+    character(len=512) :: outdir
+
     ! -----------------------------------------------------------------------
     ! parameters
     ! -----------------------------------------------------------------------
@@ -364,6 +368,16 @@ program ex_reacting_flow
     ! time loop: Strang splitting (chemistry dt/2 - transport dt - chemistry
     ! dt/2); in sod mode chemistry() is a no-op
     ! -----------------------------------------------------------------------
+    ! figure data: front trajectory every transport step (detonation only)
+    if (chemistry_on) then
+        outdir = output_dir()
+        call execute_command_line('mkdir -p ' // trim(outdir))
+        open(newunit=u_out, file=trim(outdir) // '/det_front.dat', &
+             status='replace', action='write')
+        write(u_out, '(a)') '# detonation front trajectory (HLW 2000 Ex.2)'
+        write(u_out, '(a)') '# columns: t x_front'
+    end if
+
     call system_clock(c0)
     t = 0.0d0
     mark_set = .false.
@@ -401,6 +415,7 @@ program ex_reacting_flow
         call chemistry(dt/2)
         t = t + dt
         nsteps = nsteps + 1
+        if (chemistry_on) write(u_out, '(*(es26.16e3))') t, front_x()
 
         ! detonation-speed measurement window: second half of the run
         if (chemistry_on .and. .not. mark_set .and. t >= 0.5d0*t_final) then
@@ -409,6 +424,7 @@ program ex_reacting_flow
             mark_set = .true.
         end if
     end do
+    if (chemistry_on) close(u_out)
     call system_clock(c1)
     t_total = dble(c1 - c0)/dble(crate)
 
@@ -418,6 +434,15 @@ program ex_reacting_flow
     if (.not. chemistry_on) then
         call sod_star_state(p_l, rho_l, u_l, p_r, rho_r, u_r, gamma, pstar, ustar, fstar_residual)
 
+        ! figure data: final state with the exact solution alongside (the
+        ! sampling is already done for the L1 norms; emit it here)
+        outdir = output_dir()
+        call execute_command_line('mkdir -p ' // trim(outdir))
+        open(newunit=u_out, file=trim(outdir) // '/sod_final.dat', &
+             status='replace', action='write')
+        write(u_out, '(a,i0,a,f8.4,a,f5.2)') '# Sod tube final state: nx = ', mx, &
+             ', t = ', t, ', gamma = ', gamma
+        write(u_out, '(a)') '# columns: x rho u p Z rho_exact u_exact p_exact'
         l1rho = 0.0d0; l1u = 0.0d0; l1p = 0.0d0
         do i = 1, mx
             call sod_sample(p_l, rho_l, u_l, p_r, rho_r, u_r, gamma, &
@@ -426,8 +451,12 @@ program ex_reacting_flow
             l1rho = l1rho + abs(q(1,i) - rho_ex)
             l1u = l1u + abs(q(2,i)/q(1,i) - u_ex)
             l1p = l1p + abs(pressure(q(1,i),q(2,i),q(3,i),gamma) - p_ex)
+            write(u_out, '(*(es26.16e3))') xlower + (dble(i)-0.5d0)*dx, q(1,i), &
+                 q(2,i)/q(1,i), pressure(q(1,i),q(2,i),q(3,i),gamma), 0.0d0, &
+                 rho_ex, u_ex, p_ex
         end do
         l1rho = l1rho/mx; l1u = l1u/mx; l1p = l1p/mx
+        close(u_out)
 
         sum1 = 0.0d0
         do i = 1, mx
@@ -494,6 +523,20 @@ program ex_reacting_flow
         print '(a,i0,a,i0,a,i0)', 'bridge calls: ', n_bridge + 1, ' (init/setup ', n_bridge_init, &
             ' + chemistry ', n_bridge_chem, ' + shutdown 1)'
 
+        ! figure data: final profiles with the CJ reference in the header
+        open(newunit=u_out, file=trim(output_dir()) // '/det_final.dat', &
+             status='replace', action='write')
+        write(u_out, '(a,i0,a,f8.4)') '# CJ detonation final state (HLW 2000 Ex.2): nx = ', mx, &
+             ', t = ', t
+        write(u_out, '(a,es13.6,a,es13.6,a,es13.6,a,es13.6)') '# CJ reference: rho_cj = ', rho_cj, &
+             ', u_cj = ', u_cj, ', p_cj = ', p_cj, ', s_cj = ', scj
+        write(u_out, '(a)') '# columns: x rho u p Z'
+        do i = 1, mx
+            write(u_out, '(*(es26.16e3))') xlower + (dble(i)-0.5d0)*dx, q(1,i), q(2,i)/q(1,i), &
+                 p_i(i), q(4,i)/q(1,i)
+        end do
+        close(u_out)
+
         ! NaN-safe form (see the sod section): a NaN speed or state fails
         ! these .not. (expr <= tol) tests loudly instead of passing them;
         ! the density/pressure guards are elementwise any() because
@@ -522,6 +565,23 @@ program ex_reacting_flow
 contains
 
     ! pressure in cell i, q0-aware (q0 = 0 in sod mode; q(4,:) pre-zeroed)
+    ! absolute location of examples/06_capstone/output, resolved from the
+    ! running executable the same way the sysimage/project paths are, so
+    ! the files land in one place regardless of the cwd the binary runs
+    ! from; loud failure if the exe path cannot be resolved
+    function output_dir() result(d)
+        character(len=512) :: d
+        character(len=:), allocatable :: exe_dir
+        character(len=512) :: cwd_
+        exe_dir = julia_executable_dir()
+        if (len_trim(exe_dir) == 0) error stop 'FATAL: cannot resolve executable dir for output'
+        d = trim(exe_dir) // '/../../examples/06_capstone/output'
+        if (d(1:1) /= '/') then
+            call getcwd(cwd_)
+            d = trim(cwd_) // '/' // trim(d)
+        end if
+    end function output_dir
+
     function p_i(i)
         integer, intent(in) :: i
         double precision :: p_i
