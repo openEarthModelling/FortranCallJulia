@@ -15,10 +15,12 @@ const PROJECT_ROOT      = normpath(joinpath(@__DIR__, ".."))
 const FORTRANBRIDGE_PATH = joinpath(PROJECT_ROOT, "src", "FortranBridge")
 const SYSIMAGE_ENV      = joinpath(@__DIR__, "sysimage_env")
 
-# FjKinetics (capstone chemistry package) is also in-repo: dev it into the
-# same environment so `import FjKinetics` resolves wherever FortranBridge
-# does (the embedded runtime activates exactly one project).
-const FJKINETICS_PATH = joinpath(PROJECT_ROOT, "src", "FjKinetics")
+# FjKinetics (capstone chemistry package) lives under the example dir
+# (examples/07_capstone/FjKinetics) but this framework-level script still
+# points at it: the sysimage embeds the capstone chemistry workload as part
+# of the deployment recipe, so the scratch env dev's it alongside
+# FortranBridge (the embedded runtime activates exactly one project).
+const FJKINETICS_PATH = joinpath(PROJECT_ROOT, "examples", "07_capstone", "FjKinetics")
 
 isfile(joinpath(FORTRANBRIDGE_PATH, "Project.toml")) ||
     error("FortranBridge package not found at $(FORTRANBRIDGE_PATH)")

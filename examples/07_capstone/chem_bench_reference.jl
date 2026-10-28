@@ -4,7 +4,7 @@
 # 2_aot_kinetics/main.f90 drives, so per-cell numbers are directly
 # comparable across JIT / sysimage / AOT / native.
 #
-#   julia --project=scripts/sysimage_env examples/06_capstone/chem_bench_reference.jl
+#   julia --project=scripts/sysimage_env examples/07_capstone/chem_bench_reference.jl
 
 using Printf
 

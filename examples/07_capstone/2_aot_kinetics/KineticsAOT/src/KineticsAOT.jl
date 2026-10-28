@@ -6,7 +6,7 @@ module KineticsAOT
 # baked into a standalone shared library by PackageCompiler create_library
 # (MyLib precedent, examples/03_deployment/2_compiled_library).
 #
-# The comparison the perf report makes (examples/06_capstone, commit 7):
+# The comparison the perf report makes (examples/07_capstone, commit 7):
 #   JIT      embedded runtime, package caches          (bridge eval path)
 #   sysimage embedded runtime, image                   (bridge eval path)
 #   AOT      standalone library, @ccallable entry      (this module)

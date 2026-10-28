@@ -1,7 +1,7 @@
 program aot_kinetics_bench
     ! Capstone AOT comparison driver: run the same FjKinetics chemistry
     ! kernel the bridge drives (JIT / sysimage modes of
-    ! 06_capstone/1_reacting_flow), but through the standalone compiled
+    ! 07_capstone/1_reacting_flow), but through the standalone compiled
     ! library's @ccallable entry -- no bridge, no eval, no project env.
     !
     ! Workload mirrors the detonation chemistry mix: burning cells

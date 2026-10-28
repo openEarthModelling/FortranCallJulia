@@ -16,7 +16,7 @@ results come back through zero-copy or batch-extraction APIs.
 *   **Zero-Copy Arrays:** pass Fortran arrays to Julia without copying.
 *   **Callbacks (Fortran -> Julia):** `julia_callback` wraps a `bind(c)`
     subroutine into a Julia callable, e.g. an ODE right-hand side consumed
-    by OrdinaryDiffEq (`examples/05_sciml`).
+    by OrdinaryDiffEq (`examples/06_sciml`).
 *   **Batch Extraction (Julia -> Fortran):** `%to_fortran` copies a whole
     dense array in one call; `%element` and `%property` navigate result
     objects. Implemented on top of cached `Base.getindex` /
@@ -45,8 +45,8 @@ results come back through zero-copy or batch-extraction APIs.
 ├── examples/             # Progressive tutorial suite
 │   ├── 01_basics/ .. 04_performance/
 │   ├── 05_hpc_parallel/  # Multithreading, MPI bootstrap
-│   ├── 05_sciml/         # Callbacks, batch data, end-to-end ODE demo
-│   └── 06_capstone/      # Reacting-flow capstone: Fortran Euler driver +
+│   ├── 06_sciml/         # Callbacks, batch data, end-to-end ODE demo
+│   └── 07_capstone/      # Reacting-flow capstone: Fortran Euler driver +
 │                         #   vendored Clawpack kernel, Strang-split
 │                         #   Catalyst chemistry over the bridge (JIT /
 │                         #   sysimage / AOT), CJ-detonation validated;
@@ -181,16 +181,16 @@ res = cb%call_value(du_boxed, u_boxed, p_boxed, t_boxed)
 ```
 
 The full end-to-end demo (harmonic oscillator through Tsit5, analytic
-comparison at ~1e-9 error) is `examples/05_sciml/3_sciml_demo.f90`.
+comparison at ~1e-9 error) is `examples/06_sciml/3_sciml_demo.f90`.
 
-The capstone (`examples/06_capstone/`) is the same idea at production
+The capstone (`examples/07_capstone/`) is the same idea at production
 scale: the Fortran driver owns a 1D reacting-Euler time loop over a
 vendored Clawpack wave-propagation kernel, and every Strang-split
 chemistry half-step crosses the bridge as ONE batched call into a
 precompiled FjKinetics package (no runtime compilation in any mode).
 It validates the HLW 2000 CJ detonation speed to 0.011% at nx=2700 and
 carries the full JIT / sysimage / AOT / native comparison in
-`examples/06_capstone/PERFORMANCE.md`.
+`examples/07_capstone/PERFORMANCE.md`.
 
 The driver also writes plain-ASCII figure data (`output/sod_final.dat`,
 `det_final.dat`, `det_front.dat`, resolved relative to the executable) and

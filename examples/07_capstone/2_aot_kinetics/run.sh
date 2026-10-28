@@ -6,7 +6,7 @@ set -e
 # root, like examples/03_deployment/2_compiled_library/run.sh.
 
 ROOT_DIR="$(pwd)"
-EXAMPLE_DIR="examples/06_capstone/2_aot_kinetics"
+EXAMPLE_DIR="examples/07_capstone/2_aot_kinetics"
 DIST_DIR="$EXAMPLE_DIR/dist"
 LIB_DIR="$DIST_DIR/lib"
 INCLUDE_DIR="$DIST_DIR/include"

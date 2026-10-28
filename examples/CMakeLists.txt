@@ -190,23 +190,21 @@ endif()
 # ==============================================================================
 
 # Fortran bind(c) RHS wrapped into a Julia-side callable f(du,u,p,t)
-add_fj_example(ex_sciml_callback        05_sciml/1_callback.f90)
+add_fj_example(ex_sciml_callback        06_sciml/1_callback.f90)
 
 # Batch extraction: 1-based element / getproperty / bulk to_fortran
-add_fj_example(ex_sciml_batch_data      05_sciml/2_batch_data.f90)
+add_fj_example(ex_sciml_batch_data      06_sciml/2_batch_data.f90)
 
 # End-to-end acceptance demo: Fortran bind(c) RHS -> Main.FJ_CALLBACK ->
 # OrdinaryDiffEq solve -> extraction of the final state vs analytic solution
-add_fj_example(ex_sciml_demo            05_sciml/3_sciml_demo.f90)
+add_fj_example(ex_sciml_demo            06_sciml/3_sciml_demo.f90)
 
 # ==============================================================================
 # 7. Capstone: Reacting Flow (Clawpack transport + embedded Julia chemistry)
 # ==============================================================================
-# The transport engine is the vendored Clawpack classic 1D kernel (see
-# third_party/clawpack1d/SOURCES.md); it only exists in the in-tree examples
-# build. Chemistry arrives in later commits via the bridge -- this commit
-# validates the transport engine alone (Sod vs exact Riemann solution).
-if(TARGET clawpack1d)
-    add_fj_example(ex_reacting_flow      06_capstone/1_reacting_flow.f90 06_capstone/rp1_reacting.f90)
-    target_link_libraries(ex_reacting_flow PRIVATE clawpack1d)
-endif()
+# The transport engine is the vendored Clawpack classic 1D kernel, kept
+# under the capstone example dir (see 07_capstone/clawpack1d/SOURCES.md) --
+# it is example content, not framework content, so it is built from here.
+add_subdirectory(07_capstone/clawpack1d)
+add_fj_example(ex_reacting_flow      07_capstone/1_reacting_flow.f90 07_capstone/rp1_reacting.f90)
+target_link_libraries(ex_reacting_flow PRIVATE clawpack1d)

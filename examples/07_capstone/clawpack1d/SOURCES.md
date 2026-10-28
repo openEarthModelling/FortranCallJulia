@@ -33,4 +33,4 @@ Notes for this build:
   sets it. It solves the 3-equation (pure Euler) system and is used directly
   by the Sod validation mode. The reacting mode uses an app-layer derivation
   of it (passive species as a 4th wave family at contact speed) kept under
-  `examples/06_capstone/`.
+  `examples/07_capstone/`.

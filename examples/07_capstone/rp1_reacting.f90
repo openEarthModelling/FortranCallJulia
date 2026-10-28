@@ -1,6 +1,6 @@
 ! =========================================================================
 ! rp1_reacting: approximate Riemann solver for the 1D REACTING Euler
-! equations, derived from the vendored third_party/clawpack1d
+! equations, derived from the vendored examples/07_capstone/clawpack1d
 ! rp1_euler_with_efix.f90 (Roe solver + entropy fix) by the substitution
 !
 !     ets = E - q0 * rho*Z        (sensible + kinetic energy)

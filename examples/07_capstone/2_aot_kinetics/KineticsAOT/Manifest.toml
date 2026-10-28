@@ -643,7 +643,7 @@ version = "2.33.0"
 
 [[deps.FjKinetics]]
 deps = ["Catalyst", "OrdinaryDiffEq", "PrecompileTools", "SciMLBase", "StaticArrays"]
-path = "/home/redacted/Project/20250108_FortranCallJulia/FortranCallJulia/src/FjKinetics"
+path = "/home/redacted/Project/20250108_FortranCallJulia/FortranCallJulia/examples/07_capstone/FjKinetics"
 uuid = "931b181b-f631-444a-95c8-c66fcaa6254e"
 version = "0.1.0"
 

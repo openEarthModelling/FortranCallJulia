@@ -3,7 +3,7 @@ program ex_reacting_flow
     ! Capstone example: 1D reacting Euler flow.
     !
     !   transport : vendored Clawpack classic 1D wave-propagation kernel
-    !               (third_party/clawpack1d, see SOURCES.md there); the
+    !               (examples/07_capstone/clawpack1d, see SOURCES.md there); the
     !               4-equation Riemann solver rp1_reacting.f90 (same
     !               directory) extends the vendored Roe+efix solver to the
     !               reactive state (rho, rho*u, E, rho*Z) -- see its header
@@ -13,7 +13,7 @@ program ex_reacting_flow
     !               in classic the splitting lives in the time loop (step1
     !               itself never calls a source routine) and this program owns
     !               the time loop.
-    !   chemistry : embedded Julia.  FjKinetics (src/FjKinetics, Catalyst +
+    !   chemistry : embedded Julia.  FjKinetics (examples/07_capstone/FjKinetics, Catalyst +
     !               OrdinaryDiffEq) integrates the stiff Arrhenius system
     !               dF/dt = -k(T) F, dT/dt = (q/cv) k(T) F for every active
     !               cell in ONE batched call per half-step, through the
@@ -565,7 +565,7 @@ program ex_reacting_flow
 contains
 
     ! pressure in cell i, q0-aware (q0 = 0 in sod mode; q(4,:) pre-zeroed)
-    ! absolute location of examples/06_capstone/output, resolved from the
+    ! absolute location of examples/07_capstone/output, resolved from the
     ! running executable the same way the sysimage/project paths are, so
     ! the files land in one place regardless of the cwd the binary runs
     ! from; loud failure if the exe path cannot be resolved
@@ -575,7 +575,7 @@ contains
         character(len=512) :: cwd_
         exe_dir = julia_executable_dir()
         if (len_trim(exe_dir) == 0) error stop 'FATAL: cannot resolve executable dir for output'
-        d = trim(exe_dir) // '/../../examples/06_capstone/output'
+        d = trim(exe_dir) // '/../../examples/07_capstone/output'
         if (d(1:1) /= '/') then
             call getcwd(cwd_)
             d = trim(cwd_) // '/' // trim(d)

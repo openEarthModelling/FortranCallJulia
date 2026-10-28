@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capstone figures for examples/06_capstone (Fortran-Julia CJ detonation).
+"""Capstone figures for examples/07_capstone (Fortran-Julia CJ detonation).
 
 Figure contracts (nature-figure five-point contract):
   fig1_sod_transport        183 mm, a|b|c = rho|u|p vs exact Riemann solution.
