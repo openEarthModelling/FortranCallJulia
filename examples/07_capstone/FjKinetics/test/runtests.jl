@@ -104,4 +104,51 @@ end
     @test all(Y[:, 1] .+ Y[:, 2] .≈ 1.0)
 end
 
+# ------------------------------------------------------------------ v0.2 (GRI)
+@testset "gri30 solver (v0.2)" begin
+    @test KineticsSolver <: AbstractKineticsSolver
+    @test OneStepSolver === KineticsSolver
+
+    gs = build_gri30_kinetics()
+    @test gs isa GriSolver
+    @test gs isa AbstractKineticsSolver
+    @test nspecies(gs) == 53                    # GRI-Mech 3.0
+    @test all(>(0), gs.W)
+
+    # one-shot ignition: stoichiometric CH4/air at 1500 K / 1 atm
+    # (ChemMechSim's own validation setup; coarse grid keeps the test quick)
+    r = run_gri_ignition(gs; nsample = 201)
+    @test length(r.ts) == 201 && size(r.X) == (4, 201)
+    @test r.t_ign ≈ 1.1075e-3 rtol = 3e-2       # coarse grid shifts by < 1 step
+    @test 2000.0 < r.T_end < 3200.0
+    @test r.X[1, end] < 1e-6                    # CH4 consumed
+    @test r.X[3, end] > 1e-3                    # CO2 produced
+    @test all(>=(0.0), r.X)
+
+    # per-cell mass-fraction step: conservation + heat release
+    names = [s.name for s in gs.mech.species]
+    iCH4 = findfirst(==("CH4"), names)
+    iO2  = findfirst(==("O2"), names)
+    iN2  = findfirst(==("N2"), names)
+    W = [s.molecular_weight for s in gs.mech.species]
+    X = zeros(nspecies(gs))
+    X[iCH4] = 1.0 / 10.52; X[iO2] = 2.0 / 10.52; X[iN2] = 7.52 / 10.52
+    Ymass = reshape(X .* W ./ sum(X .* W), 1, :)
+    rho = 101325.0 * sum(X .* W) / (8.314 * 1500.0)
+    Tcell = [1500.0]
+    step_chemistry!(gs, Ymass, Tcell, [rho], 1.5e-3)   # past ignition
+    @test sum(Ymass) ≈ 1.0 rtol = 1e-9
+    @test all(>=(0.0), Ymass)
+    @test Tcell[1] > 2000.0                     # ignited
+    @test Ymass[1, iCH4] < 1e-4                 # burned
+    @test Ymass[1, iN2] > 0.7                   # diluent survives
+
+    # documented argument-validation errors -- each fires before any ODE
+    # solve, so these stay cheap
+    @test_throws ErrorException build_gri30_kinetics(yaml_path = "/nonexistent/fj_kinetics.yaml")
+    @test_throws ErrorException step_chemistry!(gs, zeros(1, 52), [1500.0], [1.0], 1.0e-6)
+    @test_throws ErrorException step_chemistry!(gs, zeros(1, nspecies(gs)), [1500.0], [1.0], -1.0)
+    @test_throws ErrorException run_gri_ignition(gs; nsample = 1)
+end
+
 end # top-level testset
