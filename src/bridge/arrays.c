@@ -13,7 +13,7 @@ static jl_function_t *tuple_func = NULL;
 
 // --- Array Wrappers (Zero-Copy) ---
 
-void* fj_wrap_array_1d(void* data, long dim1) {
+void* fcj_wrap_array_1d(void* data, long dim1) {
     if (!check_thread()) return NULL;
     jl_value_t *array_type = NULL;
     JL_GC_PUSH1(&array_type);
@@ -33,7 +33,7 @@ void* fj_wrap_array_1d(void* data, long dim1) {
 // crashes inside Julia with no bridge-level diagnostic -- the failure window
 // these checks close. check_julia_exception() runs BEFORE the NULL checks so
 // the detailed exception text is not overwritten by the generic message.
-void* fj_wrap_array_2d(void* data, long dim1, long dim2) {
+void* fcj_wrap_array_2d(void* data, long dim1, long dim2) {
     if (!check_thread()) return NULL;
     jl_value_t *array_type = NULL;
 
@@ -46,7 +46,7 @@ void* fj_wrap_array_2d(void* data, long dim1, long dim2) {
     array_type = arr_f64_2d;
     if (!tuple_func) tuple_func = jl_get_function(jl_base_module, "tuple");
     if (tuple_func == NULL) {
-        set_error("fj_wrap_array_2d: Base.tuple binding not found");
+        set_error("fcj_wrap_array_2d: Base.tuple binding not found");
         JL_GC_POP();
         return NULL;
     }
@@ -57,7 +57,7 @@ void* fj_wrap_array_2d(void* data, long dim1, long dim2) {
     dims_tuple = jl_call2(tuple_func, v_d1, v_d2);
     if (check_julia_exception()) { JL_GC_POP(); return NULL; }
     if (dims_tuple == NULL) {
-        set_error("fj_wrap_array_2d: Base.tuple returned NULL without an exception");
+        set_error("fcj_wrap_array_2d: Base.tuple returned NULL without an exception");
         JL_GC_POP();
         return NULL;
     }
@@ -69,7 +69,7 @@ void* fj_wrap_array_2d(void* data, long dim1, long dim2) {
     return (void*)arr;
 }
 
-void* fj_wrap_array_3d(void* data, long dim1, long dim2, long dim3) {
+void* fcj_wrap_array_3d(void* data, long dim1, long dim2, long dim3) {
     if (!check_thread()) return NULL;
     jl_value_t *array_type = NULL;
 
@@ -83,7 +83,7 @@ void* fj_wrap_array_3d(void* data, long dim1, long dim2, long dim3) {
     array_type = arr_f64_3d;
     if (!tuple_func) tuple_func = jl_get_function(jl_base_module, "tuple");
     if (tuple_func == NULL) {
-        set_error("fj_wrap_array_3d: Base.tuple binding not found");
+        set_error("fcj_wrap_array_3d: Base.tuple binding not found");
         JL_GC_POP();
         return NULL;
     }
@@ -95,7 +95,7 @@ void* fj_wrap_array_3d(void* data, long dim1, long dim2, long dim3) {
     dims_tuple = jl_call3(tuple_func, v_d1, v_d2, v_d3);
     if (check_julia_exception()) { JL_GC_POP(); return NULL; }
     if (dims_tuple == NULL) {
-        set_error("fj_wrap_array_3d: Base.tuple returned NULL without an exception");
+        set_error("fcj_wrap_array_3d: Base.tuple returned NULL without an exception");
         JL_GC_POP();
         return NULL;
     }
@@ -109,7 +109,7 @@ void* fj_wrap_array_3d(void* data, long dim1, long dim2, long dim3) {
 
 // --- Array Deep Copies (Alloc + Memcpy) ---
 
-void* fj_copy_array_1d(void* data, long dim1) {
+void* fcj_copy_array_1d(void* data, long dim1) {
     if (!check_thread()) return NULL;
     jl_value_t *array_type = NULL;
     JL_GC_PUSH1(&array_type);
@@ -133,7 +133,7 @@ void* fj_copy_array_1d(void* data, long dim1) {
 // dimensions as integers directly -- no dims tuple is needed (the tuple
 // construction that used to live here was dead code carrying the same
 // failure window as the wrappers above).
-void* fj_copy_array_2d(void* data, long dim1, long dim2) {
+void* fcj_copy_array_2d(void* data, long dim1, long dim2) {
     if (!check_thread()) return NULL;
     jl_value_t *array_type = NULL;
     JL_GC_PUSH1(&array_type);
@@ -153,7 +153,7 @@ void* fj_copy_array_2d(void* data, long dim1, long dim2) {
     return (void*)arr;
 }
 
-void* fj_copy_array_3d(void* data, long dim1, long dim2, long dim3) {
+void* fcj_copy_array_3d(void* data, long dim1, long dim2, long dim3) {
     if (!check_thread()) return NULL;
     jl_value_t *array_type = NULL;
     JL_GC_PUSH1(&array_type);
@@ -173,10 +173,10 @@ void* fj_copy_array_3d(void* data, long dim1, long dim2, long dim3) {
     return (void*)arr;
 }
 
-// Invalidate the module caches. Called from fj_shutdown: the pointers are
+// Invalidate the module caches. Called from fcj_shutdown: the pointers are
 // only tombstoned (the objects die with the runtime at jl_atexit_hook(0));
 // see the lifecycle note in bridge_internal.h.
-void fj_arrays_clear_cache(void) {
+void fcj_arrays_clear_cache(void) {
     arr_f64_1d = NULL;
     arr_f64_2d = NULL;
     arr_f64_3d = NULL;

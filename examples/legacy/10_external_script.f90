@@ -38,8 +38,8 @@ program ex10_external_script
     print *, matrix(2, :)
 
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fj_wrap_array_2d(raw_ptr, 2_8, 2_8)
-    mat_obj%ptr = fj_retain(wrapped_ptr)
+    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 2_8, 2_8)
+    mat_obj%ptr = fcj_retain(wrapped_ptr)
 
     ! 4. Call the aliased function using Generic Interface
     print *, "Calling 'RunSim' with scalar:", val

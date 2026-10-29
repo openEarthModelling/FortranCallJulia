@@ -4,14 +4,14 @@
 
 // --- Extraction (Julia object -> Fortran memory) ---
 //
-// fj_to_fortran / fj_get_element / fj_get_property.
+// fcj_to_fortran / fcj_get_element / fcj_get_property.
 //
 // GC hazards honored here:
 //  - a C static is NOT a GC root: cached function bindings are routed
-//    through fj_retain before the statics can reach them (dispatch.c
+//    through fcj_retain before the statics can reach them (dispatch.c
 //    pattern); the cached ComplexF64 datatype is an immortal Base-bound
 //    singleton, safe as a plain static (types.c pattern);
-//  - every handle returned to the caller goes through fj_retain.
+//  - every handle returned to the caller goes through fcj_retain.
 //
 // 1.12.7 API notes (verified against include/julia/julia.h):
 //  - jl_get_property does not exist; jl_get_field exists but only reads
@@ -32,7 +32,7 @@ static jl_function_t* FuncGetProperty = NULL; // Base.getproperty
 static jl_function_t* FuncGetElement = NULL;  // Base.getindex (linear)
 
 // Cached ComplexF64 type object (immortal; kept alive by its Base binding).
-static jl_datatype_t* fj_complex_f64_type(void) {
+static jl_datatype_t* fcj_complex_f64_type(void) {
     if (!complex_f64_type) {
         jl_value_t* t = jl_eval_string("ComplexF64");
         if (check_julia_exception()) return NULL;
@@ -43,7 +43,7 @@ static jl_datatype_t* fj_complex_f64_type(void) {
 
 // Resolve + retain a Base binding once, caching it in *slot. Returns the
 // retained function, or NULL (with the last error set) on failure.
-static jl_function_t* fj_resolve_base_binding(jl_function_t** slot, const char* name, const char* api) {
+static jl_function_t* fcj_resolve_base_binding(jl_function_t** slot, const char* name, const char* api) {
     if (*slot) return *slot;
     jl_function_t* f = jl_get_function(jl_base_module, name);
     if (!f) {
@@ -52,7 +52,7 @@ static jl_function_t* fj_resolve_base_binding(jl_function_t** slot, const char* 
         set_error(err);
         return NULL;
     }
-    void* rooted = fj_retain((jl_value_t*)f); // a C static is not a GC root
+    void* rooted = fcj_retain((jl_value_t*)f); // a C static is not a GC root
     if (!rooted) return NULL;
     *slot = (jl_function_t*)rooted;
     return *slot;
@@ -61,7 +61,7 @@ static jl_function_t* fj_resolve_base_binding(jl_function_t** slot, const char* 
 // numel == product of dims (== Julia length(A) for any rank). Computed from
 // the dims rather than jl_array_maxsize, which reports the backing Memory
 // length and can overshoot for reshaped arrays.
-static long long fj_array_numel(jl_array_t* a) {
+static long long fcj_array_numel(jl_array_t* a) {
     int rank = jl_array_rank((jl_value_t*)a);
     long long n = 1;
     for (int d = 0; d < rank; d++) n *= (long long)jl_array_dim(a, d);
@@ -70,7 +70,7 @@ static long long fj_array_numel(jl_array_t* a) {
 
 // Shared checks: handle must be an any-rank Array{Float64}/Array{ComplexF64}.
 // On success returns the array and sets *elem_size; NULL (error set) otherwise.
-static jl_array_t* fj_extract_check_array(void* handle, const char* api, size_t* elem_size) {
+static jl_array_t* fcj_extract_check_array(void* handle, const char* api, size_t* elem_size) {
     jl_value_t* v = (jl_value_t*)handle;
     if (!jl_is_array(v)) {
         char err[128];
@@ -86,7 +86,7 @@ static jl_array_t* fj_extract_check_array(void* handle, const char* api, size_t*
     if (elty == (jl_value_t*)jl_float64_type) {
         *elem_size = sizeof(double);
     } else {
-        jl_datatype_t* cf = fj_complex_f64_type();
+        jl_datatype_t* cf = fcj_complex_f64_type();
         if (!cf || elty != (jl_value_t*)cf) {
             char err[160];
             snprintf(err, sizeof(err), "%s: handle is not Array{Float64} or Array{ComplexF64}", api);
@@ -98,24 +98,24 @@ static jl_array_t* fj_extract_check_array(void* handle, const char* api, size_t*
     return (jl_array_t*)v;
 }
 
-int fj_to_fortran(void* handle, void* dest, long long n) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return -1; }
+int fcj_to_fortran(void* handle, void* dest, long long n) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return -1; }
     if (!check_thread()) return -1;
-    if (!handle) { set_error("fj_to_fortran: NULL handle"); return -1; }
-    if (!dest) { set_error("fj_to_fortran: NULL destination buffer"); return -1; }
-    if (n < 0) { set_error("fj_to_fortran: negative n"); return -1; }
+    if (!handle) { set_error("fcj_to_fortran: NULL handle"); return -1; }
+    if (!dest) { set_error("fcj_to_fortran: NULL destination buffer"); return -1; }
+    if (n < 0) { set_error("fcj_to_fortran: negative n"); return -1; }
 
     jl_value_t* v = (jl_value_t*)handle;
     JL_GC_PUSH1(&v);
 
     size_t elem_size = 0;
-    jl_array_t* a = fj_extract_check_array(handle, "fj_to_fortran", &elem_size);
+    jl_array_t* a = fcj_extract_check_array(handle, "fcj_to_fortran", &elem_size);
     if (!a) { JL_GC_POP(); return -1; }
 
-    long long len = fj_array_numel(a);
+    long long len = fcj_array_numel(a);
     if (n != len) {
         char err[192];
-        snprintf(err, sizeof(err), "fj_to_fortran: n (%lld) does not match array length (%lld)", n, len);
+        snprintf(err, sizeof(err), "fcj_to_fortran: n (%lld) does not match array length (%lld)", n, len);
         set_error(err);
         JL_GC_POP();
         return -1;
@@ -128,45 +128,45 @@ int fj_to_fortran(void* handle, void* dest, long long n) {
     return 0;
 }
 
-void* fj_get_element(void* handle, long long idx) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+void* fcj_get_element(void* handle, long long idx) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
-    if (!handle) { set_error("fj_get_element: NULL handle"); return NULL; }
+    if (!handle) { set_error("fcj_get_element: NULL handle"); return NULL; }
 
     jl_value_t* v = (jl_value_t*)handle;
     jl_value_t* v_idx = NULL;
     jl_value_t* elem = NULL;
     JL_GC_PUSH3(&v, &v_idx, &elem);
 
-    if (!jl_is_array(v)) { set_error("fj_get_element: handle is not an Array"); JL_GC_POP(); return NULL; }
-    long long len = fj_array_numel((jl_array_t*)v);
+    if (!jl_is_array(v)) { set_error("fcj_get_element: handle is not an Array"); JL_GC_POP(); return NULL; }
+    long long len = fcj_array_numel((jl_array_t*)v);
     if (idx < 1 || idx > len) {
         char err[192];
-        snprintf(err, sizeof(err), "fj_get_element: index (%lld) out of bounds for array of length %lld", idx, len);
+        snprintf(err, sizeof(err), "fcj_get_element: index (%lld) out of bounds for array of length %lld", idx, len);
         set_error(err);
         JL_GC_POP();
         return NULL;
     }
 
-    jl_function_t* getindex = fj_resolve_base_binding(&FuncGetElement, "getindex", "fj_get_element");
+    jl_function_t* getindex = fcj_resolve_base_binding(&FuncGetElement, "getindex", "fcj_get_element");
     if (!getindex) { JL_GC_POP(); return NULL; }
 
     v_idx = jl_box_int64(idx);
     elem = jl_call2(getindex, v, v_idx); // boxes numerics, like jl_arrayref did
     if (check_julia_exception()) { JL_GC_POP(); return NULL; }
 
-    void* out = fj_retain(elem); // root before the result becomes reachable from C
+    void* out = fcj_retain(elem); // root before the result becomes reachable from C
     JL_GC_POP();
     return out;
 }
 
-void* fj_get_property(void* handle, const char* name) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+void* fcj_get_property(void* handle, const char* name) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
-    if (!handle) { set_error("fj_get_property: NULL handle"); return NULL; }
-    if (!name) { set_error("fj_get_property: NULL name"); return NULL; }
+    if (!handle) { set_error("fcj_get_property: NULL handle"); return NULL; }
+    if (!name) { set_error("fcj_get_property: NULL name"); return NULL; }
 
-    jl_function_t* getproperty = fj_resolve_base_binding(&FuncGetProperty, "getproperty", "fj_get_property");
+    jl_function_t* getproperty = fcj_resolve_base_binding(&FuncGetProperty, "getproperty", "fcj_get_property");
     if (!getproperty) return NULL;
 
     jl_value_t* v = (jl_value_t*)handle;
@@ -178,15 +178,15 @@ void* fj_get_property(void* handle, const char* name) {
     prop = jl_call2(getproperty, v, v_name);
     if (check_julia_exception()) { JL_GC_POP(); return NULL; }
 
-    void* out = fj_retain(prop); // root before the result becomes reachable from C
+    void* out = fcj_retain(prop); // root before the result becomes reachable from C
     JL_GC_POP();
     return out;
 }
 
-// Invalidate the module caches. Called from fj_shutdown: the pointers are
+// Invalidate the module caches. Called from fcj_shutdown: the pointers are
 // only tombstoned (the objects die with the runtime at jl_atexit_hook(0));
 // see the lifecycle note in bridge_internal.h.
-void fj_extract_clear_cache(void) {
+void fcj_extract_clear_cache(void) {
     complex_f64_type = NULL;
     FuncGetProperty = NULL;
     FuncGetElement = NULL;

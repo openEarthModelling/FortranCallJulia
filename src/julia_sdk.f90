@@ -15,7 +15,7 @@ module julia_high_level
     end type JuliaKwargs
 
     ! JuliaValue ownership rule: assignment (=) is a retaining copy
-    ! (copy_jv: fj_retain + pointer copy, pure C via the root set, no
+    ! (copy_jv: fcj_retain + pointer copy, pure C via the root set, no
     ! Julia round trip). The finalizer releases each owned reference
     ! exactly once.
     type :: JuliaValue
@@ -66,7 +66,7 @@ module julia_high_level
         ! a dense Float64 / ComplexF64 array into a Fortran buffer (the
         ! real / complex specifics resolve by the buffer type). element
         ! and property return handles already retained on the C side
-        ! (fj_get_element / fj_get_property): on failure the handle is
+        ! (fcj_get_element / fcj_get_property): on failure the handle is
         ! c_null_ptr (check is_valid / c_associated).
         generic :: to_fortran => to_fortran_real, to_fortran_complex
         procedure, private :: to_fortran_real
@@ -134,14 +134,14 @@ contains
         integer(kind=c_int64_t), intent(in) :: start, stop
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_make_unitrange(start, stop)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_make_unitrange(start, stop)
+        res%ptr = fcj_retain(raw_res)
     end function julia_range
 
     ! --- Internal Management ---
     
     ! Defined assignment = retaining copy via the C-side root set
-! (fj_retain is a pure C operation, no Julia round trip). Standard
+! (fcj_retain is a pure C operation, no Julia round trip). Standard
 ! Fortran requires INTENT(IN) for the second dummy of a defined
 ! assignment, so true move semantics cannot be expressed here.
 subroutine copy_julia_value(dest, src)
@@ -155,7 +155,7 @@ end subroutine copy_julia_value
 class(JuliaValue), intent(out) :: dst
 class(JuliaValue), intent(in) :: src
 if (c_associated(src%ptr)) then
-dst%ptr = fj_retain(src%ptr)
+dst%ptr = fcj_retain(src%ptr)
 else
 dst%ptr = c_null_ptr
 end if
@@ -164,7 +164,7 @@ end subroutine copy_jv
     subroutine destructor(self)
         type(JuliaValue), intent(inout) :: self
         if (c_associated(self%ptr)) then
-            call fj_release(self%ptr)
+            call fcj_release(self%ptr)
             self%ptr = c_null_ptr
         end if
     end subroutine destructor
@@ -186,12 +186,12 @@ end subroutine copy_jv
             do i = 1, n
                 ptrs(i) = args(i)%ptr
             end do
-            raw_res = fj_call_general(to_c_string(func_name), ptrs, int(n, c_int32_t))
+            raw_res = fcj_call_general(to_c_string(func_name), ptrs, int(n, c_int32_t))
             deallocate(ptrs)
         else
-            raw_res = fj_call0(to_c_string(func_name))
+            raw_res = fcj_call0(to_c_string(func_name))
         end if
-        res%ptr = fj_retain(raw_res)
+        res%ptr = fcj_retain(raw_res)
     end function call_method_generic
 
     function is_valid(self)
@@ -205,27 +205,27 @@ end subroutine copy_jv
     function julia_to_integer(self) result(val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t) :: val
-        val = fj_unbox_int64(self%ptr)
+        val = fcj_unbox_int64(self%ptr)
     end function julia_to_integer
 
     function julia_to_real(self) result(val)
         class(JuliaValue), intent(in) :: self
         real(kind=c_double) :: val
-        val = fj_unbox_float64(self%ptr)
+        val = fcj_unbox_float64(self%ptr)
     end function julia_to_real
 
     function julia_to_logical(self) result(val)
         class(JuliaValue), intent(in) :: self
         logical :: val
-        val = (fj_unbox_bool(self%ptr) /= 0)
+        val = (fcj_unbox_bool(self%ptr) /= 0)
     end function julia_to_logical
     
     function julia_to_complex(self) result(val)
         class(JuliaValue), intent(in) :: self
         complex(kind=c_double) :: val
         real(kind=c_double) :: r, i
-        r = fj_unbox_complex_real(self%ptr)
-        i = fj_unbox_complex_imag(self%ptr)
+        r = fcj_unbox_complex_real(self%ptr)
+        i = fcj_unbox_complex_imag(self%ptr)
         val = cmplx(r, i, c_double)
     end function julia_to_complex
 
@@ -236,7 +236,7 @@ end subroutine copy_jv
         character(kind=c_char), pointer :: f_char_ptr(:)
         integer :: i, length
         
-        c_str = fj_unbox_string(self%ptr)
+        c_str = fcj_unbox_string(self%ptr)
         if (.not. c_associated(c_str)) then
              msg = ""
              return
@@ -257,16 +257,16 @@ end subroutine copy_jv
         real(kind=c_double), intent(in) :: val
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr
-        raw_ptr = fj_box_float64(val)
-        res%ptr = fj_retain(raw_ptr)
+        raw_ptr = fcj_box_float64(val)
+        res%ptr = fcj_retain(raw_ptr)
     end function julia_box_real
 
     function julia_box_integer(val) result(res)
         integer(kind=c_int64_t), intent(in) :: val
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr
-        raw_ptr = fj_box_int64(val)
-        res%ptr = fj_retain(raw_ptr)
+        raw_ptr = fcj_box_int64(val)
+        res%ptr = fcj_retain(raw_ptr)
     end function julia_box_integer
     
     function julia_box_logical(val) result(res)
@@ -279,24 +279,24 @@ end subroutine copy_jv
         else
             c_bool = 0
         end if
-        raw_ptr = fj_box_bool(c_bool)
-        res%ptr = fj_retain(raw_ptr)
+        raw_ptr = fcj_box_bool(c_bool)
+        res%ptr = fcj_retain(raw_ptr)
     end function julia_box_logical
 
     function julia_box_string(val) result(res)
         character(len=*), intent(in) :: val
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr
-        raw_ptr = fj_box_string(to_c_string(val))
-        res%ptr = fj_retain(raw_ptr)
+        raw_ptr = fcj_box_string(to_c_string(val))
+        res%ptr = fcj_retain(raw_ptr)
     end function julia_box_string
 
     function julia_box_complex(val) result(res)
         complex(kind=c_double), intent(in) :: val
         type(JuliaValue) :: res
         type(c_ptr) :: raw_ptr
-        raw_ptr = fj_box_complex(dble(val), aimag(val))
-        res%ptr = fj_retain(raw_ptr)
+        raw_ptr = fcj_box_complex(dble(val), aimag(val))
+        res%ptr = fcj_retain(raw_ptr)
     end function julia_box_complex
 
     ! --- Array Wrappers (Zero-Copy) ---
@@ -321,8 +321,8 @@ end subroutine copy_jv
             return
         end if
         data_ptr = c_loc(arr)
-        raw_ptr = fj_wrap_array_1d(data_ptr, length)
-        res%ptr = fj_retain(raw_ptr)
+        raw_ptr = fcj_wrap_array_1d(data_ptr, length)
+        res%ptr = fcj_retain(raw_ptr)
     end function julia_wrap_array_1d
 
     function julia_wrap_array_2d(arr, d1, d2) result(res)
@@ -347,8 +347,8 @@ end subroutine copy_jv
             return
         end if
         data_ptr = c_loc(arr)
-        raw_ptr = fj_wrap_array_2d(data_ptr, d1, d2)
-        res%ptr = fj_retain(raw_ptr)
+        raw_ptr = fcj_wrap_array_2d(data_ptr, d1, d2)
+        res%ptr = fcj_retain(raw_ptr)
     end function julia_wrap_array_2d
 
     function julia_wrap_array_3d(arr, d1, d2, d3) result(res)
@@ -374,8 +374,8 @@ end subroutine copy_jv
             return
         end if
         data_ptr = c_loc(arr)
-        raw_ptr = fj_wrap_array_3d(data_ptr, d1, d2, d3)
-        res%ptr = fj_retain(raw_ptr)
+        raw_ptr = fcj_wrap_array_3d(data_ptr, d1, d2, d3)
+        res%ptr = fcj_retain(raw_ptr)
     end function julia_wrap_array_3d
 
     ! --- Array Deep Copies (Alloc + Memcpy) ---
@@ -386,8 +386,8 @@ end subroutine copy_jv
         type(c_ptr) :: raw_res
         integer(kind=c_long) :: dim1
         dim1 = size(arr, kind=c_long)
-        raw_res = fj_copy_array_1d(c_loc(arr), dim1)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_copy_array_1d(c_loc(arr), dim1)
+        res%ptr = fcj_retain(raw_res)
     end function julia_copy_array_1d
 
     function julia_copy_array_2d(arr) result(res)
@@ -397,8 +397,8 @@ end subroutine copy_jv
         integer(kind=c_long) :: dim1, dim2
         dim1 = size(arr, 1, kind=c_long)
         dim2 = size(arr, 2, kind=c_long)
-        raw_res = fj_copy_array_2d(c_loc(arr), dim1, dim2)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_copy_array_2d(c_loc(arr), dim1, dim2)
+        res%ptr = fcj_retain(raw_res)
     end function julia_copy_array_2d
 
     function julia_copy_array_3d(arr) result(res)
@@ -409,29 +409,29 @@ end subroutine copy_jv
         dim1 = size(arr, 1, kind=c_long)
         dim2 = size(arr, 2, kind=c_long)
         dim3 = size(arr, 3, kind=c_long)
-        raw_res = fj_copy_array_3d(c_loc(arr), dim1, dim2, dim3)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_copy_array_3d(c_loc(arr), dim1, dim2, dim3)
+        res%ptr = fcj_retain(raw_res)
     end function julia_copy_array_3d
 
     ! --- Init / Shutdown / Util ---
     
     subroutine julia_init()
-        call fj_init(c_null_ptr)
+        call fcj_init(c_null_ptr)
     end subroutine julia_init
 
     subroutine julia_init_with_image(image_path)
         character(len=*), intent(in) :: image_path
         character(kind=c_char, len=len_trim(image_path)+1), target :: c_path
         c_path = trim(image_path) // c_null_char
-        call fj_init(c_loc(c_path))
+        call fcj_init(c_loc(c_path))
     end subroutine julia_init_with_image
 
-    ! Startup control: mirrors C fj_init_ex (bridge.h). An omitted argument
+    ! Startup control: mirrors C fcj_init_ex (bridge.h). An omitted argument
     ! selects the C-side default (c_null_ptr for paths, 0 threads = Julia
     ! default, handle_signals = 0 = "no takeover": after a successful init,
     ! SIGINT/SIGTERM are reset to SIG_DFL; jl_options.handle_signals is
     ! never touched). The legacy julia_init / julia_init_with_image wrappers
-    ! go through C fj_init, which pins handle_signals = 1, so their
+    ! go through C fcj_init, which pins handle_signals = 1, so their
     ! historical behavior is unchanged.
     !
     ! Paths are copied into fixed character(len=4096) buffers handed to the
@@ -439,7 +439,7 @@ end subroutine copy_jv
     ! with its trailing c_null_char, i.e. len_trim >= 4096) would be
     ! silently truncated by the assignment; it is rejected instead: a
     ! diagnostic goes to error_unit and the routine returns WITHOUT
-    ! initializing the runtime (fj_init_ex is never called).
+    ! initializing the runtime (fcj_init_ex is never called).
     subroutine julia_init_ex(image_path, project_path, nthreads, handle_signals)
         character(len=*), intent(in), optional :: image_path
         character(len=*), intent(in), optional :: project_path
@@ -483,11 +483,11 @@ end subroutine copy_jv
         if (present(nthreads)) opts%nthreads = int(nthreads, kind=c_int)
         if (present(handle_signals)) opts%handle_signals = int(handle_signals, kind=c_int)
 
-        call fj_init_ex(c_loc(opts))
+        call fcj_init_ex(c_loc(opts))
     end subroutine julia_init_ex
 
     subroutine julia_shutdown()
-        call fj_shutdown()
+        call fcj_shutdown()
     end subroutine julia_shutdown
 
     subroutine julia_clear_function_cache()
@@ -498,13 +498,13 @@ end subroutine copy_jv
         ! automatically on both outcome paths. Needed after rebinding
         ! names by other means: set_field on a module, calling include()
         ! or a reload helper by name, Julia-side evals.
-        call fj_clear_function_cache()
+        call fcj_clear_function_cache()
     end subroutine julia_clear_function_cache
 
     subroutine julia_eval_string(cmd)
         character(len=*), intent(in) :: cmd
         type(c_ptr) :: raw_res
-        raw_res = fj_eval_string(to_c_string(cmd))
+        raw_res = fcj_eval_string(to_c_string(cmd))
         if (.not. c_associated(raw_res)) then
             ! Do not swallow the failure: eval errors used to vanish here and
             ! downstream unbox calls silently returned 0 (wrong answers that
@@ -516,13 +516,13 @@ end subroutine copy_jv
     end subroutine julia_eval_string
 
     ! Absolute directory of the running executable (no trailing slash), or
-    ! an empty string if it cannot be resolved (see fj_get_last_error).
+    ! an empty string if it cannot be resolved (see fcj_get_last_error).
     function julia_executable_dir() result(dir)
         character(len=:), allocatable :: dir
         character(kind=c_char), dimension(4096) :: buf
         type(c_ptr) :: ok
         integer :: i, nul
-        ok = fj_get_executable_dir(buf, int(size(buf), kind=c_size_t))
+        ok = fcj_get_executable_dir(buf, int(size(buf), kind=c_size_t))
         if (.not. c_associated(ok)) then
             dir = ''
             return
@@ -541,7 +541,7 @@ end subroutine copy_jv
     end function julia_executable_dir
 
     ! Include a Julia source file located next to the running executable --
-    ! the same anchor fj_init_ex uses to probe for the FortranBridge
+    ! the same anchor fcj_init_ex uses to probe for the FortranBridge
     ! package. Examples load examples_lib.jl through this so they behave
     ! identically from any working directory. A leading '/' in relname is
     ! treated as an absolute path and passed through unchanged.
@@ -570,8 +570,8 @@ end subroutine copy_jv
         character(len=*), intent(in) :: cmd
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_eval_string(to_c_string(cmd))
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_eval_string(to_c_string(cmd))
+        res%ptr = fcj_retain(raw_res)
     end function julia_eval
 
     function get_last_error_message() result(msg)
@@ -579,7 +579,7 @@ end subroutine copy_jv
         type(c_ptr) :: c_str
         character(kind=c_char), pointer :: f_char_ptr(:)
         integer :: i, length
-        c_str = fj_get_last_error()
+        c_str = fcj_get_last_error()
         if (.not. c_associated(c_str)) then
              msg = "Unknown Error"
              return
@@ -611,7 +611,7 @@ end subroutine copy_jv
     function get_function_pointer(func_name, ret_type, arg_types) result(funptr)
         character(len=*), intent(in) :: func_name, ret_type, arg_types
         type(c_funptr) :: funptr
-        funptr = fj_get_function_pointer(to_c_string(func_name), &
+        funptr = fcj_get_function_pointer(to_c_string(func_name), &
                                          to_c_string(ret_type), &
                                          to_c_string(arg_types))
         if (.not. c_associated(funptr)) then
@@ -625,8 +625,8 @@ end subroutine copy_jv
         character(len=*), intent(in) :: func_name
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_call0(to_c_string(func_name))
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call0(to_c_string(func_name))
+        res%ptr = fcj_retain(raw_res)
     end function call_method_0
 
     function call_method_1_real(self, func_name, arg1) result(res)
@@ -635,8 +635,8 @@ end subroutine copy_jv
         real(kind=c_double), intent(in) :: arg1
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_call1_float64(to_c_string(func_name), arg1)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call1_float64(to_c_string(func_name), arg1)
+        res%ptr = fcj_retain(raw_res)
     end function call_method_1_real
 
     function call_method_1_obj(self, func_name, arg_obj) result(res)
@@ -645,8 +645,8 @@ end subroutine copy_jv
         type(JuliaValue), intent(in) :: arg_obj
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_call1_obj(to_c_string(func_name), arg_obj%ptr)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call1_obj(to_c_string(func_name), arg_obj%ptr)
+        res%ptr = fcj_retain(raw_res)
     end function call_method_1_obj
 
     function call_method_2_obj_real(self, func_name, arg_obj, arg2) result(res)
@@ -656,8 +656,8 @@ end subroutine copy_jv
         real(kind=c_double), intent(in) :: arg2
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_call2_obj_double(to_c_string(func_name), arg_obj%ptr, arg2)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call2_obj_double(to_c_string(func_name), arg_obj%ptr, arg2)
+        res%ptr = fcj_retain(raw_res)
     end function call_method_2_obj_real
 
     ! --- Accessors ---
@@ -667,15 +667,15 @@ end subroutine copy_jv
         character(len=*), intent(in) :: name
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_get_field(self%ptr, to_c_string(name))
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_get_field(self%ptr, to_c_string(name))
+        res%ptr = fcj_retain(raw_res)
     end function get_field
 
     subroutine set_field(self, name, val)
         class(JuliaValue), intent(in) :: self
         character(len=*), intent(in) :: name
         type(JuliaValue), intent(in) :: val
-        call fj_set_field(self%ptr, to_c_string(name), val%ptr)
+        call fcj_set_field(self%ptr, to_c_string(name), val%ptr)
     end subroutine set_field
 
     function at(self, idx) result(res)
@@ -683,15 +683,15 @@ end subroutine copy_jv
         integer(kind=c_int64_t), intent(in) :: idx
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_get_index_i(self%ptr, idx)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_get_index_i(self%ptr, idx)
+        res%ptr = fcj_retain(raw_res)
     end function at
 
     subroutine set_at(self, idx, val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: idx
         type(JuliaValue), intent(in) :: val
-        call fj_set_index_i(self%ptr, idx, val%ptr)
+        call fcj_set_index_i(self%ptr, idx, val%ptr)
     end subroutine set_at
 
     function at_2d(self, i, j) result(res)
@@ -699,15 +699,15 @@ end subroutine copy_jv
         integer(kind=c_int64_t), intent(in) :: i, j
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_get_index_ii(self%ptr, i, j)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_get_index_ii(self%ptr, i, j)
+        res%ptr = fcj_retain(raw_res)
     end function at_2d
 
     subroutine set_at_2d(self, i, j, val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: i, j
         type(JuliaValue), intent(in) :: val
-        call fj_set_index_ii(self%ptr, i, j, val%ptr)
+        call fcj_set_index_ii(self%ptr, i, j, val%ptr)
     end subroutine set_at_2d
 
     function at_3d(self, i, j, k) result(res)
@@ -715,15 +715,15 @@ end subroutine copy_jv
         integer(kind=c_int64_t), intent(in) :: i, j, k
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_get_index_iii(self%ptr, i, j, k)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_get_index_iii(self%ptr, i, j, k)
+        res%ptr = fcj_retain(raw_res)
     end function at_3d
 
     subroutine set_at_3d(self, i, j, k, val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: i, j, k
         type(JuliaValue), intent(in) :: val
-        call fj_set_index_iii(self%ptr, i, j, k, val%ptr)
+        call fcj_set_index_iii(self%ptr, i, j, k, val%ptr)
     end subroutine set_at_3d
 
     function at_string(self, key) result(res)
@@ -731,15 +731,15 @@ end subroutine copy_jv
         character(len=*), intent(in) :: key
         type(JuliaValue) :: res
         type(c_ptr) :: raw_res
-        raw_res = fj_get_index_s(self%ptr, to_c_string(key))
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_get_index_s(self%ptr, to_c_string(key))
+        res%ptr = fcj_retain(raw_res)
     end function at_string
 
     subroutine set_at_string(self, key, val)
         class(JuliaValue), intent(in) :: self
         character(len=*), intent(in) :: key
         type(JuliaValue), intent(in) :: val
-        call fj_set_index_s(self%ptr, to_c_string(key), val%ptr)
+        call fcj_set_index_s(self%ptr, to_c_string(key), val%ptr)
     end subroutine set_at_string
 
     ! --- Fast Real Element Accessors ---
@@ -748,42 +748,42 @@ end subroutine copy_jv
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: idx
         real(kind=c_double) :: val
-        val = fj_get_real(self%ptr, idx)
+        val = fcj_get_real(self%ptr, idx)
     end function at_real_1d
 
     subroutine set_at_real_1d(self, idx, val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: idx
         real(kind=c_double), intent(in) :: val
-        call fj_set_real(self%ptr, idx, val)
+        call fcj_set_real(self%ptr, idx, val)
     end subroutine set_at_real_1d
 
     function at_real_2d(self, i, j) result(val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: i, j
         real(kind=c_double) :: val
-        val = fj_get_real2(self%ptr, i, j)
+        val = fcj_get_real2(self%ptr, i, j)
     end function at_real_2d
 
     subroutine set_at_real_2d(self, i, j, val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: i, j
         real(kind=c_double), intent(in) :: val
-        call fj_set_real2(self%ptr, i, j, val)
+        call fcj_set_real2(self%ptr, i, j, val)
     end subroutine set_at_real_2d
 
     function at_real_3d(self, i, j, k) result(val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: i, j, k
         real(kind=c_double) :: val
-        val = fj_get_real3(self%ptr, i, j, k)
+        val = fcj_get_real3(self%ptr, i, j, k)
     end function at_real_3d
 
     subroutine set_at_real_3d(self, i, j, k, val)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: i, j, k
         real(kind=c_double), intent(in) :: val
-        call fj_set_real3(self%ptr, i, j, k, val)
+        call fcj_set_real3(self%ptr, i, j, k, val)
     end subroutine set_at_real_3d
 
     ! --- SciML Batch Extraction (Wave B) ---
@@ -793,7 +793,7 @@ end subroutine copy_jv
         real(kind=c_double), intent(out), target :: dest(*)
         integer(kind=c_int64_t), intent(in) :: n
         integer(kind=c_int) :: rc
-        rc = fj_to_fortran(self%ptr, c_loc(dest), n)
+        rc = fcj_to_fortran(self%ptr, c_loc(dest), n)
     end function to_fortran_real
 
     function to_fortran_complex(self, dest, n) result(rc)
@@ -801,42 +801,42 @@ end subroutine copy_jv
         complex(kind=c_double), intent(out), target :: dest(*)
         integer(kind=c_int64_t), intent(in) :: n
         integer(kind=c_int) :: rc
-        rc = fj_to_fortran(self%ptr, c_loc(dest), n)
+        rc = fcj_to_fortran(self%ptr, c_loc(dest), n)
     end function to_fortran_complex
 
     function element(self, idx) result(v)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t), intent(in) :: idx
         type(JuliaValue) :: v
-        ! fj_get_element returns a RETAINED handle; do not retain again.
-        v%ptr = fj_get_element(self%ptr, idx)
+        ! fcj_get_element returns a RETAINED handle; do not retain again.
+        v%ptr = fcj_get_element(self%ptr, idx)
     end function element
 
     function property(self, name) result(v)
         class(JuliaValue), intent(in) :: self
         character(len=*), intent(in) :: name
         type(JuliaValue) :: v
-        ! fj_get_property returns a RETAINED handle; do not retain again.
-        v%ptr = fj_get_property(self%ptr, to_c_string(name))
+        ! fcj_get_property returns a RETAINED handle; do not retain again.
+        v%ptr = fcj_get_property(self%ptr, to_c_string(name))
     end function property
 
     function length(self) result(res)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t) :: res
-        res = fj_length(self%ptr)
+        res = fcj_length(self%ptr)
     end function length
 
     function ndims(self) result(res)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int64_t) :: res
-        res = fj_ndims(self%ptr)
+        res = fcj_ndims(self%ptr)
     end function ndims
 
     function size_dim(self, dim) result(res)
         class(JuliaValue), intent(in) :: self
         integer(kind=c_int), intent(in) :: dim
         integer(kind=c_int64_t) :: res
-        res = fj_size(self%ptr, dim)
+        res = fcj_size(self%ptr, dim)
     end function size_dim
 
     ! --- Kwargs Support ---
@@ -899,10 +899,10 @@ end subroutine copy_jv
             kw_ptrs(i) = c_loc(c_keys(i))
             val_ptrs(i) = kw%values(i)%ptr
         end do
-        raw_res = fj_call_kwargs(to_c_string(func_name), ptrs, int(n, c_int32_t), &
+        raw_res = fcj_call_kwargs(to_c_string(func_name), ptrs, int(n, c_int32_t), &
                                  kw_ptrs, val_ptrs, int(nkw, c_int32_t))
         deallocate(ptrs); deallocate(kw_ptrs); deallocate(val_ptrs); deallocate(c_keys)
-        res%ptr = fj_retain(raw_res)
+        res%ptr = fcj_retain(raw_res)
     end function call_with_kwargs
 
 ! end module julia_high_level (Moved to bottom)
@@ -916,34 +916,34 @@ end subroutine copy_jv
         
         select type (val => arg)
         type is (integer(kind=c_int64_t))
-             tmp_ptr = fj_box_int64(val)
-             res%ptr = fj_retain(tmp_ptr)
+             tmp_ptr = fcj_box_int64(val)
+             res%ptr = fcj_retain(tmp_ptr)
         type is (integer(kind=c_int32_t))
-             tmp_ptr = fj_box_int32(val)
-             res%ptr = fj_retain(tmp_ptr)
+             tmp_ptr = fcj_box_int32(val)
+             res%ptr = fcj_retain(tmp_ptr)
         type is (real(kind=c_double))
-             tmp_ptr = fj_box_float64(val)
-             res%ptr = fj_retain(tmp_ptr)
+             tmp_ptr = fcj_box_float64(val)
+             res%ptr = fcj_retain(tmp_ptr)
         type is (real(kind=c_float))
-             tmp_ptr = fj_box_float64(dble(val))
-             res%ptr = fj_retain(tmp_ptr)
+             tmp_ptr = fcj_box_float64(dble(val))
+             res%ptr = fcj_retain(tmp_ptr)
         type is (logical)
             if (val) then
                 c_bool = 1
             else
                 c_bool = 0
             end if
-            tmp_ptr = fj_box_bool(c_bool)
-            res%ptr = fj_retain(tmp_ptr)
+            tmp_ptr = fcj_box_bool(c_bool)
+            res%ptr = fcj_retain(tmp_ptr)
         type is (character(len=*))
-             tmp_ptr = fj_box_string(to_c_string(val))
-             res%ptr = fj_retain(tmp_ptr)
+             tmp_ptr = fcj_box_string(to_c_string(val))
+             res%ptr = fcj_retain(tmp_ptr)
         type is (complex(kind=c_double))
-             tmp_ptr = fj_box_complex(dble(val), aimag(val))
-             res%ptr = fj_retain(tmp_ptr)
+             tmp_ptr = fcj_box_complex(dble(val), aimag(val))
+             res%ptr = fcj_retain(tmp_ptr)
         class is (JuliaValue)
              if (c_associated(val%ptr)) then
-                 res%ptr = fj_retain(val%ptr)
+                 res%ptr = fcj_retain(val%ptr)
              else
                  res%ptr = c_null_ptr
              end if
@@ -967,13 +967,13 @@ end subroutine copy_jv
         ! ignored (kept only for signature compatibility) and the call is
         ! dispatched through call_value.
         if (c_associated(self%ptr)) then
-            if (fj_is_function(self%ptr) /= 0) then
+            if (fcj_is_function(self%ptr) /= 0) then
                 res = self%call_value_0()
                 return
             end if
         end if
-        raw_res = fj_call0(to_c_string(func_name))
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call0(to_c_string(func_name))
+        res%ptr = fcj_retain(raw_res)
     end function call_method_generic_dispatch_0
 
     function call_method_generic_dispatch_1(self, func_name, arg1) result(res)
@@ -990,7 +990,7 @@ end subroutine copy_jv
         ! ignored (kept only for signature compatibility) and the call is
         ! dispatched through call_value.
         if (c_associated(self%ptr)) then
-            if (fj_is_function(self%ptr) /= 0) then
+            if (fcj_is_function(self%ptr) /= 0) then
                 res = self%call_value_1(arg1)
                 return
             end if
@@ -998,8 +998,8 @@ end subroutine copy_jv
         boxed_args(1) = box_argument(arg1)
         raw_args(1) = boxed_args(1)%ptr
         
-        raw_res = fj_call_general(to_c_string(func_name), raw_args, 1_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_general(to_c_string(func_name), raw_args, 1_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_method_generic_dispatch_1
 
     function call_method_generic_dispatch_2(self, func_name, arg1, arg2) result(res)
@@ -1016,7 +1016,7 @@ end subroutine copy_jv
         ! ignored (kept only for signature compatibility) and the call is
         ! dispatched through call_value.
         if (c_associated(self%ptr)) then
-            if (fj_is_function(self%ptr) /= 0) then
+            if (fcj_is_function(self%ptr) /= 0) then
                 res = self%call_value_2(arg1, arg2)
                 return
             end if
@@ -1027,8 +1027,8 @@ end subroutine copy_jv
         raw_args(1) = boxed_args(1)%ptr
         raw_args(2) = boxed_args(2)%ptr
         
-        raw_res = fj_call_general(to_c_string(func_name), raw_args, 2_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_general(to_c_string(func_name), raw_args, 2_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_method_generic_dispatch_2
 
     function call_method_generic_dispatch_3(self, func_name, arg1, arg2, arg3) result(res)
@@ -1045,7 +1045,7 @@ end subroutine copy_jv
         ! ignored (kept only for signature compatibility) and the call is
         ! dispatched through call_value.
         if (c_associated(self%ptr)) then
-            if (fj_is_function(self%ptr) /= 0) then
+            if (fcj_is_function(self%ptr) /= 0) then
                 res = self%call_value_3(arg1, arg2, arg3)
                 return
             end if
@@ -1058,8 +1058,8 @@ end subroutine copy_jv
         raw_args(2) = boxed_args(2)%ptr
         raw_args(3) = boxed_args(3)%ptr
         
-        raw_res = fj_call_general(to_c_string(func_name), raw_args, 3_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_general(to_c_string(func_name), raw_args, 3_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_method_generic_dispatch_3
 
     function call_method_generic_dispatch_4(self, func_name, arg1, arg2, arg3, arg4) result(res)
@@ -1076,7 +1076,7 @@ end subroutine copy_jv
         ! ignored (kept only for signature compatibility) and the call is
         ! dispatched through call_value.
         if (c_associated(self%ptr)) then
-            if (fj_is_function(self%ptr) /= 0) then
+            if (fcj_is_function(self%ptr) /= 0) then
                 res = self%call_value_4(arg1, arg2, arg3, arg4)
                 return
             end if
@@ -1091,8 +1091,8 @@ end subroutine copy_jv
         raw_args(3) = boxed_args(3)%ptr
         raw_args(4) = boxed_args(4)%ptr
         
-        raw_res = fj_call_general(to_c_string(func_name), raw_args, 4_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_general(to_c_string(func_name), raw_args, 4_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_method_generic_dispatch_4
 
     ! --- Cached Function Handles ---
@@ -1100,8 +1100,8 @@ end subroutine copy_jv
     function julia_function(func_name) result(v)
         character(len=*), intent(in) :: func_name
         type(JuliaValue) :: v
-        ! fj_resolve_function returns an owned (retained) reference; do not retain again.
-        v%ptr = fj_resolve_function(to_c_string(func_name))
+        ! fcj_resolve_function returns an owned (retained) reference; do not retain again.
+        v%ptr = fcj_resolve_function(to_c_string(func_name))
     end function julia_function
 
     ! --- SciML Callbacks (Wave B) ---
@@ -1110,13 +1110,13 @@ end subroutine copy_jv
         type(c_funptr), intent(in) :: fnptr
         type(c_ptr), intent(in) :: ctx
         type(JuliaValue) :: v
-        ! fj_create_callback returns an owned (retained) reference
-        ! routed through fj_retain (C-side root set); do not retain
+        ! fcj_create_callback returns an owned (retained) reference
+        ! routed through fcj_retain (C-side root set); do not retain
         ! again, same pattern as julia_function. The C side also binds
         ! the callable to Main.FJ_CALLBACK for eval-ed solver code.
         ! c_funptr and c_ptr share the same representation, so the
         ! transfer adapts c_funloc(fn) to the C void* parameter.
-        v%ptr = fj_create_callback(transfer(fnptr, c_null_ptr), ctx)
+        v%ptr = fcj_create_callback(transfer(fnptr, c_null_ptr), ctx)
     end function julia_callback
 
     function call_value_0(self) result(res)
@@ -1126,8 +1126,8 @@ end subroutine copy_jv
         type(c_ptr) :: raw_res
 
         no_args(1) = c_null_ptr
-        raw_res = fj_call_function(self%ptr, no_args, 0_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_function(self%ptr, no_args, 0_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_value_0
 
     function call_value_1(self, arg1) result(res)
@@ -1142,8 +1142,8 @@ end subroutine copy_jv
         boxed_args(1) = box_argument(arg1)
         raw_args(1) = boxed_args(1)%ptr
 
-        raw_res = fj_call_function(self%ptr, raw_args, 1_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_function(self%ptr, raw_args, 1_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_value_1
 
     function call_value_2(self, arg1, arg2) result(res)
@@ -1161,8 +1161,8 @@ end subroutine copy_jv
         raw_args(1) = boxed_args(1)%ptr
         raw_args(2) = boxed_args(2)%ptr
 
-        raw_res = fj_call_function(self%ptr, raw_args, 2_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_function(self%ptr, raw_args, 2_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_value_2
 
     function call_value_3(self, arg1, arg2, arg3) result(res)
@@ -1182,8 +1182,8 @@ end subroutine copy_jv
         raw_args(2) = boxed_args(2)%ptr
         raw_args(3) = boxed_args(3)%ptr
 
-        raw_res = fj_call_function(self%ptr, raw_args, 3_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_function(self%ptr, raw_args, 3_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_value_3
 
     function call_value_4(self, arg1, arg2, arg3, arg4) result(res)
@@ -1205,8 +1205,8 @@ end subroutine copy_jv
         raw_args(3) = boxed_args(3)%ptr
         raw_args(4) = boxed_args(4)%ptr
 
-        raw_res = fj_call_function(self%ptr, raw_args, 4_c_int32_t)
-        res%ptr = fj_retain(raw_res)
+        raw_res = fcj_call_function(self%ptr, raw_args, 4_c_int32_t)
+        res%ptr = fcj_retain(raw_res)
     end function call_value_4
 
 end module julia_high_level

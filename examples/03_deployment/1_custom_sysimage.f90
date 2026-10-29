@@ -55,8 +55,8 @@ program ex05_sysimage
     do i=1,10; matrix(i,i)=2.0d0; end do
     
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fj_wrap_array_2d(raw_ptr, 10_8, 10_8)
-    mat_obj%ptr = fj_retain(wrapped_ptr)
+    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 10_8, 10_8)
+    mat_obj%ptr = fcj_retain(wrapped_ptr)
 
     ! Execute
     res = ctx%call_method_1_obj("calc_inverse", mat_obj)

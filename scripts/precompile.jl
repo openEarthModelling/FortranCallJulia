@@ -41,11 +41,11 @@ println("Precompilation complete.")
 # everything compiled here is baked into libfj_sysimage.
 using PrecompileTools
 
-# Julia-native stand-in for the Fortran-backed RHS. fj_create_callback installs
+# Julia-native stand-in for the Fortran-backed RHS. fcj_create_callback installs
 # the real function under the global name Main.FJ_CALLBACK at runtime (latest
 # created wins), so precompiling the same-signature dispatch through that
 # global is what the eval-ed solver code hits; the placeholder binding created
-# below is re-bound away on the first fj_create_callback call.
+# below is re-bound away on the first fcj_create_callback call.
 function precompile_rhs!(du, u, p, t)
     du[1] = u[2]
     du[2] = -u[1]
@@ -65,13 +65,13 @@ PrecompileTools.@setup_workload begin
         sol.retcode == ReturnCode.Success ||
             error("precompile workload ODE solve failed: $(sol.retcode)")
 
-        # (b) The Main.FJ_CALLBACK binding fj_create_callback maintains:
+        # (b) The Main.FJ_CALLBACK binding fcj_create_callback maintains:
         #     install a same-signature stand-in and invoke it once so the
         #     call-site shape (du, u, p, t) through the global is compiled.
         Core.eval(Main, :(FJ_CALLBACK = $precompile_rhs!))
-        fj_cb = getfield(Main, :FJ_CALLBACK)
+        fcj_cb = getfield(Main, :FJ_CALLBACK)
         du = zeros(2)
-        fj_cb(du, [1.0, 0.0], nothing, 0.0)
+        fcj_cb(du, [1.0, 0.0], nothing, 0.0)
         du[2] == -1.0 || error("precompile workload callback did not run")
     end
 end
@@ -84,9 +84,9 @@ end
 # runtime expression shape (kwarg build, global re-binding) against Main.
 using FjKinetics
 
-fj_ks = FjKinetics.build_kinetics(A = 164180.0, Ea = 25.0, R_g = 1.0,
+fcj_ks = FjKinetics.build_kinetics(A = 164180.0, Ea = 25.0, R_g = 1.0,
                                   q = 25.0, cv = 2.5)
-FjKinetics.nspecies(fj_ks) == 2 || error("precompile workload: bad mechanism")
+FjKinetics.nspecies(fcj_ks) == 2 || error("precompile workload: bad mechanism")
 
 # emulate the driver's persistent zero-copy buffers + active-set slicing
 const FJ_YBUF = zeros(8, 2)
@@ -95,7 +95,7 @@ const FJ_RHOBUF = zeros(8)
 FJ_YBUF[:, 1] .= 1.0
 FJ_TBUF .= 17.0
 for n_active in (2, 8)
-    FjKinetics.step_chemistry!(fj_ks,
+    FjKinetics.step_chemistry!(fcj_ks,
         view(FJ_YBUF, 1:n_active, :), view(FJ_TBUF, 1:n_active),
         view(FJ_RHOBUF, 1:n_active), 4.0e-4)
 end

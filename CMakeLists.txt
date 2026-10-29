@@ -53,7 +53,7 @@ string(REPLACE "'" "" JULIA_LDLIBS "${JULIA_LDLIBS}")
 # ==============================================================================
 # Core Library (Fortran-Julia Middleware)
 # ==============================================================================
-add_library(fj_middleware STATIC
+add_library(fcj_middleware STATIC
     src/bridge/core.c
     src/bridge/memory.c
     src/bridge/dispatch.c
@@ -67,7 +67,7 @@ add_library(fj_middleware STATIC
 )
 
 # Set Include Directories (Public so consumers inherit it)
-target_include_directories(fj_middleware PUBLIC 
+target_include_directories(fcj_middleware PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include>
 )
@@ -77,26 +77,26 @@ target_include_directories(fj_middleware PUBLIC
 # versioned bin dir, then take its DIRECTORY.
 get_filename_component(JULIA_BINDIR "${JULIA_EXECUTABLE}" REALPATH)
 get_filename_component(JULIA_BINDIR "${JULIA_BINDIR}" DIRECTORY)
-target_compile_definitions(fj_middleware PRIVATE JULIA_BINDIR="${JULIA_BINDIR}")
+target_compile_definitions(fcj_middleware PRIVATE JULIA_BINDIR="${JULIA_BINDIR}")
 
-target_compile_options(fj_middleware PRIVATE 
+target_compile_options(fcj_middleware PRIVATE 
     $<$<COMPILE_LANGUAGE:C>:${JULIA_CFLAGS}>
 )
 
 # -fno-underscoring is GNU-only (gfortran): it disables gfortran's default
 # trailing-underscore name mangling so C-side symbol lookups match.
 if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(fj_middleware PRIVATE
+    target_compile_options(fcj_middleware PRIVATE
         $<$<COMPILE_LANGUAGE:Fortran>:-fno-underscoring>
     )
 endif()
 
 # Link Options
-target_link_options(fj_middleware INTERFACE ${JULIA_LDFLAGS})
-target_link_libraries(fj_middleware INTERFACE ${JULIA_LDLIBS})
+target_link_options(fcj_middleware INTERFACE ${JULIA_LDFLAGS})
+target_link_libraries(fcj_middleware INTERFACE ${JULIA_LDLIBS})
 
 # Fortran Module Output Directory
-set_target_properties(fj_middleware PROPERTIES 
+set_target_properties(fcj_middleware PROPERTIES 
     Fortran_MODULE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules
 )
 
@@ -106,7 +106,7 @@ set_target_properties(fj_middleware PROPERTIES
 include(GNUInstallDirs)
 
 # Install Library
-install(TARGETS fj_middleware
+install(TARGETS fcj_middleware
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -178,7 +178,7 @@ if(FJ_BUILD_SYSIMAGE)
     endif()
     set(FJ_SYSIMAGE_OUTPUT "${CMAKE_BINARY_DIR}/libfj_sysimage${FJ_SYSIMAGE_EXT}")
 
-    add_custom_target(fj_sysimage
+    add_custom_target(fcj_sysimage
         COMMAND ${JULIA_SYSIMAGE_EXE}
             --project=${FJ_SYSIMAGE_ENV}
             ${CMAKE_CURRENT_SOURCE_DIR}/scripts/build_sysimage.jl

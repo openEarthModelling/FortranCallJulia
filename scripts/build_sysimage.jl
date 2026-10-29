@@ -1,7 +1,7 @@
 # scripts/build_sysimage.jl
 #
 # Builds libfj_sysimage via PackageCompiler. Normally invoked by the CMake
-# custom target `fj_sysimage` (root CMakeLists.txt with -DFJ_BUILD_SYSIMAGE=ON):
+# custom target `fcj_sysimage` (root CMakeLists.txt with -DFJ_BUILD_SYSIMAGE=ON):
 #
 #   julia --project=scripts/sysimage_env scripts/build_sysimage.jl <output-path>
 #

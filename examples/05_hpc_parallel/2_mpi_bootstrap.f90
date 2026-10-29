@@ -46,8 +46,8 @@ program ex07_mpi_bootstrap
     do i=1,4; matrix(i,i)=real(rank+1, 8); end do ! Diagonal based on rank
     
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fj_wrap_array_2d(raw_ptr, 4_8, 4_8)
-    mat_obj%ptr = fj_retain(wrapped_ptr)
+    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 4_8, 4_8)
+    mat_obj%ptr = fcj_retain(wrapped_ptr)
     
     block
         type(JuliaValue) :: args(1), dummy

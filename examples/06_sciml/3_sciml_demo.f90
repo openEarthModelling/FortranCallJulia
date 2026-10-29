@@ -3,7 +3,7 @@
 !
 ! Fortran supplies a bind(c) harmonic-oscillator RHS
 !     du1 = u2,  du2 = -u1         (analytic: u1 = cos t, u2 = -sin t)
-! which fj_create_callback wraps into the Julia callable f(du, u, p, t) also
+! which fcj_create_callback wraps into the Julia callable f(du, u, p, t) also
 ! bound to Main.FJ_CALLBACK. The ODE is then assembled by eval-ing solver code
 ! in Main (ODEProblem(FJ_CALLBACK, u0, tspan); solve with Tsit5), and the
 ! result is navigated through the Wave B extraction surface

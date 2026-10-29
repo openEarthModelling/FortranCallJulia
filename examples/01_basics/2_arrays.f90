@@ -57,10 +57,10 @@ program ex02_arrays
     
     ! Step 1: Wrap the raw Fortran pointer
     raw_ptr = c_loc(vec)
-    wrapped_ptr = fj_wrap_array_1d(raw_ptr, 5_8)
+    wrapped_ptr = fcj_wrap_array_1d(raw_ptr, 5_8)
     
     ! Step 2: Manage it as a JuliaValue (so GC doesn't kill it prematurely if we stored it)
-    vec_obj%ptr = fj_retain(wrapped_ptr) 
+    vec_obj%ptr = fcj_retain(wrapped_ptr) 
     
     ! Step 3: Call function passing the object
     ! Note: 'vec_obj' is already a Julia Object, so we pass it directly.
@@ -77,8 +77,8 @@ program ex02_arrays
     
     ! Step 1: Wrap
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fj_wrap_array_2d(raw_ptr, 3_8, 3_8)
-    mat_obj%ptr = fj_retain(wrapped_ptr)
+    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 3_8, 3_8)
+    mat_obj%ptr = fcj_retain(wrapped_ptr)
     
     ! Step 2: Call
     res = dummy%call("modify_matrix!", mat_obj)

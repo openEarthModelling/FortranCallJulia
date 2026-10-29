@@ -37,7 +37,7 @@ end
 # must live in a real global binding: the raw trampoline address is not a
 # Julia object, and a raw pointer-to-objref reinterpretation manufactures a corrupt
 # object that crashes the GC / type cache (SIGSEGV in jl_inst_arg_tuple_type).
-root_sym = Symbol("#fj_cfunc#", func_name)
+root_sym = Symbol("#fcj_cfunc#", func_name)
 cfunc_ptr = Main.eval(quote
 global $root_sym = @cfunction($func, $RetTypeExpr, $ArgTypesExpr)
 Base.unsafe_convert(Ptr{Cvoid}, $root_sym)
@@ -83,7 +83,7 @@ end
 
 # --- Redefinition safety ---
 # Drop the cached (func, names) pairs. The C bridge calls this from
-# fj_clear_function_cache (after every fj_eval_string on both outcome
+# fcj_clear_function_cache (after every fcj_eval_string on both outcome
 # paths, and on manual clears): eval (and include reached through eval) is
 # the rebinding path the bridge intercepts, so clearing here keeps kwargs
 # calls on the current definition for that path. Rebinds by other means

@@ -35,8 +35,8 @@ program ex07_linear_algebra
 
     ! Wrap 2D Array
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fj_wrap_array_2d(raw_ptr, 3_8, 3_8)
-    mat_obj%ptr = fj_retain(wrapped_ptr)
+    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 3_8, 3_8)
+    mat_obj%ptr = fcj_retain(wrapped_ptr)
     
     print *, "Matrix wrapped. Passing to Julia..."
     

@@ -36,8 +36,8 @@ program ex06_multithreading
     batch_stack(1,1,:) = batch_stack(1,1,:) + 10.0d0
 
     raw_ptr = c_loc(batch_stack)
-    wrapped_ptr = fj_wrap_array_3d(raw_ptr, n, m, k)
-    arr_obj%ptr = fj_retain(wrapped_ptr)
+    wrapped_ptr = fcj_wrap_array_3d(raw_ptr, n, m, k)
+    arr_obj%ptr = fcj_retain(wrapped_ptr)
 
     print *, "[Fortran] Calling parallel_batch_inverse..."
     

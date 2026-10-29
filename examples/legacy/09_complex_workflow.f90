@@ -24,8 +24,8 @@ program ex09_complex_workflow
     
     ! 2. Wrap Matrix
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fj_wrap_array_2d(raw_ptr, 3_8, 3_8)
-    mat_obj%ptr = fj_retain(wrapped_ptr)
+    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 3_8, 3_8)
+    mat_obj%ptr = fcj_retain(wrapped_ptr)
     
     ! 3. Define Scalar x
     x_val = 5.0d0

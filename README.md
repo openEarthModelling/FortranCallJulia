@@ -138,7 +138,7 @@ print *, res%as_real()
 
 `%call` on an object that IS a function (e.g. a callback handle) ignores
 the name argument and calls the object itself -- a true method call
-(`fj_is_function` routes it through the call_value path).
+(`fcj_is_function` routes it through the call_value path).
 
 ### 3. Fast path (function pointers)
 

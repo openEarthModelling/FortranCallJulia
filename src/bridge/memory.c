@@ -4,11 +4,11 @@
 
 // --- Object Management ---
 //
-// fj_retain/fj_release keep their bind(C) signatures but no longer round-trip
+// fcj_retain/fcj_release keep their bind(C) signatures but no longer round-trip
 // through Julia (retain_obj/release_obj in GCManager.jl) on the hot path.
 // Retained objects live in a Julia Vector{Any} reachable through the constant
-// binding `Main.FJ_ROOTS` (created once at the end of a successful fj_init
-// via fj_roots_init below); bookkeeping is a pure-C ptr -> slot hash map with
+// binding `Main.FJ_ROOTS` (created once at the end of a successful fcj_init
+// via fcj_roots_init below); bookkeeping is a pure-C ptr -> slot hash map with
 // per-pointer refcounts, mirroring GCManager's REF_COUNTS/PTR_CACHE logic.
 // GCManager.jl stays untouched as the fallback path (and for precompilation).
 //
@@ -17,7 +17,7 @@
 // Main.FJ_ROOTS` is a module binding, i.e. a GC root holding the only
 // reference to it, so the cached jl_array_t* stays valid for the runtime's
 // lifetime and every written slot is scanned as part of that vector.
-// `fj_nothing` is the `nothing` singleton kept alive by its Base binding.
+// `fcj_nothing` is the `nothing` singleton kept alive by its Base binding.
 // jl_array_grow_end fills newly exposed slots with jl_nothing, so the GC
 // never scans uninitialized memory.
 //
@@ -30,52 +30,52 @@
 // tombstoned so probe chains stay intact.
 #define FJ_MAP_TOMBSTONE ((void*)1)
 
-int fj_roots_init(void);
-void fj_roots_teardown(void);
+int fcj_roots_init(void);
+void fcj_roots_teardown(void);
 
 // Root vector (Main.FJ_ROOTS, a Vector{Any})
-static jl_array_t* fj_roots = NULL;
-static jl_value_t* fj_nothing = NULL; // cached `nothing`
-static size_t fj_roots_len = 0; // logical length we manage (<= capacity)
-static size_t fj_roots_cap = 0; // current jl_array_len(fj_roots)
+static jl_array_t* fcj_roots = NULL;
+static jl_value_t* fcj_nothing = NULL; // cached `nothing`
+static size_t fcj_roots_len = 0; // logical length we manage (<= capacity)
+static size_t fcj_roots_cap = 0; // current jl_array_len(fcj_roots)
 
 // Free list of reusable slot indices (LIFO)
-static size_t* fj_free_slots = NULL;
-static size_t fj_free_count = 0;
-static size_t fj_free_cap = 0;
+static size_t* fcj_free_slots = NULL;
+static size_t fcj_free_count = 0;
+static size_t fcj_free_cap = 0;
 
 // ptr -> slot map: open addressing, linear probing, power-of-two capacity,
 // rehash at 70% load
 typedef struct {
     void* key;    // the (void*)jl_value_t* handle Fortran stores
-    size_t slot;  // index into fj_roots
+    size_t slot;  // index into fcj_roots
     size_t count; // reference count (GCManager REF_COUNTS semantics)
-} fj_map_entry_t;
+} fcj_map_entry_t;
 
-static fj_map_entry_t* fj_map = NULL;
-static size_t fj_map_cap = 0;  // power of two
-static size_t fj_map_used = 0; // live entries
-static size_t fj_map_fill = 0; // live entries + tombstones
+static fcj_map_entry_t* fcj_map = NULL;
+static size_t fcj_map_cap = 0;  // power of two
+static size_t fcj_map_used = 0; // live entries
+static size_t fcj_map_fill = 0; // live entries + tombstones
 
 // --- C-side root set internals ---
 
-static void fj_roots_reset(void) {
-    free(fj_map);
-    fj_map = NULL;
-    fj_map_cap = 0;
-    fj_map_used = 0;
-    fj_map_fill = 0;
-    free(fj_free_slots);
-    fj_free_slots = NULL;
-    fj_free_count = 0;
-    fj_free_cap = 0;
-    fj_roots = NULL;
-    fj_nothing = NULL;
-    fj_roots_len = 0;
-    fj_roots_cap = 0;
+static void fcj_roots_reset(void) {
+    free(fcj_map);
+    fcj_map = NULL;
+    fcj_map_cap = 0;
+    fcj_map_used = 0;
+    fcj_map_fill = 0;
+    free(fcj_free_slots);
+    fcj_free_slots = NULL;
+    fcj_free_count = 0;
+    fcj_free_cap = 0;
+    fcj_roots = NULL;
+    fcj_nothing = NULL;
+    fcj_roots_len = 0;
+    fcj_roots_cap = 0;
 }
 
-static size_t fj_map_hash(void* key) {
+static size_t fcj_map_hash(void* key) {
     // 64-bit pointer mix (murmur3 finalizer) to avalanche aligned pointers
     uintptr_t x = (uintptr_t)key;
     x ^= x >> 33;
@@ -86,96 +86,96 @@ static size_t fj_map_hash(void* key) {
     return (size_t)x;
 }
 
-static fj_map_entry_t* fj_map_find(void* key) {
-    if (fj_map_cap == 0) return NULL;
-    size_t mask = fj_map_cap - 1;
-    size_t i = fj_map_hash(key) & mask;
+static fcj_map_entry_t* fcj_map_find(void* key) {
+    if (fcj_map_cap == 0) return NULL;
+    size_t mask = fcj_map_cap - 1;
+    size_t i = fcj_map_hash(key) & mask;
     while (1) {
-        void* k = fj_map[i].key;
-        if (k == key) return &fj_map[i];
+        void* k = fcj_map[i].key;
+        if (k == key) return &fcj_map[i];
         if (k == NULL) return NULL; // end of probe chain
         i = (i + 1) & mask;
     }
 }
 
 // Raw insert; caller guarantees headroom (fresh tables hold no tombstones).
-static void fj_map_insert_raw(void* key, size_t slot, size_t count) {
-    size_t mask = fj_map_cap - 1;
-    size_t i = fj_map_hash(key) & mask;
-    while (fj_map[i].key != NULL) i = (i + 1) & mask;
-    fj_map[i].key = key;
-    fj_map[i].slot = slot;
-    fj_map[i].count = count;
-    fj_map_used++;
-    fj_map_fill++;
+static void fcj_map_insert_raw(void* key, size_t slot, size_t count) {
+    size_t mask = fcj_map_cap - 1;
+    size_t i = fcj_map_hash(key) & mask;
+    while (fcj_map[i].key != NULL) i = (i + 1) & mask;
+    fcj_map[i].key = key;
+    fcj_map[i].slot = slot;
+    fcj_map[i].count = count;
+    fcj_map_used++;
+    fcj_map_fill++;
 }
 
-static int fj_map_rehash(size_t new_cap) {
-    fj_map_entry_t* old = fj_map;
-    size_t old_cap = fj_map_cap;
-    fj_map_entry_t* fresh = calloc(new_cap, sizeof(fj_map_entry_t));
+static int fcj_map_rehash(size_t new_cap) {
+    fcj_map_entry_t* old = fcj_map;
+    size_t old_cap = fcj_map_cap;
+    fcj_map_entry_t* fresh = calloc(new_cap, sizeof(fcj_map_entry_t));
     if (fresh == NULL) return -1;
-    fj_map = fresh;
-    fj_map_cap = new_cap;
-    fj_map_used = 0;
-    fj_map_fill = 0;
+    fcj_map = fresh;
+    fcj_map_cap = new_cap;
+    fcj_map_used = 0;
+    fcj_map_fill = 0;
     for (size_t j = 0; j < old_cap; j++) {
         if (old[j].key != NULL && old[j].key != FJ_MAP_TOMBSTONE) {
-            fj_map_insert_raw(old[j].key, old[j].slot, old[j].count);
+            fcj_map_insert_raw(old[j].key, old[j].slot, old[j].count);
         }
     }
     free(old);
     return 0;
 }
 
-// Insert a brand-new key with count 1 (fj_retain checks fj_map_find first,
+// Insert a brand-new key with count 1 (fcj_retain checks fcj_map_find first,
 // so duplicates never reach here). Returns 0, or -1 on out-of-memory
 // (map left unchanged).
-static int fj_map_put(void* key, size_t slot) {
-    if ((fj_map_fill + 1) * 10 >= fj_map_cap * 7) {
-        size_t new_cap = fj_map_cap ? fj_map_cap : FJ_MAP_INITIAL_CAP;
-        while ((fj_map_used + 1) * 10 >= new_cap * 7) new_cap <<= 1;
-        if (fj_map_rehash(new_cap) != 0) return -1;
+static int fcj_map_put(void* key, size_t slot) {
+    if ((fcj_map_fill + 1) * 10 >= fcj_map_cap * 7) {
+        size_t new_cap = fcj_map_cap ? fcj_map_cap : FJ_MAP_INITIAL_CAP;
+        while ((fcj_map_used + 1) * 10 >= new_cap * 7) new_cap <<= 1;
+        if (fcj_map_rehash(new_cap) != 0) return -1;
     }
-    size_t mask = fj_map_cap - 1;
-    size_t i = fj_map_hash(key) & mask;
+    size_t mask = fcj_map_cap - 1;
+    size_t i = fcj_map_hash(key) & mask;
     size_t tomb = SIZE_MAX;
     while (1) {
-        void* k = fj_map[i].key;
+        void* k = fcj_map[i].key;
         if (k == key) return 0; // unreachable; keep the existing entry intact
         if (k == FJ_MAP_TOMBSTONE) {
             if (tomb == SIZE_MAX) tomb = i;
         } else if (k == NULL) {
-            fj_map_entry_t* e = &fj_map[tomb != SIZE_MAX ? tomb : i];
+            fcj_map_entry_t* e = &fcj_map[tomb != SIZE_MAX ? tomb : i];
             e->key = key;
             e->slot = slot;
             e->count = 1;
-            fj_map_used++;
-            if (tomb == SIZE_MAX) fj_map_fill++; // a reused tombstone already counts toward fill
+            fcj_map_used++;
+            if (tomb == SIZE_MAX) fcj_map_fill++; // a reused tombstone already counts toward fill
             return 0;
         }
         i = (i + 1) & mask;
     }
 }
 
-static int fj_free_push(size_t slot) {
-    if (fj_free_count == fj_free_cap) {
-        size_t new_cap = fj_free_cap ? fj_free_cap * 2 : FJ_MAP_INITIAL_CAP;
-        size_t* grown = realloc(fj_free_slots, new_cap * sizeof(size_t));
+static int fcj_free_push(size_t slot) {
+    if (fcj_free_count == fcj_free_cap) {
+        size_t new_cap = fcj_free_cap ? fcj_free_cap * 2 : FJ_MAP_INITIAL_CAP;
+        size_t* grown = realloc(fcj_free_slots, new_cap * sizeof(size_t));
         if (grown == NULL) return -1;
-        fj_free_slots = grown;
-        fj_free_cap = new_cap;
+        fcj_free_slots = grown;
+        fcj_free_cap = new_cap;
     }
-    fj_free_slots[fj_free_count++] = slot;
+    fcj_free_slots[fcj_free_count++] = slot;
     return 0;
 }
 
 // Create Main.FJ_ROOTS once (idempotent guard, same pattern as the
-// FortranBridge check in fj_init) and cache the handles. Returns 0 on
+// FortranBridge check in fcj_init) and cache the handles. Returns 0 on
 // success; on failure the caller falls back to retain_obj/release_obj and
 // last_error_msg holds the reason.
-int fj_roots_init(void) {
-    fj_roots_reset();
+int fcj_roots_init(void) {
+    fcj_roots_reset();
 
     jl_eval_string("isdefined(Main, :FJ_ROOTS) || Main.eval(Meta.parse(\"const FJ_ROOTS = Vector{Any}()\"))");
     if (check_julia_exception()) return -1;
@@ -194,42 +194,42 @@ int fj_roots_init(void) {
         return -1;
     }
 
-    fj_map_entry_t* fresh = calloc(FJ_MAP_INITIAL_CAP, sizeof(fj_map_entry_t));
+    fcj_map_entry_t* fresh = calloc(FJ_MAP_INITIAL_CAP, sizeof(fcj_map_entry_t));
     if (fresh == NULL) {
         set_error("FJ_ROOTS setup failed: out of memory for ptr->slot map");
         return -1;
     }
-    fj_map = fresh;
-    fj_map_cap = FJ_MAP_INITIAL_CAP;
-    fj_map_used = 0;
-    fj_map_fill = 0;
+    fcj_map = fresh;
+    fcj_map_cap = FJ_MAP_INITIAL_CAP;
+    fcj_map_used = 0;
+    fcj_map_fill = 0;
 
     // Both handles stay valid without a local GC root: the constant binding
     // Main.FJ_ROOTS is a GC root holding the only reference to the vector,
     // and `nothing` is kept alive by its Base binding.
-    fj_roots = (jl_array_t*)roots;
-    fj_nothing = nothing_val;
-    fj_roots_cap = (size_t)jl_array_len(fj_roots);
+    fcj_roots = (jl_array_t*)roots;
+    fcj_nothing = nothing_val;
+    fcj_roots_cap = (size_t)jl_array_len(fcj_roots);
     // A re-init may find a pre-existing FJ_ROOTS: never clobber old slots,
     // manage only what we append from here on (fresh array: both are 0).
-    fj_roots_len = fj_roots_cap;
+    fcj_roots_len = fcj_roots_cap;
     return 0;
 }
 
-void fj_roots_teardown(void) {
-    fj_roots_reset();
+void fcj_roots_teardown(void) {
+    fcj_roots_reset();
 }
 
 // --- Object Management ---
 
-void* fj_retain(jl_value_t* val) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+void* fcj_retain(jl_value_t* val) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     if (val == NULL) return NULL;
 
     // Fast path: root the object in Main.FJ_ROOTS, no Julia round trip.
-    if (fj_roots != NULL) {
-        fj_map_entry_t* e = fj_map_find(val);
+    if (fcj_roots != NULL) {
+        fcj_map_entry_t* e = fcj_map_find(val);
         if (e != NULL) {
             e->count++; // duplicate retain: GCManager REF_COUNTS semantics
             return (void*)val;
@@ -238,33 +238,33 @@ void* fj_retain(jl_value_t* val) {
         JL_GC_PUSH1(&val); // keep val rooted across the possible GC in jl_array_grow_end
 
         size_t slot;
-        if (fj_free_count > 0) {
-            slot = fj_free_slots[--fj_free_count]; // reuse a freed slot
+        if (fcj_free_count > 0) {
+            slot = fcj_free_slots[--fcj_free_count]; // reuse a freed slot
         } else {
-            if (fj_roots_len >= fj_roots_cap) {
-                jl_array_grow_end(fj_roots, FJ_ROOTS_GROW);
+            if (fcj_roots_len >= fcj_roots_cap) {
+                jl_array_grow_end(fcj_roots, FJ_ROOTS_GROW);
                 if (check_julia_exception()) {
-                    fj_roots = NULL; // grow failed: fall back to retain_obj/release_obj
+                    fcj_roots = NULL; // grow failed: fall back to retain_obj/release_obj
                     JL_GC_POP();
                     return NULL;
                 }
-                fj_roots_cap = (size_t)jl_array_len(fj_roots);
+                fcj_roots_cap = (size_t)jl_array_len(fcj_roots);
             }
-            slot = fj_roots_len++;
+            slot = fcj_roots_len++;
         }
 
-        jl_array_ptr_set(fj_roots, slot, val); // val is now rooted by FJ_ROOTS
+        jl_array_ptr_set(fcj_roots, slot, val); // val is now rooted by FJ_ROOTS
 
-        if (fj_map_put(val, slot) != 0) {
+        if (fcj_map_put(val, slot) != 0) {
             // Out of memory for the bookkeeping: undo the root and fail.
-            jl_array_ptr_set(fj_roots, slot, fj_nothing);
-            if (slot == fj_roots_len - 1) {
-                fj_roots_len--;
-            } else if (fj_free_push(slot) != 0) {
+            jl_array_ptr_set(fcj_roots, slot, fcj_nothing);
+            if (slot == fcj_roots_len - 1) {
+                fcj_roots_len--;
+            } else if (fcj_free_push(slot) != 0) {
                 // Slot is untracked but holds jl_nothing: harmless leak of one slot.
             }
             JL_GC_POP();
-            set_error("fj_retain: out of memory for ptr->slot map");
+            set_error("fcj_retain: out of memory for ptr->slot map");
             return NULL;
         }
 
@@ -292,16 +292,16 @@ void* fj_retain(jl_value_t* val) {
     return (void*)val;
 }
 
-void fj_release(void* ptr) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
+void fcj_release(void* ptr) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
     if (!check_thread()) return;
     if (ptr == NULL) return;
 
     // Fast path: drop the slot in Main.FJ_ROOTS, no Julia round trip.
-    if (fj_roots != NULL) {
-        fj_map_entry_t* e = fj_map_find(ptr);
+    if (fcj_roots != NULL) {
+        fcj_map_entry_t* e = fcj_map_find(ptr);
         if (e == NULL) {
-            set_error("fj_release: pointer was not retained (double release?)");
+            set_error("fcj_release: pointer was not retained (double release?)");
             return;
         }
         if (e->count > 1) {
@@ -310,9 +310,9 @@ void fj_release(void* ptr) {
         }
         size_t slot = e->slot;
         e->key = FJ_MAP_TOMBSTONE; // remove the map entry
-        fj_map_used--;
-        jl_array_ptr_set(fj_roots, slot, fj_nothing);
-        if (fj_free_push(slot) != 0) {
+        fcj_map_used--;
+        jl_array_ptr_set(fcj_roots, slot, fcj_nothing);
+        if (fcj_free_push(slot) != 0) {
             // Slot is untracked but holds jl_nothing: harmless leak of one slot.
         }
         return;
@@ -326,9 +326,9 @@ void fj_release(void* ptr) {
     JL_GC_POP();
 }
 
-// Invalidate the module caches. Called from fj_shutdown: the pointer is
+// Invalidate the module caches. Called from fcj_shutdown: the pointer is
 // only tombstoned (the object dies with the runtime at jl_atexit_hook(0));
 // see the lifecycle note in bridge_internal.h.
-void fj_memory_clear_cache(void) {
-    fj_nothing = NULL;
+void fcj_memory_clear_cache(void) {
+    fcj_nothing = NULL;
 }

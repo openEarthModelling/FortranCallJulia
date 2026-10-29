@@ -6,13 +6,13 @@
 // and, for dotted names, the per-call jl_eval_string parse+eval.
 //
 // GC safety: a C static is NOT a GC root, so every cached function is routed
-// through fj_retain() before it becomes reachable from the table below; the
+// through fcj_retain() before it becomes reachable from the table below; the
 // Julia-side root set (GCManager.PTR_CACHE) keeps it alive. Keys are heap
-// copies; fj_clear_function_cache() frees the keys and releases the roots.
+// copies; fcj_clear_function_cache() frees the keys and releases the roots.
 //
-// Lifetime: fj_shutdown() clears this cache first (freeing the keys and
+// Lifetime: fcj_shutdown() clears this cache first (freeing the keys and
 // releasing the roots) before tombstoning any C statics; calling
-// fj_clear_function_cache() manually remains valid at any time.
+// fcj_clear_function_cache() manually remains valid at any time.
 //
 // Threading: all bridge calls run on the init thread (check_thread enforces
 // this), so the statics below need no locking.
@@ -21,9 +21,9 @@
 typedef struct {
     char*          name;   // NULL => empty slot
     jl_function_t* func;
-} fj_func_cache_slot_t;
+} fcj_func_cache_slot_t;
 
-static fj_func_cache_slot_t fj_func_cache[FJ_FUNC_CACHE_CAP];
+static fcj_func_cache_slot_t fcj_func_cache[FJ_FUNC_CACHE_CAP];
 
 // Julia-side counterpart of the clear below: FortranBridge.clear_kw_cache!
 // (empties FunctionRegistry.KW_CACHE). Resolved lazily on first use;
@@ -31,7 +31,7 @@ static fj_func_cache_slot_t fj_func_cache[FJ_FUNC_CACHE_CAP];
 // the export) simply keeps the pre-change kwargs-cache behavior.
 static jl_function_t* FuncClearKwCache = NULL;
 
-static unsigned fj_func_cache_hash(const char* s) {
+static unsigned fcj_func_cache_hash(const char* s) {
     unsigned h = 2166136261u; // FNV-1a
     while (*s) {
         h ^= (unsigned char)*s++;
@@ -40,28 +40,28 @@ static unsigned fj_func_cache_hash(const char* s) {
     return h;
 }
 
-static jl_function_t* fj_func_cache_find(const char* name) {
-    unsigned idx = fj_func_cache_hash(name) % FJ_FUNC_CACHE_CAP;
+static jl_function_t* fcj_func_cache_find(const char* name) {
+    unsigned idx = fcj_func_cache_hash(name) % FJ_FUNC_CACHE_CAP;
     for (int i = 0; i < FJ_FUNC_CACHE_CAP; i++) {
-        fj_func_cache_slot_t *slot = &fj_func_cache[(idx + i) % FJ_FUNC_CACHE_CAP];
+        fcj_func_cache_slot_t *slot = &fcj_func_cache[(idx + i) % FJ_FUNC_CACHE_CAP];
         if (slot->name == NULL) return NULL; // empty slot: name not cached
         if (strcmp(slot->name, name) == 0) return slot->func;
     }
     return NULL; // table full, no match
 }
 
-// Insert name->func. Roots func via fj_retain before storing. Ordering is:
+// Insert name->func. Roots func via fcj_retain before storing. Ordering is:
 // probe for a slot, copy the key, then retain -- so every failure path leaves
 // nothing behind and the pointer is rooted the moment the table can reach it.
 // Returns 1 on success; 0 if the table is full (eviction-free: the name just
-// stays uncached), the key copy cannot be allocated, or fj_retain fails
+// stays uncached), the key copy cannot be allocated, or fcj_retain fails
 // (error set by it) -- then the caller must treat func as unrooted, exactly
 // as before the cache existed.
-static int fj_func_cache_insert(const char* name, jl_function_t* func) {
-    unsigned idx = fj_func_cache_hash(name) % FJ_FUNC_CACHE_CAP;
-    fj_func_cache_slot_t *slot = NULL;
+static int fcj_func_cache_insert(const char* name, jl_function_t* func) {
+    unsigned idx = fcj_func_cache_hash(name) % FJ_FUNC_CACHE_CAP;
+    fcj_func_cache_slot_t *slot = NULL;
     for (int i = 0; i < FJ_FUNC_CACHE_CAP; i++) {
-        fj_func_cache_slot_t *s = &fj_func_cache[(idx + i) % FJ_FUNC_CACHE_CAP];
+        fcj_func_cache_slot_t *s = &fcj_func_cache[(idx + i) % FJ_FUNC_CACHE_CAP];
         if (s->name == NULL) { slot = s; break; }
         if (strcmp(s->name, name) == 0) return 1; // already cached
     }
@@ -69,7 +69,7 @@ static int fj_func_cache_insert(const char* name, jl_function_t* func) {
     slot->name = (char*)malloc(strlen(name) + 1);
     if (!slot->name) return 0;
     strcpy(slot->name, name);
-    void* rooted = fj_retain((jl_value_t*)func);
+    void* rooted = fcj_retain((jl_value_t*)func);
     if (!rooted) {
         free(slot->name);
         slot->name = NULL;
@@ -81,27 +81,27 @@ static int fj_func_cache_insert(const char* name, jl_function_t* func) {
 
 // Drop every redefinition-sensitive name cache:
 //   1. the C-side function-name cache below (keys freed, GC roots released
-//      via fj_release -- entries only exist while the runtime is live);
+//      via fcj_release -- entries only exist while the runtime is live);
 //   2. the Julia-side FunctionRegistry.KW_CACHE, via the optional
 //      FortranBridge.clear_kw_cache! hook (see FuncClearKwCache above).
-// Called from fj_shutdown (first, while the runtime still honors
-// fj_release), automatically after every fj_eval_string (on BOTH outcome
+// Called from fcj_shutdown (first, while the runtime still honors
+// fcj_release), automatically after every fcj_eval_string (on BOTH outcome
 // paths: top-level expressions commit as they evaluate, so an eval that
 // rebinds names and then throws has still performed the rebinding), and
 // manually via the Fortran SDK's julia_clear_function_cache. Julia-side
 // work only runs while the runtime is live on the init thread.
-void fj_clear_function_cache(void) {
+void fcj_clear_function_cache(void) {
     for (int i = 0; i < FJ_FUNC_CACHE_CAP; i++) {
-        if (fj_func_cache[i].name != NULL) {
-            free(fj_func_cache[i].name);
-            fj_func_cache[i].name = NULL;
-            if (fj_func_cache[i].func != NULL) {
-                fj_release((void*)fj_func_cache[i].func);
-                fj_func_cache[i].func = NULL;
+        if (fcj_func_cache[i].name != NULL) {
+            free(fcj_func_cache[i].name);
+            fcj_func_cache[i].name = NULL;
+            if (fcj_func_cache[i].func != NULL) {
+                fcj_release((void*)fcj_func_cache[i].func);
+                fcj_func_cache[i].func = NULL;
             }
         }
     }
-    if (fj_ready() && check_thread()) {
+    if (fcj_ready() && check_thread()) {
         if (FuncClearKwCache == NULL)
             FuncClearKwCache = jl_get_function(FortranBridgeMod, "clear_kw_cache!");
         if (FuncClearKwCache != NULL) {
@@ -115,7 +115,7 @@ void fj_clear_function_cache(void) {
 
 static jl_function_t* lookup_function(const char* func_name) {
     // OPT-2: consult the function-name cache first.
-    jl_function_t *cached = fj_func_cache_find(func_name);
+    jl_function_t *cached = fcj_func_cache_find(func_name);
     if (cached) return cached;
 
     jl_function_t *func = jl_get_function(jl_main_module, func_name);
@@ -130,16 +130,16 @@ static jl_function_t* lookup_function(const char* func_name) {
         }
     }
 
-    // Cache fill on miss: fj_func_cache_insert retains func before it becomes
+    // Cache fill on miss: fcj_func_cache_insert retains func before it becomes
     // reachable from the static table (a C global is not a GC root).
-    if (func) fj_func_cache_insert(func_name, func);
+    if (func) fcj_func_cache_insert(func_name, func);
     return func;
 }
 
 // --- Generic Calls ---
 
-jl_value_t* fj_call0(const char* func_name) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+jl_value_t* fcj_call0(const char* func_name) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -150,8 +150,8 @@ jl_value_t* fj_call0(const char* func_name) {
     return ret;
 }
 
-jl_value_t* fj_call1_float64(const char* func_name, double arg1) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+jl_value_t* fcj_call1_float64(const char* func_name, double arg1) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -166,8 +166,8 @@ jl_value_t* fj_call1_float64(const char* func_name, double arg1) {
     return ret;
 }
 
-jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+jl_value_t* fcj_call1_obj(const char* func_name, void* arg_obj) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -181,8 +181,8 @@ jl_value_t* fj_call1_obj(const char* func_name, void* arg_obj) {
     return ret;
 }
 
-jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg2) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+jl_value_t* fcj_call2_obj_double(const char* func_name, void* arg_obj, double arg2) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -198,8 +198,8 @@ jl_value_t* fj_call2_obj_double(const char* func_name, void* arg_obj, double arg
     return ret;
 }
 
-jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+jl_value_t* fcj_call_general(const char* func_name, void** args, int32_t nargs) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
@@ -212,27 +212,27 @@ jl_value_t* fj_call_general(const char* func_name, void** args, int32_t nargs) {
 
 // --- Function Handle API (OPT-2) ---
 
-void* fj_resolve_function(const char* func_name) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+void* fcj_resolve_function(const char* func_name) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_function_t *func = lookup_function(func_name);
     if (!func) {
         char err[256]; snprintf(err, 256, "Function %s not found.", func_name); set_error(err); return NULL;
     }
     // Return an OWNED reference rooted independently in the C-side root set
-    // (fj_retain): eval-triggered cache invalidation releases the cache's
+    // (fcj_retain): eval-triggered cache invalidation releases the cache's
     // root, so a handle kept alive only by its cache entry would dangle
     // after any later eval. The caller owns this reference and balances it
-    // with fj_release (the Fortran SDK's JuliaValue finalizer does exactly
+    // with fcj_release (the Fortran SDK's JuliaValue finalizer does exactly
     // that -- this now matches the SDK's documented ownership rule).
-    void* rooted = fj_retain((jl_value_t*)func);
+    void* rooted = fcj_retain((jl_value_t*)func);
     return rooted;
 }
 
-jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+jl_value_t* fcj_call_function(void* func_handle, void** args, int32_t nargs) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
-    if (!func_handle) { set_error("fj_call_function: NULL function handle"); return NULL; }
+    if (!func_handle) { set_error("fcj_call_function: NULL function handle"); return NULL; }
     jl_function_t *func = (jl_function_t*)func_handle;
     jl_value_t* ret;
     if (nargs == 0) {
@@ -244,26 +244,26 @@ jl_value_t* fj_call_function(void* func_handle, void** args, int32_t nargs) {
     return ret;
 }
 
-// Evaluate Julia source. fj_clear_function_cache() runs on BOTH outcome
+// Evaluate Julia source. fcj_clear_function_cache() runs on BOTH outcome
 // paths (top-level expressions commit as they evaluate, so a throwing eval
 // can still have rebound names), so name-based calls observe any top-level
-// rebinding the eval performed. See fj_clear_function_cache above for the
+// rebinding the eval performed. See fcj_clear_function_cache above for the
 // rebinding paths this covers and the ones it cannot see.
-jl_value_t* fj_eval_string(const char* cmd) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+jl_value_t* fcj_eval_string(const char* cmd) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_value_t *ret = NULL;
     JL_GC_PUSH1(&ret); // the invalidation below can GC; keep the result rooted
     ret = jl_eval_string(cmd);
     int failed = check_julia_exception();
-    fj_clear_function_cache();
+    fcj_clear_function_cache();
     if (failed) { JL_GC_POP(); return NULL; }
     JL_GC_POP();
     return ret;
 }
 
-void* fj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+void* fcj_get_function_pointer(const char* func_name, const char* ret_type, const char* arg_types) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     if (!FuncRegisterStr) { set_error("register_f2_string function not loaded."); return NULL; }
     jl_value_t **args;
@@ -286,9 +286,9 @@ void* fj_get_function_pointer(const char* func_name, const char* ret_type, const
 static jl_value_t* kwarg_any_array_type = NULL;
 static jl_value_t* kwarg_str_array_type = NULL;
 
-jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
+jl_value_t* fcj_call_kwargs(const char* func_name, void** args, int32_t nargs,
                            const char** kw_keys, void** kw_vals, int32_t nkw) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
 
     if (!kwarg_any_array_type) kwarg_any_array_type = jl_apply_array_type((jl_value_t*)jl_any_type, 1);
@@ -342,8 +342,8 @@ jl_value_t* fj_call_kwargs(const char* func_name, void** args, int32_t nargs,
 // True when the handle is a Julia Function object. The Fortran SDK uses this
 // to route obj%call(...) on a function object to call_value(...) (true method
 // call) instead of the legacy name-based global lookup.
-int fj_is_function(void* handle) {
-    if (!fj_ready()) return 0;
+int fcj_is_function(void* handle) {
+    if (!fcj_ready()) return 0;
     if (!check_thread()) return 0;
     if (!handle) return 0;
     return jl_isa((jl_value_t*)handle, (jl_value_t*)jl_function_type) ? 1 : 0;

@@ -2,7 +2,7 @@
 #
 # One-time setup for the sysimage build (root CMakeLists with
 # -DFJ_BUILD_SYSIMAGE=ON): creates and instantiates the scratch environment
-# scripts/sysimage_env that the `fj_sysimage` CMake target and
+# scripts/sysimage_env that the `fcj_sysimage` CMake target and
 # scripts/build_sysimage.jl build from.
 #
 # Run with the same Julia that embeds the sysimage (must be 1.12.x):

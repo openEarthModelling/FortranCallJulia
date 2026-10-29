@@ -5,12 +5,12 @@ project(FortranCallJuliaExamples LANGUAGES Fortran C)
 # Examples Build Configuration
 # ==============================================================================
 
-if(TARGET fj_middleware)
+if(TARGET fcj_middleware)
     # Built as part of main project: the Julia runtime is the in-repo package
     set(FJ_RUNTIME_SOURCE "${CMAKE_CURRENT_SOURCE_DIR}/../src/FortranBridge")
 else()
     # Standalone build (User installed SDK)
-    find_library(FJ_LIB NAMES fj_middleware REQUIRED)
+    find_library(FJ_LIB NAMES fcj_middleware REQUIRED)
     find_path(FJ_INCLUDE_DIR NAMES bridge.h REQUIRED)
     find_path(FJ_MOD_DIR NAMES julia_high_level.mod REQUIRED)
 
@@ -21,8 +21,8 @@ else()
     execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --ldlibs OUTPUT_VARIABLE JULIA_LDLIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
 
     # Create imported target
-    add_library(fj_middleware UNKNOWN IMPORTED)
-    set_target_properties(fj_middleware PROPERTIES
+    add_library(fcj_middleware UNKNOWN IMPORTED)
+    set_target_properties(fcj_middleware PROPERTIES
         IMPORTED_LOCATION "${FJ_LIB}"
         INTERFACE_INCLUDE_DIRECTORIES "${FJ_INCLUDE_DIR};${FJ_MOD_DIR}"
         INTERFACE_LINK_LIBRARIES "${JULIA_LDLIBS} ${JULIA_LDFLAGS}"
@@ -45,12 +45,12 @@ endif()
 # ==============================================================================
 
 # Serialized copy of the shared Julia runtime (the FortranBridge package) plus
-# examples_lib.jl: one custom target performs all copies; fj_init_ex resolves
+# examples_lib.jl: one custom target performs all copies; fcj_init_ex resolves
 # the package via the exe-adjacent probe (FortranBridge/Project.toml next to
 # the executable). Per-example POST_BUILD copies of the same paths raced
 # under -jN ("Error copying directory").
-if(NOT TARGET fj_copy_runtime)
-add_custom_target(fj_copy_runtime
+if(NOT TARGET fcj_copy_runtime)
+add_custom_target(fcj_copy_runtime
 COMMAND ${CMAKE_COMMAND} -E copy_directory
 ${FJ_RUNTIME_SOURCE}
 ${CMAKE_CURRENT_BINARY_DIR}/FortranBridge
@@ -61,7 +61,7 @@ ${CMAKE_CURRENT_BINARY_DIR}/examples_lib.jl
 endif()
 macro(add_fj_example name source)
     add_executable(${name} ${source} ${ARGN})
-    target_link_libraries(${name} PRIVATE fj_middleware)
+    target_link_libraries(${name} PRIVATE fcj_middleware)
     # -fno-underscoring and -cpp are GNU-only flags; non-GNU compilers need
     # their own equivalents (e.g. -fpp instead of -cpp for Intel).
     if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
@@ -69,14 +69,14 @@ macro(add_fj_example name source)
     endif()
 
     # If built in-tree, add module dir
-    if(TARGET fj_middleware)
-        get_target_property(MOD_DIR fj_middleware Fortran_MODULE_DIRECTORY)
+    if(TARGET fcj_middleware)
+        get_target_property(MOD_DIR fcj_middleware Fortran_MODULE_DIRECTORY)
         if(MOD_DIR)
             target_include_directories(${name} PRIVATE ${MOD_DIR})
         endif()
     endif()
 
-    add_dependencies(${name} fj_copy_runtime)
+    add_dependencies(${name} fcj_copy_runtime)
 endmacro()
 
 # ==============================================================================
@@ -120,7 +120,7 @@ find_library(MYLIB_LIB NAMES mylib MyLib PATHS ${MYLIB_DIR} NO_DEFAULT_PATH)
 if(MYLIB_LIB)
     message(STATUS "Found MyLib (Compiled Mode): ${MYLIB_LIB}")
     add_executable(ex_perf_startup_aot 04_performance/1_jit_vs_aot.f90)
-    target_link_libraries(ex_perf_startup_aot PRIVATE ${MYLIB_LIB} fj_middleware)
+    target_link_libraries(ex_perf_startup_aot PRIVATE ${MYLIB_LIB} fcj_middleware)
     target_compile_options(ex_perf_startup_aot PRIVATE -DCOMPILED_MODE)
     # -fno-underscoring / -cpp are GNU-only; non-GNU compilers need their own.
     if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
@@ -131,14 +131,14 @@ if(MYLIB_LIB)
     # Same in-tree module-dir wiring the add_fj_example macro applies;
     # this target was never compiled before (MyLib was not found), so it
     # silently lacked it.
-    if(TARGET fj_middleware)
-        get_target_property(MOD_DIR fj_middleware Fortran_MODULE_DIRECTORY)
+    if(TARGET fcj_middleware)
+        get_target_property(MOD_DIR fcj_middleware Fortran_MODULE_DIRECTORY)
         if(MOD_DIR)
             target_include_directories(ex_perf_startup_aot PRIVATE ${MOD_DIR})
         endif()
     endif()
 
-    add_dependencies(ex_perf_startup_aot fj_copy_runtime)
+    add_dependencies(ex_perf_startup_aot fcj_copy_runtime)
 else()
     message(STATUS "MyLib not found. Skipping ex_perf_startup_aot. (Build 03_deployment/2_compiled_library first)")
 endif()
@@ -165,22 +165,22 @@ endif()
 if(BUILD_MPI_EXAMPLES AND MPI_Fortran_FOUND)
     message(STATUS "MPI Found: Enabling ex_hpc_mpi_bootstrap")
     add_executable(ex_hpc_mpi_bootstrap 05_hpc_parallel/2_mpi_bootstrap.f90)
-    target_link_libraries(ex_hpc_mpi_bootstrap PRIVATE fj_middleware MPI::MPI_Fortran)
+    target_link_libraries(ex_hpc_mpi_bootstrap PRIVATE fcj_middleware MPI::MPI_Fortran)
     # -fno-underscoring is GNU-only; non-GNU compilers need their own flags.
     if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
         target_compile_options(ex_hpc_mpi_bootstrap PRIVATE -fno-underscoring)
     endif()
 
     # In-tree module support
-    if(TARGET fj_middleware)
-        get_target_property(MOD_DIR fj_middleware Fortran_MODULE_DIRECTORY)
+    if(TARGET fcj_middleware)
+        get_target_property(MOD_DIR fcj_middleware Fortran_MODULE_DIRECTORY)
         if(MOD_DIR)
             target_include_directories(ex_hpc_mpi_bootstrap PRIVATE ${MOD_DIR})
         endif()
     endif()
 
-    # Runtime files are covered by the shared fj_copy_runtime target
-    add_dependencies(ex_hpc_mpi_bootstrap fj_copy_runtime)
+    # Runtime files are covered by the shared fcj_copy_runtime target
+    add_dependencies(ex_hpc_mpi_bootstrap fcj_copy_runtime)
 else()
     message(STATUS "MPI Not Found: Skipping ex_hpc_mpi_bootstrap")
 endif()

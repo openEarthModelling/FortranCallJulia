@@ -2,7 +2,7 @@
 
 // --- Field Access (Struct / NamedTuple) ---
 
-void* fj_get_field(void* obj, const char* name) {
+void* fcj_get_field(void* obj, const char* name) {
     if (!check_thread()) return NULL;
     if (!obj) return NULL;
     
@@ -20,7 +20,7 @@ void* fj_get_field(void* obj, const char* name) {
     return ret;
 }
 
-void fj_set_field(void* obj, const char* name, void* val) {
+void fcj_set_field(void* obj, const char* name, void* val) {
     if (!check_thread()) return;
     if (!obj) return;
     
@@ -39,7 +39,7 @@ void fj_set_field(void* obj, const char* name, void* val) {
 
 // --- Index Access (Array / Tuple) ---
 
-void* fj_get_index_i(void* obj, long long idx) {
+void* fcj_get_index_i(void* obj, long long idx) {
     if (!check_thread()) return NULL;
     if (!obj) return NULL;
 
@@ -56,7 +56,7 @@ void* fj_get_index_i(void* obj, long long idx) {
     return ret;
 }
 
-void fj_set_index_i(void* obj, long long idx, void* val) {
+void fcj_set_index_i(void* obj, long long idx, void* val) {
     if (!check_thread()) return;
     if (!obj) return;
     
@@ -75,7 +75,7 @@ void fj_set_index_i(void* obj, long long idx, void* val) {
 
 // --- Extended Accessors ---
 
-void* fj_get_index_ii(void* obj, long long i, long long j) {
+void* fcj_get_index_ii(void* obj, long long i, long long j) {
     if (!check_thread()) return NULL;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_i = NULL;
@@ -91,7 +91,7 @@ void* fj_get_index_ii(void* obj, long long i, long long j) {
     return ret;
 }
 
-void fj_set_index_ii(void* obj, long long i, long long j, void* val) {
+void fcj_set_index_ii(void* obj, long long i, long long j, void* val) {
     if (!check_thread()) return;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_val = (jl_value_t*)val;
@@ -109,7 +109,7 @@ void fj_set_index_ii(void* obj, long long i, long long j, void* val) {
     JL_GC_POP();
 }
 
-void* fj_get_index_iii(void* obj, long long i, long long j, long long k) {
+void* fcj_get_index_iii(void* obj, long long i, long long j, long long k) {
     if (!check_thread()) return NULL;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_i = NULL;
@@ -128,7 +128,7 @@ void* fj_get_index_iii(void* obj, long long i, long long j, long long k) {
     return ret;
 }
 
-void fj_set_index_iii(void* obj, long long i, long long j, long long k, void* val) {
+void fcj_set_index_iii(void* obj, long long i, long long j, long long k, void* val) {
     if (!check_thread()) return;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_val = (jl_value_t*)val;
@@ -147,7 +147,7 @@ void fj_set_index_iii(void* obj, long long i, long long j, long long k, void* va
     JL_GC_POP();
 }
 
-void* fj_get_index_s(void* obj, const char* key) {
+void* fcj_get_index_s(void* obj, const char* key) {
     if (!check_thread()) return NULL;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_key = NULL;
@@ -161,7 +161,7 @@ void* fj_get_index_s(void* obj, const char* key) {
     return ret;
 }
 
-void fj_set_index_s(void* obj, const char* key, void* val) {
+void fcj_set_index_s(void* obj, const char* key, void* val) {
     if (!check_thread()) return;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_val = (jl_value_t*)val;
@@ -177,7 +177,7 @@ void fj_set_index_s(void* obj, const char* key, void* val) {
 
 // --- Introspection ---
 
-long long fj_length(void* obj) {
+long long fcj_length(void* obj) {
     if (!check_thread()) return -1;
     jl_value_t *v_obj = (jl_value_t*)obj;
     JL_GC_PUSH1(&v_obj);
@@ -188,7 +188,7 @@ long long fj_length(void* obj) {
     return len;
 }
 
-long long fj_ndims(void* obj) {
+long long fcj_ndims(void* obj) {
     if (!check_thread()) return -1;
     jl_value_t *v_obj = (jl_value_t*)obj;
     JL_GC_PUSH1(&v_obj);
@@ -199,7 +199,7 @@ long long fj_ndims(void* obj) {
     return nd;
 }
 
-long long fj_size(void* obj, int dim) {
+long long fcj_size(void* obj, int dim) {
     if (!check_thread()) return -1;
     jl_value_t *v_obj = (jl_value_t*)obj;
     jl_value_t *v_dim = NULL;
@@ -212,7 +212,7 @@ long long fj_size(void* obj, int dim) {
     return sz;
 }
 
-void* fj_make_unitrange(long long start, long long stop) {
+void* fcj_make_unitrange(long long start, long long stop) {
     if (!check_thread()) return NULL;
     jl_value_t *v_start = NULL;
     jl_value_t *v_stop = NULL;
@@ -254,127 +254,127 @@ static jl_array_t* check_f64_array(void* obj, int rank, jl_value_t** cache, cons
     return (jl_array_t*)obj;
 }
 
-double fj_get_real(void* arr, long long i) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
+double fcj_get_real(void* arr, long long i) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
     if (!check_thread()) return 0.0;
-    if (!arr) { set_error("fj_get_real: NULL array"); return 0.0; }
+    if (!arr) { set_error("fcj_get_real: NULL array"); return 0.0; }
 
     jl_value_t *v_arr = (jl_value_t*)arr;
     JL_GC_PUSH1(&v_arr);
 
-    jl_array_t *a = check_f64_array(arr, 1, &arr_f64_1d, "fj_get_real");
+    jl_array_t *a = check_f64_array(arr, 1, &arr_f64_1d, "fcj_get_real");
     if (!a) { JL_GC_POP(); return 0.0; }
 
     long long n = (long long)jl_array_nrows(a);
-    if (i < 1 || i > n) { set_error("fj_get_real: index out of bounds"); JL_GC_POP(); return 0.0; }
+    if (i < 1 || i > n) { set_error("fcj_get_real: index out of bounds"); JL_GC_POP(); return 0.0; }
 
     double v = jl_array_data(a, double)[i - 1];
     JL_GC_POP();
     return v;
 }
 
-void fj_set_real(void* arr, long long i, double v) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
+void fcj_set_real(void* arr, long long i, double v) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
     if (!check_thread()) return;
-    if (!arr) { set_error("fj_set_real: NULL array"); return; }
+    if (!arr) { set_error("fcj_set_real: NULL array"); return; }
 
     jl_value_t *v_arr = (jl_value_t*)arr;
     JL_GC_PUSH1(&v_arr);
 
-    jl_array_t *a = check_f64_array(arr, 1, &arr_f64_1d, "fj_set_real");
+    jl_array_t *a = check_f64_array(arr, 1, &arr_f64_1d, "fcj_set_real");
     if (!a) { JL_GC_POP(); return; }
 
     long long n = (long long)jl_array_nrows(a);
-    if (i < 1 || i > n) { set_error("fj_set_real: index out of bounds"); JL_GC_POP(); return; }
+    if (i < 1 || i > n) { set_error("fcj_set_real: index out of bounds"); JL_GC_POP(); return; }
 
     jl_array_data(a, double)[i - 1] = v;
     JL_GC_POP();
 }
 
-double fj_get_real2(void* arr, long long i, long long j) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
+double fcj_get_real2(void* arr, long long i, long long j) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
     if (!check_thread()) return 0.0;
-    if (!arr) { set_error("fj_get_real2: NULL array"); return 0.0; }
+    if (!arr) { set_error("fcj_get_real2: NULL array"); return 0.0; }
 
     jl_value_t *v_arr = (jl_value_t*)arr;
     JL_GC_PUSH1(&v_arr);
 
-    jl_array_t *a = check_f64_array(arr, 2, &arr_f64_2d, "fj_get_real2");
+    jl_array_t *a = check_f64_array(arr, 2, &arr_f64_2d, "fcj_get_real2");
     if (!a) { JL_GC_POP(); return 0.0; }
 
     long long d1 = (long long)jl_array_dim(a, 0);
     long long d2 = (long long)jl_array_dim(a, 1);
-    if (i < 1 || i > d1 || j < 1 || j > d2) { set_error("fj_get_real2: index out of bounds"); JL_GC_POP(); return 0.0; }
+    if (i < 1 || i > d1 || j < 1 || j > d2) { set_error("fcj_get_real2: index out of bounds"); JL_GC_POP(); return 0.0; }
 
     double v = jl_array_data(a, double)[(i - 1) + (j - 1) * d1];
     JL_GC_POP();
     return v;
 }
 
-void fj_set_real2(void* arr, long long i, long long j, double v) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
+void fcj_set_real2(void* arr, long long i, long long j, double v) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
     if (!check_thread()) return;
-    if (!arr) { set_error("fj_set_real2: NULL array"); return; }
+    if (!arr) { set_error("fcj_set_real2: NULL array"); return; }
 
     jl_value_t *v_arr = (jl_value_t*)arr;
     JL_GC_PUSH1(&v_arr);
 
-    jl_array_t *a = check_f64_array(arr, 2, &arr_f64_2d, "fj_set_real2");
+    jl_array_t *a = check_f64_array(arr, 2, &arr_f64_2d, "fcj_set_real2");
     if (!a) { JL_GC_POP(); return; }
 
     long long d1 = (long long)jl_array_dim(a, 0);
     long long d2 = (long long)jl_array_dim(a, 1);
-    if (i < 1 || i > d1 || j < 1 || j > d2) { set_error("fj_set_real2: index out of bounds"); JL_GC_POP(); return; }
+    if (i < 1 || i > d1 || j < 1 || j > d2) { set_error("fcj_set_real2: index out of bounds"); JL_GC_POP(); return; }
 
     jl_array_data(a, double)[(i - 1) + (j - 1) * d1] = v;
     JL_GC_POP();
 }
 
-double fj_get_real3(void* arr, long long i, long long j, long long k) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
+double fcj_get_real3(void* arr, long long i, long long j, long long k) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return 0.0; }
     if (!check_thread()) return 0.0;
-    if (!arr) { set_error("fj_get_real3: NULL array"); return 0.0; }
+    if (!arr) { set_error("fcj_get_real3: NULL array"); return 0.0; }
 
     jl_value_t *v_arr = (jl_value_t*)arr;
     JL_GC_PUSH1(&v_arr);
 
-    jl_array_t *a = check_f64_array(arr, 3, &arr_f64_3d, "fj_get_real3");
+    jl_array_t *a = check_f64_array(arr, 3, &arr_f64_3d, "fcj_get_real3");
     if (!a) { JL_GC_POP(); return 0.0; }
 
     long long d1 = (long long)jl_array_dim(a, 0);
     long long d2 = (long long)jl_array_dim(a, 1);
     long long d3 = (long long)jl_array_dim(a, 2);
-    if (i < 1 || i > d1 || j < 1 || j > d2 || k < 1 || k > d3) { set_error("fj_get_real3: index out of bounds"); JL_GC_POP(); return 0.0; }
+    if (i < 1 || i > d1 || j < 1 || j > d2 || k < 1 || k > d3) { set_error("fcj_get_real3: index out of bounds"); JL_GC_POP(); return 0.0; }
 
     double v = jl_array_data(a, double)[(i - 1) + (j - 1) * d1 + (k - 1) * d1 * d2];
     JL_GC_POP();
     return v;
 }
 
-void fj_set_real3(void* arr, long long i, long long j, long long k, double v) {
-    if (!fj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
+void fcj_set_real3(void* arr, long long i, long long j, long long k, double v) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return; }
     if (!check_thread()) return;
-    if (!arr) { set_error("fj_set_real3: NULL array"); return; }
+    if (!arr) { set_error("fcj_set_real3: NULL array"); return; }
 
     jl_value_t *v_arr = (jl_value_t*)arr;
     JL_GC_PUSH1(&v_arr);
 
-    jl_array_t *a = check_f64_array(arr, 3, &arr_f64_3d, "fj_set_real3");
+    jl_array_t *a = check_f64_array(arr, 3, &arr_f64_3d, "fcj_set_real3");
     if (!a) { JL_GC_POP(); return; }
 
     long long d1 = (long long)jl_array_dim(a, 0);
     long long d2 = (long long)jl_array_dim(a, 1);
     long long d3 = (long long)jl_array_dim(a, 2);
-    if (i < 1 || i > d1 || j < 1 || j > d2 || k < 1 || k > d3) { set_error("fj_set_real3: index out of bounds"); JL_GC_POP(); return; }
+    if (i < 1 || i > d1 || j < 1 || j > d2 || k < 1 || k > d3) { set_error("fcj_set_real3: index out of bounds"); JL_GC_POP(); return; }
 
     jl_array_data(a, double)[(i - 1) + (j - 1) * d1 + (k - 1) * d1 * d2] = v;
     JL_GC_POP();
 }
 
-// Invalidate the module caches. Called from fj_shutdown: the pointers are
+// Invalidate the module caches. Called from fcj_shutdown: the pointers are
 // only tombstoned (the objects die with the runtime at jl_atexit_hook(0));
 // see the lifecycle note in bridge_internal.h.
-void fj_accessors_clear_cache(void) {
+void fcj_accessors_clear_cache(void) {
     arr_f64_1d = NULL;
     arr_f64_2d = NULL;
     arr_f64_3d = NULL;

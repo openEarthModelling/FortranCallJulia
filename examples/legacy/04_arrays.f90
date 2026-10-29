@@ -1,6 +1,6 @@
 program ex04_arrays
     use julia_high_level
-    use julia_low_level ! For fj_wrap_array_1d
+    use julia_low_level ! For fcj_wrap_array_1d
     use iso_c_binding
     implicit none
 
@@ -21,8 +21,8 @@ program ex04_arrays
     ! Note: In a polished SDK, we would have `arr_obj = wrap_array(data)`
     ! Here we use the low-level bridge + retain pattern.
     
-    wrapped_ptr = fj_wrap_array_1d(raw_ptr, 5_8)
-    arr_obj%ptr = fj_retain(wrapped_ptr) ! Retain it so we can manage it as an object
+    wrapped_ptr = fcj_wrap_array_1d(raw_ptr, 5_8)
+    arr_obj%ptr = fcj_retain(wrapped_ptr) ! Retain it so we can manage it as an object
     
     ! Pass to Julia to print info
     print *, "Passing to Julia to print info:"

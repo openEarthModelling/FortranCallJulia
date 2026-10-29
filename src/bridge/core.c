@@ -9,9 +9,9 @@
 #include <stdatomic.h>
 #include "bridge_internal.h"
 
-// C-side GC root set for fj_retain/fj_release (implemented in memory.c)
-extern int fj_roots_init(void);
-extern void fj_roots_teardown(void);
+// C-side GC root set for fcj_retain/fcj_release (implemented in memory.c)
+extern int fcj_roots_init(void);
+extern void fcj_roots_teardown(void);
 
 // Define this only once in the executable/main library
 JULIA_DEFINE_FAST_TLS
@@ -42,13 +42,13 @@ jl_function_t* FuncMakeUnitRange = NULL;
 static pthread_t main_thread_id;
 static char last_error_msg[2048] = "No error";
 
-// Lifecycle state machine. fj_state is _Atomic (acquire loads / release
-// stores): fj_ready() may be polled from threads other than the init
-// thread, and a wrong-thread fj_shutdown must never race the state change
+// Lifecycle state machine. fcj_state is _Atomic (acquire loads / release
+// stores): fcj_ready() may be polled from threads other than the init
+// thread, and a wrong-thread fcj_shutdown must never race the state change
 // against in-flight mutations. Bridge CALLS remain init-thread-only
 // (check_thread enforces that at every entry point).
 enum { FJ_UNINIT = 0, FJ_READY = 1, FJ_SHUTDOWN = 2 };
-static _Atomic int fj_state = 0;
+static _Atomic int fcj_state = 0;
 
 // --- Helper Functions ---
 
@@ -56,12 +56,12 @@ void set_error(const char* msg) {
     snprintf(last_error_msg, sizeof(last_error_msg), "%s", msg);
 }
 
-const char* fj_get_last_error() {
+const char* fcj_get_last_error() {
     return last_error_msg;
 }
 
-int fj_ready(void) {
-    return atomic_load_explicit(&fj_state, memory_order_acquire) == FJ_READY;
+int fcj_ready(void) {
+    return atomic_load_explicit(&fcj_state, memory_order_acquire) == FJ_READY;
 }
 
 int check_thread() {
@@ -109,10 +109,10 @@ int check_julia_exception() {
     return 0; // No exception
 }
 
-// --- Project resolution (fj_init_ex) ---
+// --- Project resolution (fcj_init_ex) ---
 
 // Returns 1 if dir exists and contains a Project.toml file.
-static int fj_is_project_dir(const char* dir) {
+static int fcj_is_project_dir(const char* dir) {
     char buf[4096];
     struct stat st;
     if (dir == NULL || dir[0] == '\0') return 0;
@@ -124,11 +124,11 @@ static int fj_is_project_dir(const char* dir) {
 // Writes the absolute directory path (no trailing slash, NUL-terminated)
 // into buf (bufsize bytes including the terminator). Returns buf on
 // success, NULL if the platform cannot resolve it or buf is too small.
-// This is the anchor of every exe-adjacent lookup: fj_init_ex probes
+// This is the anchor of every exe-adjacent lookup: fcj_init_ex probes
 // FortranBridge/ next to it, and the Fortran SDK's
 // julia_include_exe_relative resolves data files against it, so shipped
 // files keep working from any working directory.
-char* fj_get_executable_dir(char* buf, size_t bufsize) {
+char* fcj_get_executable_dir(char* buf, size_t bufsize) {
     char exe_path[4096];
     char* slash;
     ssize_t n = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
@@ -150,25 +150,25 @@ char* fj_get_executable_dir(char* buf, size_t bufsize) {
 //   3. $JULIA_PROJECT
 // Returns a pointer to a static buffer (valid until the next call), or NULL
 // if no candidate validates.
-static const char* fj_resolve_project(const char* explicit_path) {
+static const char* fcj_resolve_project(const char* explicit_path) {
     static char exe_dir_buf[4096];
     static char candidate[4096];
     const char* env;
 
     if (explicit_path != NULL && explicit_path[0] != '\0') {
-        return fj_is_project_dir(explicit_path) ? explicit_path : NULL;
+        return fcj_is_project_dir(explicit_path) ? explicit_path : NULL;
     }
 
     env = getenv("JULIA_FJ_PROJECT");
-    if (fj_is_project_dir(env)) return env;
+    if (fcj_is_project_dir(env)) return env;
 
-    if (fj_get_executable_dir(exe_dir_buf, sizeof(exe_dir_buf)) != NULL) {
+    if (fcj_get_executable_dir(exe_dir_buf, sizeof(exe_dir_buf)) != NULL) {
         snprintf(candidate, sizeof(candidate), "%s/FortranBridge", exe_dir_buf);
-        if (fj_is_project_dir(candidate)) return candidate;
+        if (fcj_is_project_dir(candidate)) return candidate;
     }
 
     env = getenv("JULIA_PROJECT");
-    if (fj_is_project_dir(env)) return env;
+    if (fcj_is_project_dir(env)) return env;
 
     return NULL;
 }
@@ -176,7 +176,7 @@ static const char* fj_resolve_project(const char* explicit_path) {
 // Make project_dir the active project environment so that
 // `using FortranBridge` resolves to the package it contains.
 // Returns 0 on success, -1 (with the last error set) on failure.
-static int fj_activate_project(const char* project_dir) {
+static int fcj_activate_project(const char* project_dir) {
     jl_value_t* dir_str = jl_cstr_to_string(project_dir);
     jl_function_t* set_active_project;
     JL_GC_PUSH1(&dir_str);
@@ -191,23 +191,23 @@ static int fj_activate_project(const char* project_dir) {
     return check_julia_exception() ? -1 : 0;
 }
 
-int fj_init_ex(const fj_options_t* opts) {
+int fcj_init_ex(const fcj_options_t* opts) {
     // NULL-opts default: "no takeover" (handle_signals = 0). Safe only
     // because of the post-init signal() reset below.
-    static const fj_options_t defaults = { NULL, NULL, 0, 0 };
+    static const fcj_options_t defaults = { NULL, NULL, 0, 0 };
 
     if (opts == NULL) opts = &defaults;
 
-    int state = atomic_load_explicit(&fj_state, memory_order_acquire);
+    int state = atomic_load_explicit(&fcj_state, memory_order_acquire);
     if (state == FJ_READY) return 0; // Already initialized by us
     if (state == FJ_SHUTDOWN) {
-        set_error("fj_init_ex: runtime was already shut down; re-initialization is not supported");
+        set_error("fcj_init_ex: runtime was already shut down; re-initialization is not supported");
         return -1;
     }
 
     if (opts->project_path != NULL && opts->project_path[0] != '\0' &&
-        !fj_is_project_dir(opts->project_path)) {
-        set_error("fj_init_ex: project_path is set but contains no Project.toml");
+        !fcj_is_project_dir(opts->project_path)) {
+        set_error("fcj_init_ex: project_path is set but contains no Project.toml");
         return -1;
     }
 
@@ -234,8 +234,8 @@ int fj_init_ex(const fj_options_t* opts) {
 
     if (check_julia_exception()) {
         char msg[3072];
-        snprintf(msg, sizeof(msg), "fj_init_ex: Julia runtime initialization failed: %s",
-                 fj_get_last_error());
+        snprintf(msg, sizeof(msg), "fcj_init_ex: Julia runtime initialization failed: %s",
+                 fcj_get_last_error());
         set_error(msg);
         return -1;
     }
@@ -265,11 +265,11 @@ int fj_init_ex(const fj_options_t* opts) {
 
     if (!is_loaded) {
         // Activate the project environment, then load the package.
-        const char* project_dir = fj_resolve_project(opts->project_path);
-        if (project_dir != NULL && fj_activate_project(project_dir) != 0) {
+        const char* project_dir = fcj_resolve_project(opts->project_path);
+        if (project_dir != NULL && fcj_activate_project(project_dir) != 0) {
             char msg[4608];
-            snprintf(msg, sizeof(msg), "fj_init_ex: could not activate FortranBridge project (%s): %s",
-                     project_dir, fj_get_last_error());
+            snprintf(msg, sizeof(msg), "fcj_init_ex: could not activate FortranBridge project (%s): %s",
+                     project_dir, fcj_get_last_error());
             set_error(msg);
             return -1;
         }
@@ -281,7 +281,7 @@ int fj_init_ex(const fj_options_t* opts) {
 
     if (check_julia_exception()) {
         char msg[3072];
-        snprintf(msg, sizeof(msg), "fj_init_ex: loading FortranBridge failed: %s", fj_get_last_error());
+        snprintf(msg, sizeof(msg), "fcj_init_ex: loading FortranBridge failed: %s", fcj_get_last_error());
         set_error(msg);
         return -1;
     }
@@ -289,8 +289,8 @@ int fj_init_ex(const fj_options_t* opts) {
     jl_value_t* mod_val = jl_eval_string("FortranBridge");
     if (check_julia_exception()) {
         char msg[3072];
-        snprintf(msg, sizeof(msg), "fj_init_ex: getting the FortranBridge module failed: %s",
-                 fj_get_last_error());
+        snprintf(msg, sizeof(msg), "fcj_init_ex: getting the FortranBridge module failed: %s",
+                 fcj_get_last_error());
         set_error(msg);
         return -1;
     }
@@ -355,66 +355,66 @@ int fj_init_ex(const fj_options_t* opts) {
                     strncat(missing, required[k].name, sizeof(missing) - strlen(missing) - 1);
                 }
             }
-            snprintf(msg, sizeof(msg), "fj_init_ex: FortranBridge functions not found:%s", missing);
+            snprintf(msg, sizeof(msg), "fcj_init_ex: FortranBridge functions not found:%s", missing);
             set_error(msg);
             return -1;
         }
     } else {
-        set_error("fj_init_ex: could not load FortranBridge module (jl_eval_string(\"FortranBridge\") did not return a module)");
+        set_error("fcj_init_ex: could not load FortranBridge module (jl_eval_string(\"FortranBridge\") did not return a module)");
         return -1;
     }
 
-    // C-side GC root set for fast fj_retain/fj_release (memory.c). Failure is
+    // C-side GC root set for fast fcj_retain/fcj_release (memory.c). Failure is
     // non-fatal: those calls then use the retain_obj/release_obj fallback path.
-    if (fj_roots_init() != 0) {
-        fprintf(stderr, "Warning: C-side root set unavailable, falling back to retain_obj/release_obj: %s\n", fj_get_last_error());
+    if (fcj_roots_init() != 0) {
+        fprintf(stderr, "Warning: C-side root set unavailable, falling back to retain_obj/release_obj: %s\n", fcj_get_last_error());
     }
 
-    atomic_store_explicit(&fj_state, FJ_READY, memory_order_release);
+    atomic_store_explicit(&fcj_state, FJ_READY, memory_order_release);
     return 0;
 }
 
-void fj_init(const char* image_path) {
+void fcj_init(const char* image_path) {
     // Historical contract: Julia's signal handlers stay in place
-    // (handle_signals = 1), independent of the fj_init_ex default; on
+    // (handle_signals = 1), independent of the fcj_init_ex default; on
     // failure the last error is printed to stderr and the process exits
-    // (fj_init has no return value to report through).
-    fj_options_t opts;
+    // (fcj_init has no return value to report through).
+    fcj_options_t opts;
     opts.sysimage_path = image_path;
     opts.project_path = NULL;
     opts.nthreads = 0;
     opts.handle_signals = 1;
-    if (fj_init_ex(&opts) != 0) {
-        fprintf(stderr, "Error: fj_init failed.\nLast Error: %s\n", fj_get_last_error());
+    if (fcj_init_ex(&opts) != 0) {
+        fprintf(stderr, "Error: fcj_init failed.\nLast Error: %s\n", fcj_get_last_error());
         exit(1);
     }
 }
 
-void fj_shutdown() {
+void fcj_shutdown() {
     // Shutdown must run on the thread that owns the runtime (the same
     // single-thread contract as every bridge call): it releases GC roots
     // and tombstones cached bindings while the runtime is still alive, so
     // racing it against anything would leave a concurrent reader
     // dereferencing NULLed globals. Refuse with the last error set when
     // called from any other thread while the runtime is live OR still
-    // initializing (fj_state stays FJ_UNINIT for the whole multi-second
-    // init, so an fj_ready() test alone would miss that window;
+    // initializing (fcj_state stays FJ_UNINIT for the whole multi-second
+    // init, so an fcj_ready() test alone would miss that window;
     // main_thread_id is assigned before Julia init starts). Shutting a
     // runtime whose initialization was never attempted is allowed from any
     // thread: it leaves the state machine at FJ_SHUTDOWN -- a later
-    // fj_init_ex is refused, as after any shutdown -- and Julia itself is
+    // fcj_init_ex is refused, as after any shutdown -- and Julia itself is
     // untouched (its atexit hook no-ops when the runtime never
     // initialized).
     if (main_thread_id != 0 && !check_thread()) return;
 
     // Drop the function-name cache FIRST, while the runtime can still honor
-    // fj_release (it frees the C-side keys and releases the GC roots).
+    // fcj_release (it frees the C-side keys and releases the GC roots).
     // Everything below only tombstones C statics.
-    fj_clear_function_cache();
+    fcj_clear_function_cache();
 
-    atomic_store_explicit(&fj_state, FJ_SHUTDOWN, memory_order_release);
+    atomic_store_explicit(&fcj_state, FJ_SHUTDOWN, memory_order_release);
 
-    // Invalidate cached handles so post-shutdown calls hit the fj_ready guard
+    // Invalidate cached handles so post-shutdown calls hit the fcj_ready guard
     FortranBridgeMod = NULL;
     FuncRetain = NULL;
     FuncRelease = NULL;
@@ -438,14 +438,14 @@ void fj_shutdown() {
     FuncMakeUnitRange = NULL;
 
     // P2-era module caches: same tombstoning as the core caches above.
-    fj_callbacks_clear_cache();
-    fj_extract_clear_cache();
-    fj_arrays_clear_cache();
-    fj_accessors_clear_cache();
-    fj_memory_clear_cache();
+    fcj_callbacks_clear_cache();
+    fcj_extract_clear_cache();
+    fcj_arrays_clear_cache();
+    fcj_accessors_clear_cache();
+    fcj_memory_clear_cache();
 
     // Drop the C-side root-set bookkeeping (Main.FJ_ROOTS dies with the runtime)
-    fj_roots_teardown();
+    fcj_roots_teardown();
 
     jl_atexit_hook(0);
 }
