@@ -37,3 +37,6 @@ examples/07_capstone/2_aot_kinetics/build/
 examples/07_capstone/2_aot_kinetics/aot_bench
 # figure data (regenerable: run the driver)
 examples/07_capstone/output/
+
+# graphify knowledge-graph outputs (local only, never commit)
+graphify-out/
