@@ -98,6 +98,7 @@ static int check_dims_positive(long ndim, const long *dims, const char *who) {
 // --- Array Wrapper (Zero-Copy, any rank 1..FCJ_MAX_NDIM) ---
 
 void* fcj_wrap_array(void* data, long ndim, const long* dims) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
     jl_value_t *array_type = NULL;
     jl_value_t *dims_tuple = NULL;
@@ -126,6 +127,7 @@ void* fcj_wrap_array(void* data, long ndim, const long* dims) {
 // that wraps the address space would otherwise allocate a small array and
 // memcpy gigabytes past its end.
 void* fcj_copy_array(void* data, long ndim, const long* dims) {
+    if (!fcj_ready()) { set_error("Julia runtime not initialized or already shut down"); return NULL; }
     if (!check_thread()) return NULL;
 
     // Range-check ndim BEFORE any loop writes dims_sz[0..ndim-1]: a caller
@@ -144,6 +146,7 @@ void* fcj_copy_array(void* data, long ndim, const long* dims) {
                      "fcj_copy_array: dimension %ld is %ld, must be positive",
                      i + 1, dims[i]);
             set_error(buf);
+            JL_GC_POP();
             return NULL;
         }
         if ((unsigned long long)dims[i] >
@@ -153,6 +156,7 @@ void* fcj_copy_array(void* data, long ndim, const long* dims) {
                      "fcj_copy_array: extent product overflows (%ld at dim %ld)",
                      dims[i], i + 1);
             set_error(buf);
+            JL_GC_POP();
             return NULL;
         }
         total *= (unsigned long long)dims[i];

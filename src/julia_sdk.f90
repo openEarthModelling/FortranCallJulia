@@ -314,7 +314,9 @@ end subroutine copy_jv
             res%ptr = c_null_ptr
             return
         end if
-        if (any([(size(arr, dim=k), k = 1, nd)] == 0)) then
+        ! kind=c_long: a default-integer size() would wrap for extents
+        ! >= 2^31 and could misread a huge (valid) extent as zero
+        if (any([(size(arr, dim=k, kind=c_long), k = 1, nd)] == 0_c_long)) then
             write(error_unit, '(A)') &
                 'julia_wrap_array: zero-sized dimension; c_loc is illegal on ' // &
                 'zero-sized arrays; returning invalid JuliaValue'
@@ -353,7 +355,7 @@ end subroutine copy_jv
             res%ptr = c_null_ptr
             return
         end if
-        if (any([(size(arr, dim=k), k = 1, nd)] == 0)) then
+        if (any([(size(arr, dim=k, kind=c_long), k = 1, nd)] == 0_c_long)) then
             write(error_unit, '(A)') &
                 'julia_copy_array: zero-sized dimension; returning invalid JuliaValue'
             res%ptr = c_null_ptr
