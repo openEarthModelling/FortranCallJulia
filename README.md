@@ -46,11 +46,14 @@ results come back through zero-copy or batch-extraction APIs.
 │   ├── 01_basics/ .. 04_performance/
 │   ├── 05_hpc_parallel/  # Multithreading, MPI bootstrap
 │   ├── 06_sciml/         # Callbacks, batch data, end-to-end ODE demo
-│   └── 07_capstone/      # Reacting-flow capstone: Fortran Euler driver +
+│   ├── 07_capstone/      # Reacting-flow capstone: Fortran Euler driver +
 │                         #   vendored Clawpack kernel, Strang-split
 │                         #   Catalyst chemistry over the bridge (JIT /
 │                         #   sysimage / AOT), CJ-detonation validated;
 │                         #   see PERFORMANCE.md
+│   └── 08_gri_ignition/  # GRI-Mech 3.0 ignition delay through FjKinetics
+│                         #   v0.2 (ChemMechSim), bridge-vs-native
+│                         #   acceptance < 1e-8 (JIT)
 ├── scripts/              # Sysimage pipeline (build_sysimage.jl,
 │                         #   precompile.jl, install_sciml_env.jl)
 └── CMakeLists.txt

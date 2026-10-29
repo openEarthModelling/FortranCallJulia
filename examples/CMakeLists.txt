@@ -208,3 +208,12 @@ add_fj_example(ex_sciml_demo            06_sciml/3_sciml_demo.f90)
 add_subdirectory(07_capstone/clawpack1d)
 add_fj_example(ex_reacting_flow      07_capstone/1_reacting_flow.f90 07_capstone/rp1_reacting.f90)
 target_link_libraries(ex_reacting_flow PRIVATE clawpack1d)
+
+# ==============================================================================
+# 8. GRI-Mech 3.0 ignition delay (Phase B chemistry, JIT mode)
+# ==============================================================================
+# Standalone homogeneous ignition benchmark through FjKinetics v0.2's
+# GriSolver (ChemMechSim). JIT only -- no sysimage target here. The native
+# baseline lives beside it (run_native.jl); see the example header for the
+# two-step run and the acceptance criterion (t_ign rel diff < 1e-8).
+add_fj_example(ex_gri_ignition      08_gri_ignition/gri_ignition.f90)
