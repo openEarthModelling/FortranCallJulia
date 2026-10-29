@@ -1,15 +1,20 @@
 name = "FjKinetics"
 uuid = "931b181b-f631-444a-95c8-c66fcaa6254e"
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
+ChemMechSim = "b641688d-d7bb-4a78-b638-4884ad9e5d4b"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 SciMLBase = "0bca4576-84f4-4d90-8ffe-ffa030f20462"
 
 [compat]
+# no ChemMechSim entry: it is dev-path only (the General registry carries
+# v1.0.0 while the repo is at 1.2.0). This package's own Manifest is
+# untracked (the dev path points outside the repo); after a fresh clone run
+# scripts/install_sciml_env.jl, which develops ChemMechSim in here too.
 julia = "1.12"
 Catalyst = "~16.2"
 OrdinaryDiffEq = "~6.111"
