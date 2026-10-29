@@ -133,8 +133,8 @@ program ex_sciml_demo
     !    f(du, u, p, t) with u = [1.0, 0.5] must produce du = [0.5, -1.0]
     u_f(1) = 1.0_c_double;  u_f(2) = 0.5_c_double
     du_f(1) = 0.0_c_double; du_f(2) = 0.0_c_double
-    du_boxed = julia_wrap_array_1d(du_f, 2_c_int64_t)
-    u_boxed  = julia_wrap_array_1d(u_f, 2_c_int64_t)
+    du_boxed = julia_wrap_array(du_f)
+    u_boxed  = julia_wrap_array(u_f)
     p_boxed  = julia_box_real(0.0_c_double)
     t_boxed  = julia_box_real(0.0_c_double)
     if (.not. du_boxed%is_valid() .or. .not. u_boxed%is_valid()) then

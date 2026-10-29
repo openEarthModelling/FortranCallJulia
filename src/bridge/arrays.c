@@ -8,59 +8,106 @@
 // GC rooting; do NOT push them on the GC stack. Lazy init is safe because all
 // bridge calls run on the init thread (see check_thread). Kept per-file on
 // purpose (accessors.c keeps its own small statics).
-static jl_value_t *arr_f64_1d = NULL, *arr_f64_2d = NULL, *arr_f64_3d = NULL;
+//
+// The old per-rank statics (arr_f64_1d/2d/3d) became this ndim-indexed table
+// when the _1d/_2d/_3d entry points collapsed into the rank-generic
+// fcj_wrap_array / fcj_copy_array. FCJ_MAX_NDIM is a soft cap: Julia supports
+// Array{T,N} for any N, but ranks > 16 are exotic, and a fixed table keeps the
+// cache a plain static array (no allocation, no invalidation bookkeeping).
+#define FCJ_MAX_NDIM 16
+static jl_value_t *arr_f64_by_nd[FCJ_MAX_NDIM]; // [ndim-1], zero-initialized
 static jl_function_t *tuple_func = NULL;
 
-// --- Array Wrappers (Zero-Copy) ---
-
-void* fcj_wrap_array_1d(void* data, long dim1) {
-    if (!check_thread()) return NULL;
-    jl_value_t *array_type = NULL;
-    JL_GC_PUSH1(&array_type);
-
-    if (!arr_f64_1d) arr_f64_1d = jl_apply_array_type((jl_value_t*)jl_float64_type, 1);
-    array_type = arr_f64_1d;
-    jl_array_t *arr = jl_ptr_to_array_1d(array_type, data, dim1, 0);
-    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
-    JL_GC_POP();
-    return (void*)arr;
+// Resolve (or lazily create) the Array{Float64,ndim} type object. Returns
+// NULL with the last error set when ndim is out of [1, FCJ_MAX_NDIM] or the
+// type application threw.
+static jl_value_t *array_type_for_ndim(long ndim, const char *who) {
+    if (ndim < 1 || ndim > FCJ_MAX_NDIM) {
+        char buf[160];
+        snprintf(buf, sizeof(buf),
+                 "%s: ndim %ld out of range [1, %d]", who, ndim, FCJ_MAX_NDIM);
+        set_error(buf);
+        return NULL;
+    }
+    if (!arr_f64_by_nd[ndim - 1])
+        arr_f64_by_nd[ndim - 1] =
+            jl_apply_array_type((jl_value_t*)jl_float64_type, (size_t)ndim);
+    return arr_f64_by_nd[ndim - 1];
 }
 
-// The 2D/3D wrappers build a dims tuple via Base.tuple before handing it to
-// jl_ptr_to_array. Every step that can fail or throw is checked immediately
-// (resolution of the tuple binding, boxing, the tuple call, the array
-// construction): passing a NULL or stale dims value into jl_ptr_to_array
-// crashes inside Julia with no bridge-level diagnostic -- the failure window
-// these checks close. check_julia_exception() runs BEFORE the NULL checks so
-// the detailed exception text is not overwritten by the generic message.
-void* fcj_wrap_array_2d(void* data, long dim1, long dim2) {
-    if (!check_thread()) return NULL;
-    jl_value_t *array_type = NULL;
+// Build the (d1, ..., dN) dims tuple for jl_ptr_to_array via Base.tuple.
+// jl_call is the same public apply machinery jl_call2/jl_call3 sit on top of,
+// so the generic path costs the same per call as the old per-rank entry
+// points; the only per-call work added by N-D generality is ndim jl_box_long
+// calls the caller used to spell out as arguments anyway. Every step that can
+// fail or throw is checked immediately: passing a NULL or stale dims value
+// into jl_ptr_to_array crashes inside Julia with no bridge-level diagnostic.
+// check_julia_exception() runs BEFORE the NULL checks so the detailed
+// exception text is not overwritten by the generic message.
+//
+// JL_GC_PUSHARGS assigns its argument, so `args` must be a pointer VARIABLE;
+// the macro allocates and zeroes the frame slots itself.
+static jl_value_t *make_dims_tuple(long ndim, const long *dims, const char *who) {
+    jl_value_t **args;
+    JL_GC_PUSHARGS(args, (int)ndim);
 
-    jl_value_t *dims_tuple = NULL;
-    jl_value_t *v_d1 = NULL;
-    jl_value_t *v_d2 = NULL;
-    JL_GC_PUSH4(&array_type, &dims_tuple, &v_d1, &v_d2);
-
-    if (!arr_f64_2d) arr_f64_2d = jl_apply_array_type((jl_value_t*)jl_float64_type, 2);
-    array_type = arr_f64_2d;
     if (!tuple_func) tuple_func = jl_get_function(jl_base_module, "tuple");
     if (tuple_func == NULL) {
-        set_error("fcj_wrap_array_2d: Base.tuple binding not found");
+        char buf[128];
+        snprintf(buf, sizeof(buf), "%s: Base.tuple binding not found", who);
+        set_error(buf);
         JL_GC_POP();
         return NULL;
     }
-    v_d1 = jl_box_long(dim1);
-    v_d2 = jl_box_long(dim2);
-    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
+    for (long i = 0; i < ndim; i++) {
+        args[i] = jl_box_long(dims[i]);
+        if (check_julia_exception()) { JL_GC_POP(); return NULL; }
+    }
 
-    dims_tuple = jl_call2(tuple_func, v_d1, v_d2);
+    jl_value_t *dims_tuple = jl_call(tuple_func, args, (uint32_t)ndim);
     if (check_julia_exception()) { JL_GC_POP(); return NULL; }
     if (dims_tuple == NULL) {
-        set_error("fcj_wrap_array_2d: Base.tuple returned NULL without an exception");
+        char buf[160];
+        snprintf(buf, sizeof(buf),
+                 "%s: Base.tuple returned NULL without an exception", who);
+        set_error(buf);
         JL_GC_POP();
         return NULL;
     }
+    JL_GC_POP();
+    return dims_tuple;
+}
+
+// Reject non-positive dimensions up front: a zero or negative extent would
+// otherwise surface as a Julia-side throw (empty array) or a bogus memcpy
+// size, far from the caller's mistake.
+static int check_dims_positive(long ndim, const long *dims, const char *who) {
+    for (long i = 0; i < ndim; i++) {
+        if (dims[i] <= 0) {
+            char buf[160];
+            snprintf(buf, sizeof(buf),
+                     "%s: dimension %ld is %ld, must be positive",
+                     who, i + 1, dims[i]);
+            set_error(buf);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+// --- Array Wrapper (Zero-Copy, any rank 1..FCJ_MAX_NDIM) ---
+
+void* fcj_wrap_array(void* data, long ndim, const long* dims) {
+    if (!check_thread()) return NULL;
+    jl_value_t *array_type = NULL;
+    jl_value_t *dims_tuple = NULL;
+    JL_GC_PUSH2(&array_type, &dims_tuple);
+
+    array_type = array_type_for_ndim(ndim, "fcj_wrap_array");
+    if (array_type == NULL) { JL_GC_POP(); return NULL; }
+    if (!check_dims_positive(ndim, dims, "fcj_wrap_array")) { JL_GC_POP(); return NULL; }
+    dims_tuple = make_dims_tuple(ndim, dims, "fcj_wrap_array");
+    if (dims_tuple == NULL) { JL_GC_POP(); return NULL; }
 
     jl_array_t *arr = jl_ptr_to_array(array_type, data, dims_tuple, 0);
 
@@ -69,105 +116,54 @@ void* fcj_wrap_array_2d(void* data, long dim1, long dim2) {
     return (void*)arr;
 }
 
-void* fcj_wrap_array_3d(void* data, long dim1, long dim2, long dim3) {
+// --- Array Deep Copy (Alloc + Memcpy, any rank 1..FCJ_MAX_NDIM) ---
+//
+// Allocates with jl_alloc_array_nd -- the public N-D constructor the old
+// jl_alloc_array_{1,2,3}d specializations parallel, taking plain C extents so
+// no dims tuple is needed on this path -- then copies the full extent. The
+// element-count product is overflow-checked against SIZE_MAX / sizeof(double)
+// BEFORE any allocation or memcpy: with caller-supplied extents, a product
+// that wraps the address space would otherwise allocate a small array and
+// memcpy gigabytes past its end.
+void* fcj_copy_array(void* data, long ndim, const long* dims) {
     if (!check_thread()) return NULL;
+
+    // Range-check ndim BEFORE any loop writes dims_sz[0..ndim-1]: a caller
+    // passing ndim > FCJ_MAX_NDIM would otherwise smash the stack array.
     jl_value_t *array_type = NULL;
+    JL_GC_PUSH1(&array_type);
+    array_type = array_type_for_ndim(ndim, "fcj_copy_array");
+    if (array_type == NULL) { JL_GC_POP(); return NULL; }
 
-    jl_value_t *dims_tuple = NULL;
-    jl_value_t *v_d1 = NULL;
-    jl_value_t *v_d2 = NULL;
-    jl_value_t *v_d3 = NULL;
-    JL_GC_PUSH5(&array_type, &dims_tuple, &v_d1, &v_d2, &v_d3);
-
-    if (!arr_f64_3d) arr_f64_3d = jl_apply_array_type((jl_value_t*)jl_float64_type, 3);
-    array_type = arr_f64_3d;
-    if (!tuple_func) tuple_func = jl_get_function(jl_base_module, "tuple");
-    if (tuple_func == NULL) {
-        set_error("fcj_wrap_array_3d: Base.tuple binding not found");
-        JL_GC_POP();
-        return NULL;
+    unsigned long long total = 1;
+    size_t dims_sz[FCJ_MAX_NDIM];
+    for (long i = 0; i < ndim; i++) {
+        if (dims[i] <= 0) {
+            char buf[160];
+            snprintf(buf, sizeof(buf),
+                     "fcj_copy_array: dimension %ld is %ld, must be positive",
+                     i + 1, dims[i]);
+            set_error(buf);
+            return NULL;
+        }
+        if ((unsigned long long)dims[i] >
+            (unsigned long long)-1 / sizeof(double) / total) {
+            char buf[160];
+            snprintf(buf, sizeof(buf),
+                     "fcj_copy_array: extent product overflows (%ld at dim %ld)",
+                     dims[i], i + 1);
+            set_error(buf);
+            return NULL;
+        }
+        total *= (unsigned long long)dims[i];
+        dims_sz[i] = (size_t)dims[i];
     }
-    v_d1 = jl_box_long(dim1);
-    v_d2 = jl_box_long(dim2);
-    v_d3 = jl_box_long(dim3);
+
+    jl_array_t *arr = jl_alloc_array_nd(array_type, dims_sz, (size_t)ndim);
     if (check_julia_exception()) { JL_GC_POP(); return NULL; }
 
-    dims_tuple = jl_call3(tuple_func, v_d1, v_d2, v_d3);
-    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
-    if (dims_tuple == NULL) {
-        set_error("fcj_wrap_array_3d: Base.tuple returned NULL without an exception");
-        JL_GC_POP();
-        return NULL;
-    }
-
-    jl_array_t *arr = jl_ptr_to_array(array_type, data, dims_tuple, 0);
-
-    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
-    JL_GC_POP();
-    return (void*)arr;
-}
-
-// --- Array Deep Copies (Alloc + Memcpy) ---
-
-void* fcj_copy_array_1d(void* data, long dim1) {
-    if (!check_thread()) return NULL;
-    jl_value_t *array_type = NULL;
-    JL_GC_PUSH1(&array_type);
-
-    if (!arr_f64_1d) arr_f64_1d = jl_apply_array_type((jl_value_t*)jl_float64_type, 1);
-    array_type = arr_f64_1d;
-
-    // Allocate new array in Julia (managed by GC)
-    jl_array_t *arr = jl_alloc_array_1d(array_type, dim1);
-    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
-
-    // Copy data
     double* raw_data = (double*)jl_array_data(arr, double);
-    memcpy(raw_data, data, dim1 * sizeof(double));
-
-    JL_GC_POP();
-    return (void*)arr;
-}
-
-// The deep copies allocate with jl_alloc_array_{2,3}d, which take the
-// dimensions as integers directly -- no dims tuple is needed (the tuple
-// construction that used to live here was dead code carrying the same
-// failure window as the wrappers above).
-void* fcj_copy_array_2d(void* data, long dim1, long dim2) {
-    if (!check_thread()) return NULL;
-    jl_value_t *array_type = NULL;
-    JL_GC_PUSH1(&array_type);
-
-    if (!arr_f64_2d) arr_f64_2d = jl_apply_array_type((jl_value_t*)jl_float64_type, 2);
-    array_type = arr_f64_2d;
-
-    // Allocate new array in Julia (managed by GC)
-    jl_array_t *arr = jl_alloc_array_2d(array_type, dim1, dim2);
-    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
-
-    // Copy data
-    double* raw_data = (double*)jl_array_data(arr, double);
-    memcpy(raw_data, data, dim1 * dim2 * sizeof(double));
-
-    JL_GC_POP();
-    return (void*)arr;
-}
-
-void* fcj_copy_array_3d(void* data, long dim1, long dim2, long dim3) {
-    if (!check_thread()) return NULL;
-    jl_value_t *array_type = NULL;
-    JL_GC_PUSH1(&array_type);
-
-    if (!arr_f64_3d) arr_f64_3d = jl_apply_array_type((jl_value_t*)jl_float64_type, 3);
-    array_type = arr_f64_3d;
-
-    // Allocate new array in Julia (managed by GC)
-    jl_array_t *arr = jl_alloc_array_3d(array_type, dim1, dim2, dim3);
-    if (check_julia_exception()) { JL_GC_POP(); return NULL; }
-
-    // Copy data
-    double* raw_data = (double*)jl_array_data(arr, double);
-    memcpy(raw_data, data, dim1 * dim2 * dim3 * sizeof(double));
+    memcpy(raw_data, data, (size_t)total * sizeof(double));
 
     JL_GC_POP();
     return (void*)arr;
@@ -177,8 +173,7 @@ void* fcj_copy_array_3d(void* data, long dim1, long dim2, long dim3) {
 // only tombstoned (the objects die with the runtime at jl_atexit_hook(0));
 // see the lifecycle note in bridge_internal.h.
 void fcj_arrays_clear_cache(void) {
-    arr_f64_1d = NULL;
-    arr_f64_2d = NULL;
-    arr_f64_3d = NULL;
+    for (int i = 0; i < FCJ_MAX_NDIM; i++)
+        arr_f64_by_nd[i] = NULL;
     tuple_func = NULL;
 }

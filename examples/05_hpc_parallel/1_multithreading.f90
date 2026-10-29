@@ -8,6 +8,7 @@ program ex06_multithreading
     real(kind=8), allocatable, target :: batch_stack(:,:,:)
     type(c_ptr) :: raw_ptr, wrapped_ptr
     integer(kind=8) :: n, m, k
+    integer(kind=c_long) :: dims(3)
     real(kind=8) :: t1, t2
 
     print *, "--- Example 6: HPC Multithreading (Parallel Batching) ---"
@@ -36,7 +37,8 @@ program ex06_multithreading
     batch_stack(1,1,:) = batch_stack(1,1,:) + 10.0d0
 
     raw_ptr = c_loc(batch_stack)
-    wrapped_ptr = fcj_wrap_array_3d(raw_ptr, n, m, k)
+    dims(1:3) = [n, m, k]
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 3_c_long, dims)
     arr_obj%ptr = fcj_retain(wrapped_ptr)
 
     print *, "[Fortran] Calling parallel_batch_inverse..."

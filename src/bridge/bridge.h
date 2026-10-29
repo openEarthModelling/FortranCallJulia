@@ -222,15 +222,21 @@ const char* fcj_unbox_string(void* obj);
 double fcj_unbox_complex_real(void* obj);
 double fcj_unbox_complex_imag(void* obj);
 
-// --- Arrays ---
-void* fcj_wrap_array_1d(void* data, long dim1);
-void* fcj_wrap_array_2d(void* data, long dim1, long dim2);
-void* fcj_wrap_array_3d(void* data, long dim1, long dim2, long dim3);
+// --- Arrays (rank-generic: any rank 1..16) ---
+// Wrap Fortran-owned contiguous Float64 memory as a zero-copy Julia
+// Array{Float64,ndim} (column-major on both sides, dims in Fortran order).
+// data points at the first element; dims holds ndim extents in Fortran
+// dimension order. No copy is made: the Julia array aliases caller memory,
+// which must outlive every use of the wrapper and must not be reallocated.
+// Returns a raw (unrooted) handle for the bridge root set (fcj_retain), or
+// NULL with fcj_get_last_error() set on failure.
+void* fcj_wrap_array(void* data, long ndim, const long* dims);
 
-// --- Array Deep Copies (Alloc + Memcpy) ---
-void* fcj_copy_array_1d(void* data, long dim1);
-void* fcj_copy_array_2d(void* data, long dim1, long dim2);
-void* fcj_copy_array_3d(void* data, long dim1, long dim2, long dim3);
+// Deep-copy variant: allocates a fresh GC-managed Array{Float64,ndim} with
+// the given extents and memcpy's total elements from data. The extent
+// product is overflow-checked before allocation. Same error contract as
+// fcj_wrap_array.
+void* fcj_copy_array(void* data, long ndim, const long* dims);
 
 // --- Accessors (Field & Index) ---
 void* fcj_get_field(void* obj, const char* name);

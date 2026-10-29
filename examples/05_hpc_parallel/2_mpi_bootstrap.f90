@@ -12,6 +12,7 @@ program ex07_mpi_bootstrap
     real(kind=8), target :: matrix(4,4)
     type(JuliaValue) :: mat_obj, res_obj
     type(c_ptr) :: raw_ptr, wrapped_ptr
+    integer(kind=c_long) :: dims(2)
     integer :: i
 
     ! 1. MPI Init
@@ -46,7 +47,8 @@ program ex07_mpi_bootstrap
     do i=1,4; matrix(i,i)=real(rank+1, 8); end do ! Diagonal based on rank
     
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 4_8, 4_8)
+    dims(1:2) = [4_c_long, 4_c_long]
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 2_c_long, dims)
     mat_obj%ptr = fcj_retain(wrapped_ptr)
     
     block

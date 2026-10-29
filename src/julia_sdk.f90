@@ -106,17 +106,10 @@ module julia_high_level
         final :: destructor
     end type JuliaValue
 
-    interface julia_wrap_array
-        module procedure julia_wrap_array_1d
-        module procedure julia_wrap_array_2d
-        module procedure julia_wrap_array_3d
-    end interface
-
-    interface julia_copy_array
-        module procedure julia_copy_array_1d
-        module procedure julia_copy_array_2d
-        module procedure julia_copy_array_3d
-    end interface
+    ! julia_wrap_array / julia_copy_array are single rank-generic (assumed-
+    ! rank) functions: dimensions are derived from size(arr, dim=k), so there
+    ! are no caller-supplied extents to get wrong. Both accept any rank
+    ! 1..FCJ_MAX_NDIM (16, mirrored from the C side) of contiguous Float64.
 
     interface
         function strlen(s) bind(c, name="strlen") result(res)
@@ -299,119 +292,86 @@ end subroutine copy_jv
         res%ptr = fcj_retain(raw_ptr)
     end function julia_box_complex
 
-    ! --- Array Wrappers (Zero-Copy) ---
-    
-    function julia_wrap_array_1d(arr, length) result(res)
-        real(kind=c_double), target, intent(in) :: arr(:)
-        integer(kind=c_int64_t), intent(in) :: length
+    ! --- Array Wrapper & Deep Copy (Zero-Copy / Alloc+Memcpy, rank-generic) ---
+
+    ! Rank-generic zero-copy wrap of contiguous Float64 memory, any rank
+    ! 1..16. Extents are derived from size(arr, dim=k) -- there is no
+    ! caller-supplied length to disagree with the array any more. Rejected
+    ! loudly (invalid JuliaValue, diagnostic on error_unit) when the rank
+    ! exceeds the C-side soft cap, when any extent is zero (c_loc on a
+    ! zero-sized array is illegal), or when arr is not contiguous.
+    function julia_wrap_array(arr) result(res)
+        real(kind=c_double), target, intent(in) :: arr(..)
         type(JuliaValue) :: res
-        type(c_ptr) :: raw_ptr, data_ptr
-        if (length /= size(arr, dim=1, kind=c_int64_t)) then
-            write(error_unit, '(A,I0,A,I0,A)') &
-                'julia_wrap_array_1d: length (', length, ') /= size(arr,1) (', &
-                size(arr, dim=1, kind=c_int64_t), '); returning invalid JuliaValue'
+        type(c_ptr) :: raw_ptr
+        integer :: nd, k
+        integer(kind=c_long) :: dims(16)
+        nd = rank(arr)
+        if (nd < 1 .or. nd > 16) then
+            write(error_unit, '(A,I0,A)') &
+                'julia_wrap_array: rank (', nd, ') outside supported [1, 16]; ' // &
+                'returning invalid JuliaValue'
+            res%ptr = c_null_ptr
+            return
+        end if
+        if (any([(size(arr, dim=k), k = 1, nd)] == 0)) then
+            write(error_unit, '(A)') &
+                'julia_wrap_array: zero-sized dimension; c_loc is illegal on ' // &
+                'zero-sized arrays; returning invalid JuliaValue'
             res%ptr = c_null_ptr
             return
         end if
         if (.not. is_contiguous(arr)) then
             write(error_unit, '(A)') &
-                'julia_wrap_array_1d: arr is not contiguous; zero-copy wrap rejected; ' // &
+                'julia_wrap_array: arr is not contiguous; zero-copy wrap rejected; ' // &
                 'returning invalid JuliaValue'
             res%ptr = c_null_ptr
             return
         end if
-        data_ptr = c_loc(arr)
-        raw_ptr = fcj_wrap_array_1d(data_ptr, length)
+        do k = 1, nd
+            dims(k) = size(arr, dim=k, kind=c_long)
+        end do
+        raw_ptr = fcj_wrap_array(c_loc(arr), int(nd, kind=c_long), dims)
         res%ptr = fcj_retain(raw_ptr)
-    end function julia_wrap_array_1d
+    end function julia_wrap_array
 
-    function julia_wrap_array_2d(arr, d1, d2) result(res)
-        real(kind=c_double), target, intent(in) :: arr(:,:)
-        integer(kind=c_int64_t), intent(in) :: d1, d2
+    ! Rank-generic deep copy: Julia allocates a fresh Array{Float64,rank(arr)}
+    ! with the same extents and memcpy's the data. Same rank/zero-size/contig
+    ! guards as julia_wrap_array (contiguity is required to memcpy in Fortran
+    ! storage order; a non-contiguous input is rejected, not silently packed).
+    function julia_copy_array(arr) result(res)
+        real(kind=c_double), target, intent(in) :: arr(..)
         type(JuliaValue) :: res
-        type(c_ptr) :: raw_ptr, data_ptr
-        if (d1 /= size(arr, dim=1, kind=c_int64_t) .or. &
-            d2 /= size(arr, dim=2, kind=c_int64_t)) then
-            write(error_unit, '(A,I0,A,I0,A,I0,A,I0,A)') &
-                'julia_wrap_array_2d: dims (', d1, ', ', d2, ') /= size(arr) (', &
-                size(arr, dim=1, kind=c_int64_t), ', ', size(arr, dim=2, kind=c_int64_t), &
-                '); returning invalid JuliaValue'
+        type(c_ptr) :: raw_ptr
+        integer :: nd, k
+        integer(kind=c_long) :: dims(16)
+        nd = rank(arr)
+        if (nd < 1 .or. nd > 16) then
+            write(error_unit, '(A,I0,A)') &
+                'julia_copy_array: rank (', nd, ') outside supported [1, 16]; ' // &
+                'returning invalid JuliaValue'
+            res%ptr = c_null_ptr
+            return
+        end if
+        if (any([(size(arr, dim=k), k = 1, nd)] == 0)) then
+            write(error_unit, '(A)') &
+                'julia_copy_array: zero-sized dimension; returning invalid JuliaValue'
             res%ptr = c_null_ptr
             return
         end if
         if (.not. is_contiguous(arr)) then
             write(error_unit, '(A)') &
-                'julia_wrap_array_2d: arr is not contiguous; zero-copy wrap rejected; ' // &
-                'returning invalid JuliaValue'
+                'julia_copy_array: arr is not contiguous; deep copy would read ' // &
+                'strided memory as dense; returning invalid JuliaValue'
             res%ptr = c_null_ptr
             return
         end if
-        data_ptr = c_loc(arr)
-        raw_ptr = fcj_wrap_array_2d(data_ptr, d1, d2)
+        do k = 1, nd
+            dims(k) = size(arr, dim=k, kind=c_long)
+        end do
+        raw_ptr = fcj_copy_array(c_loc(arr), int(nd, kind=c_long), dims)
         res%ptr = fcj_retain(raw_ptr)
-    end function julia_wrap_array_2d
-
-    function julia_wrap_array_3d(arr, d1, d2, d3) result(res)
-        real(kind=c_double), target, intent(in) :: arr(:,:,:)
-        integer(kind=c_int64_t), intent(in) :: d1, d2, d3
-        type(JuliaValue) :: res
-        type(c_ptr) :: raw_ptr, data_ptr
-        if (d1 /= size(arr, dim=1, kind=c_int64_t) .or. &
-            d2 /= size(arr, dim=2, kind=c_int64_t) .or. &
-            d3 /= size(arr, dim=3, kind=c_int64_t)) then
-            write(error_unit, '(A,I0,A,I0,A,I0,A,I0,A,I0,A)') &
-                'julia_wrap_array_3d: dims (', d1, ', ', d2, ', ', d3, ') /= size(arr) (', &
-                size(arr, dim=1, kind=c_int64_t), ', ', size(arr, dim=2, kind=c_int64_t), &
-                ', ', size(arr, dim=3, kind=c_int64_t), '); returning invalid JuliaValue'
-            res%ptr = c_null_ptr
-            return
-        end if
-        if (.not. is_contiguous(arr)) then
-            write(error_unit, '(A)') &
-                'julia_wrap_array_3d: arr is not contiguous; zero-copy wrap rejected; ' // &
-                'returning invalid JuliaValue'
-            res%ptr = c_null_ptr
-            return
-        end if
-        data_ptr = c_loc(arr)
-        raw_ptr = fcj_wrap_array_3d(data_ptr, d1, d2, d3)
-        res%ptr = fcj_retain(raw_ptr)
-    end function julia_wrap_array_3d
-
-    ! --- Array Deep Copies (Alloc + Memcpy) ---
-
-    function julia_copy_array_1d(arr) result(res)
-        real(c_double), target, intent(in) :: arr(:)
-        type(JuliaValue) :: res
-        type(c_ptr) :: raw_res
-        integer(kind=c_long) :: dim1
-        dim1 = size(arr, kind=c_long)
-        raw_res = fcj_copy_array_1d(c_loc(arr), dim1)
-        res%ptr = fcj_retain(raw_res)
-    end function julia_copy_array_1d
-
-    function julia_copy_array_2d(arr) result(res)
-        real(c_double), target, intent(in) :: arr(:,:)
-        type(JuliaValue) :: res
-        type(c_ptr) :: raw_res
-        integer(kind=c_long) :: dim1, dim2
-        dim1 = size(arr, 1, kind=c_long)
-        dim2 = size(arr, 2, kind=c_long)
-        raw_res = fcj_copy_array_2d(c_loc(arr), dim1, dim2)
-        res%ptr = fcj_retain(raw_res)
-    end function julia_copy_array_2d
-
-    function julia_copy_array_3d(arr) result(res)
-        real(c_double), target, intent(in) :: arr(:,:,:)
-        type(JuliaValue) :: res
-        type(c_ptr) :: raw_res
-        integer(kind=c_long) :: dim1, dim2, dim3
-        dim1 = size(arr, 1, kind=c_long)
-        dim2 = size(arr, 2, kind=c_long)
-        dim3 = size(arr, 3, kind=c_long)
-        raw_res = fcj_copy_array_3d(c_loc(arr), dim1, dim2, dim3)
-        res%ptr = fcj_retain(raw_res)
-    end function julia_copy_array_3d
+    end function julia_copy_array
 
     ! --- Init / Shutdown / Util ---
     

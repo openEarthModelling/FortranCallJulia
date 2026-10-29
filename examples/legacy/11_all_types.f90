@@ -50,7 +50,7 @@ program ex11_all_types
     ! --- Test 2: 1D Vector ---
     print *, "2. Testing 1D Vector..."
     vec = 1.0d0
-    v_obj = julia_wrap_array_1d(vec, 5_8)
+    v_obj = julia_wrap_array(vec)
     
     ! We need to pass v_obj in an array of args
     block
@@ -71,7 +71,7 @@ program ex11_all_types
     arr3d = 0.0d0
     arr3d(1,1,1) = 7.0d0
     
-    a3_obj = julia_wrap_array_3d(arr3d, 2_8, 2_8, 2_8)
+    a3_obj = julia_wrap_array(arr3d)
     block
         type(JuliaValue) :: a3_args(1)
         a3_args(1) = a3_obj

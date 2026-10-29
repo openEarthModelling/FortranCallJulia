@@ -42,8 +42,8 @@ program ex_inter_math_operations
 
     ! 3. Pass Matrix to Julia (Zero-Copy)
     ! We create a view of the Fortran array.
-    ! We use generic 'julia_wrap_array' and pass dimensions explicitly (as int64)
-    mat_obj = julia_wrap_array(matrix, 3_8, 3_8)
+    ! The rank-generic 'julia_wrap_array' derives the extents from size().
+    mat_obj = julia_wrap_array(matrix)
 
     ! 4. Compute Inverse in Julia
     ! Call: ExamplesLib.calc_inverse(mat_obj)

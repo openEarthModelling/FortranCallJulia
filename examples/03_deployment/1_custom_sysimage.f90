@@ -12,6 +12,7 @@ program ex05_sysimage
     
     real(kind=8), target :: matrix(10,10)
     type(c_ptr) :: raw_ptr, wrapped_ptr
+    integer(kind=c_long) :: dims(2)
     integer :: i
 
     print *, "--- Example 5: Sysimage & Startup Latency (TTFE) ---"
@@ -55,7 +56,8 @@ program ex05_sysimage
     do i=1,10; matrix(i,i)=2.0d0; end do
     
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 10_8, 10_8)
+    dims(1:2) = [10_c_long, 10_c_long]
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 2_c_long, dims)
     mat_obj%ptr = fcj_retain(wrapped_ptr)
 
     ! Execute

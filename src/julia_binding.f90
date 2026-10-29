@@ -141,49 +141,24 @@ module julia_low_level
             type(c_ptr) :: res
         end function fcj_get_executable_dir
         
-        ! --- Array Wrappers ---
-        function fcj_wrap_array_1d(data, length) bind(c, name="fcj_wrap_array_1d") result(res)
-            import :: c_ptr, c_int64_t
-            type(c_ptr), value :: data
-            integer(kind=c_int64_t), value :: length
-            type(c_ptr) :: res
-        end function fcj_wrap_array_1d
-
-        function fcj_wrap_array_2d(data, rows, cols) bind(c, name="fcj_wrap_array_2d") result(res)
-            import :: c_ptr, c_int64_t
-            type(c_ptr), value :: data
-            integer(kind=c_int64_t), value :: rows, cols
-            type(c_ptr) :: res
-        end function fcj_wrap_array_2d
-
-        function fcj_wrap_array_3d(data, dim1, dim2, dim3) bind(c, name="fcj_wrap_array_3d") result(res)
+        ! --- Array Wrapper & Deep Copy (rank-generic) ---
+        ! dims holds ndim extents in Fortran dimension order; assumed-size so
+        ! any actual argument section dims(1:nd) matches.
+        function fcj_wrap_array(data, ndim, dims) bind(c, name="fcj_wrap_array") result(res)
             import :: c_ptr, c_long
             type(c_ptr), value :: data
-            integer(kind=c_long), value :: dim1, dim2, dim3
+            integer(kind=c_long), value :: ndim
+            integer(kind=c_long), intent(in) :: dims(*)
             type(c_ptr) :: res
-        end function fcj_wrap_array_3d
+        end function fcj_wrap_array
 
-        ! --- Array Deep Copies ---
-        function fcj_copy_array_1d(data, dim1) bind(c, name="fcj_copy_array_1d") result(res)
+        function fcj_copy_array(data, ndim, dims) bind(c, name="fcj_copy_array") result(res)
             import :: c_ptr, c_long
             type(c_ptr), value :: data
-            integer(kind=c_long), value :: dim1
+            integer(kind=c_long), value :: ndim
+            integer(kind=c_long), intent(in) :: dims(*)
             type(c_ptr) :: res
-        end function fcj_copy_array_1d
-
-        function fcj_copy_array_2d(data, dim1, dim2) bind(c, name="fcj_copy_array_2d") result(res)
-            import :: c_ptr, c_long
-            type(c_ptr), value :: data
-            integer(kind=c_long), value :: dim1, dim2
-            type(c_ptr) :: res
-        end function fcj_copy_array_2d
-
-        function fcj_copy_array_3d(data, dim1, dim2, dim3) bind(c, name="fcj_copy_array_3d") result(res)
-            import :: c_ptr, c_long
-            type(c_ptr), value :: data
-            integer(kind=c_long), value :: dim1, dim2, dim3
-            type(c_ptr) :: res
-        end function fcj_copy_array_3d
+        end function fcj_copy_array
 
         ! --- Accessors ---
         function fcj_box_float64(val) bind(c, name="fcj_box_float64") result(res)

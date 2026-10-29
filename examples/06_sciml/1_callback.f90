@@ -77,8 +77,8 @@ program ex_sciml_callback
     !    u = [1.0], p = 0.0, t = 0.0 (p is ignored by the bridge closure)
     du_f(1) = 0.0_c_double
     u_f(1) = 1.0_c_double
-    du_boxed = julia_wrap_array_1d(du_f, 1_c_int64_t)
-    u_boxed = julia_wrap_array_1d(u_f, 1_c_int64_t)
+    du_boxed = julia_wrap_array(du_f)
+    u_boxed = julia_wrap_array(u_f)
     p_boxed = julia_box_real(0.0_c_double)
     t_boxed = julia_box_real(0.0_c_double)
     if (.not. du_boxed%is_valid() .or. .not. u_boxed%is_valid()) then

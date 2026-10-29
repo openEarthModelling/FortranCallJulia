@@ -1,12 +1,13 @@
 program ex04_arrays
     use julia_high_level
-    use julia_low_level ! For fcj_wrap_array_1d
+    use julia_low_level ! For fcj_wrap_array
     use iso_c_binding
     implicit none
 
     type(JuliaValue) :: ctx, arr_obj
     real(kind=c_double), target :: data(5)
     type(c_ptr) :: raw_ptr, wrapped_ptr
+    integer(kind=c_long) :: dims(1)
     integer :: i
 
     print *, "--- Example 4: Zero-Copy Arrays ---"
@@ -18,10 +19,12 @@ program ex04_arrays
 
     ! Wrap it
     raw_ptr = c_loc(data)
-    ! Note: In a polished SDK, we would have `arr_obj = wrap_array(data)`
-    ! Here we use the low-level bridge + retain pattern.
-    
-    wrapped_ptr = fcj_wrap_array_1d(raw_ptr, 5_8)
+    ! Note: the SDK-level form `arr_obj = julia_wrap_array(data)` wraps in one
+    ! step; this legacy example keeps the explicit low-level bridge + retain
+    ! pattern.
+
+    dims(1) = 5_c_long
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 1_c_long, dims)
     arr_obj%ptr = fcj_retain(wrapped_ptr) ! Retain it so we can manage it as an object
     
     ! Pass to Julia to print info

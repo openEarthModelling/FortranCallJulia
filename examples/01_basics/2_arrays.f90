@@ -10,11 +10,14 @@ program ex02_arrays
     ! Arrays
     real(kind=8), target :: vec(5)
     real(kind=8), target :: matrix(3,3)
+    real(kind=8), target :: hyper(2,3,4,5)   ! 4D: ranks beyond 3 work too
     type(c_ptr) :: raw_ptr, wrapped_ptr
+    integer(kind=c_long) :: dims(4)          ! extents in Fortran dim order
     
     ! Variables for primitive call
     integer :: i_val = 10
     logical :: b_val = .true.
+    integer :: k
 
     print *, "--- Example 2: Arrays & Memory Management ---"
     call julia_init()
@@ -55,9 +58,11 @@ program ex02_arrays
     vec = 10.0d0
     print *, "  1. Vector before: ", vec(1)
     
-    ! Step 1: Wrap the raw Fortran pointer
+    ! Step 1: Wrap the raw Fortran pointer. The C-level API is rank-generic:
+    ! pass ndim plus the extents in Fortran dimension order.
     raw_ptr = c_loc(vec)
-    wrapped_ptr = fcj_wrap_array_1d(raw_ptr, 5_8)
+    dims(1) = 5_c_long
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 1_c_long, dims)
     
     ! Step 2: Manage it as a JuliaValue (so GC doesn't kill it prematurely if we stored it)
     vec_obj%ptr = fcj_retain(wrapped_ptr) 
@@ -77,15 +82,31 @@ program ex02_arrays
     
     ! Step 1: Wrap
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 3_8, 3_8)
+    dims(1:2) = [3_c_long, 3_c_long]
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 2_c_long, dims)
     mat_obj%ptr = fcj_retain(wrapped_ptr)
-    
+
     ! Step 2: Call
     res = dummy%call("modify_matrix!", mat_obj)
-    
+
     print *, "  2. Matrix(1,1) after:  ", matrix(1,1)
     if (matrix(1,1) == 100.0d0) then
         print *, "     [SUCCESS] Matrix modified in place."
+    endif
+
+    ! --- 3. Hypermatrix (4D, zero-copy through the rank-generic API) ---
+    ! The high-level SDK form is simply  vec_obj = julia_wrap_array(hyper)
+    ! (extents derived from size()); here we exercise the raw C form and
+    ! verify the wrap via introspection.
+    hyper = 0.0d0
+    raw_ptr = c_loc(hyper)
+    dims(1:4) = [2_c_long, 3_c_long, 4_c_long, 5_c_long]
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 4_c_long, dims)
+    mat_obj%ptr = fcj_retain(wrapped_ptr)
+    print *, "  3. Rank-4 wrap: ndims=", mat_obj%ndims(), &
+             " sizes=", (mat_obj%size_dim(k), k=1,4)
+    if (mat_obj%ndims() == 4 .and. mat_obj%size_dim(4) == 5) then
+        print *, "     [SUCCESS] 4D array wrapped zero-copy (ndims=4)."
     endif
     
     call julia_shutdown()

@@ -18,7 +18,7 @@ program ex_reacting_flow
     !               dF/dt = -k(T) F, dT/dt = (q/cv) k(T) F for every active
     !               cell in ONE batched call per half-step, through the
     !               persistent zero-copy wrapped buffers FJ_Y / FJ_T /
-    !               FJ_RHO in Main (julia_wrap_array_2d/1d + set_field) --
+    !               FJ_RHO in Main (julia_wrap_array + set_field) --
     !               one julia_eval per Strang half-step, no per-cell traffic.
     !               The chemistry step conserves rho, rho*u, E: Fortran
     !               writes back only q(4) = rho * F_new (temperature and
@@ -323,15 +323,15 @@ program ex_reacting_flow
             ! declare the bindings first, then assign through set_field
             call julia_eval_string('global FJ_Y, FJ_T, FJ_RHO')
             n_bridge = n_bridge + 1
-            v_res = julia_wrap_array_2d(ybuf, int(mx, c_int64_t), 2_c_int64_t)
+            v_res = julia_wrap_array(ybuf)
             if (.not. v_res%is_valid()) error stop 'FATAL: wrap ybuf failed'
             call v_main%set_field('FJ_Y', v_res)
             n_bridge = n_bridge + 2
-            v_res = julia_wrap_array_1d(tbuf, int(mx, c_int64_t))
+            v_res = julia_wrap_array(tbuf)
             if (.not. v_res%is_valid()) error stop 'FATAL: wrap tbuf failed'
             call v_main%set_field('FJ_T', v_res)
             n_bridge = n_bridge + 2
-            v_res = julia_wrap_array_1d(rbuf, int(mx, c_int64_t))
+            v_res = julia_wrap_array(rbuf)
             if (.not. v_res%is_valid()) error stop 'FATAL: wrap rbuf failed'
             call v_main%set_field('FJ_RHO', v_res)
             n_bridge = n_bridge + 2

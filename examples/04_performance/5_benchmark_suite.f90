@@ -76,23 +76,23 @@ program benchmark_suite
     
     ! Warm-up JIT for perf_scale_matrix & perf_scale_matrix_bang
     ! (Using the actual data for simplicity)
-    j_mat = julia_copy_array_2d(mat)
+    j_mat = julia_copy_array(mat)
     j_val = julia%call("perf_scale_matrix", j_mat, 2.0d0)
     
-    j_mat = julia_wrap_array_2d(mat, int(N_matrix, 8), int(N_matrix, 8))
+    j_mat = julia_wrap_array(mat)
     j_val = julia%call("perf_scale_matrix_bang", j_mat, 2.0d0)
     ! Note: in-place modified mat, but that's fine for benchmark, we re-run
     
     ! Deep Copy
     call cpu_time(t_start)
-    j_mat = julia_copy_array_2d(mat) ! Copy to Julia
+    j_mat = julia_copy_array(mat) ! Copy to Julia
     j_val = julia%call("perf_scale_matrix", j_mat, 2.0d0) ! New array returned
     call cpu_time(t_end)
     t_baseline = t_end - t_start
     
     ! Zero Copy
     call cpu_time(t_start)
-    j_mat = julia_wrap_array_2d(mat, int(N_matrix, 8), int(N_matrix, 8)) ! Wrap
+    j_mat = julia_wrap_array(mat) ! Wrap
     j_val = julia%call("perf_scale_matrix_bang", j_mat, 2.0d0) ! In-place
     call cpu_time(t_end)
     t_fast = t_end - t_start

@@ -13,7 +13,7 @@
  * kinetics_build before any kinetics_step.
  *
  * Layout: y is n x 2 column-major (Fortran ybuf(n,2)); the library
- * wraps it zero-copy, exactly like the bridge's fcj_wrap_array_2d.
+ * wraps it zero-copy, exactly like the bridge's fcj_wrap_array.
  */
 #ifndef KINETICS_H
 #define KINETICS_H

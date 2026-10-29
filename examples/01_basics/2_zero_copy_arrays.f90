@@ -8,7 +8,6 @@ program ex02_zero_copy_arrays
 
     type(JuliaValue) :: julia, dummy, res
     real(kind=8), target :: simulation_grid(100, 100)
-    integer(kind=8) :: d1, d2
     integer :: i, j
 
     print *, "--- Example 2: Zero-Copy Array Sharing ---"
@@ -28,10 +27,8 @@ program ex02_zero_copy_arrays
 
     ! 2. Box the Fortran Array into a Julia Object
     !    This creates a Julia Array header pointing to the EXISTING Fortran memory.
-    !    NO DATA COPY happens here.
-    d1 = 100
-    d2 = 100
-    dummy = julia_wrap_array(simulation_grid, d1, d2)
+    !    NO DATA COPY happens here. Extents are derived from size() by the SDK.
+    dummy = julia_wrap_array(simulation_grid)
     
     ! 3. Call Julia Function with the Array
     !    Julia sees a standard Matrix{Float64}.

@@ -64,7 +64,7 @@ program access_patterns
     
     call cpu_time(t1)
     ! 1. Wrap (Zero-Cost)
-    wrapped_arr = julia_wrap_array_1d(arr, int(N, 8))
+    wrapped_arr = julia_wrap_array(arr)
     ! 2. Call once
     ! Warm-up call (to exclude JIT compilation time)
     res = julia%call("perf_sqrt_vector_bang", wrapped_arr)

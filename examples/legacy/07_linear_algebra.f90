@@ -8,6 +8,7 @@ program ex07_linear_algebra
     type(JuliaValue) :: mat_obj, inv_res, eigen_res
     real(kind=c_double), target :: matrix(3,3)
     type(c_ptr) :: raw_ptr, wrapped_ptr
+    integer(kind=c_long) :: dims(2)
     integer :: i, j
 
     print *, "--- Example 7: Linear Algebra (Matrices) ---"
@@ -35,7 +36,8 @@ program ex07_linear_algebra
 
     ! Wrap 2D Array
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 3_8, 3_8)
+    dims(1:2) = [3_c_long, 3_c_long]
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 2_c_long, dims)
     mat_obj%ptr = fcj_retain(wrapped_ptr)
     
     print *, "Matrix wrapped. Passing to Julia..."

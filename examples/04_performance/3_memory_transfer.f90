@@ -39,7 +39,7 @@ program memory_transfer
     ! However, 'julia_copy_array' exists. Let's use that.
     
     ! Step 1: Explicit Deep Copy to Julia
-    wrapped_array = julia_copy_array_2d(matrix)
+    wrapped_array = julia_copy_array(matrix)
     ! Step 2: Call function (returns new array)
     res = julia%call("perf_scale_matrix", wrapped_array, 2.0d0)
     ! Step 3: Copy back (simulated by accessing one element to force sync if needed, or just time the call)
@@ -63,8 +63,8 @@ program memory_transfer
     vlast = matrix(N, N)
 
     ! Step 1: Wrap (O(1))
-    ! Note: pass explicit dimensions as int64
-    wrapped_array = julia_wrap_array_2d(matrix, int(N, 8), int(N, 8))
+    ! The rank-generic wrapper derives the extents from size()
+    wrapped_array = julia_wrap_array(matrix)
     
     ! Step 2: Call In-Place Function
     ! We pass the wrapped array. No data moves.

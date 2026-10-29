@@ -8,6 +8,7 @@ program ex10_external_script
     type(JuliaValue), allocatable :: args(:)
     real(kind=c_double), target :: matrix(2,2)
     type(c_ptr) :: raw_ptr, wrapped_ptr
+    integer(kind=c_long) :: dims(2)
     real(kind=c_double) :: val = 2.5d0
     integer :: i
 
@@ -38,7 +39,8 @@ program ex10_external_script
     print *, matrix(2, :)
 
     raw_ptr = c_loc(matrix)
-    wrapped_ptr = fcj_wrap_array_2d(raw_ptr, 2_8, 2_8)
+    dims(1:2) = [2_c_long, 2_c_long]
+    wrapped_ptr = fcj_wrap_array(raw_ptr, 2_c_long, dims)
     mat_obj%ptr = fcj_retain(wrapped_ptr)
 
     ! 4. Call the aliased function using Generic Interface
