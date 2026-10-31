@@ -48,3 +48,7 @@ graphify-out/
 # MkDocs docs toolchain and rendered site output
 .venv-docs/
 site/
+
+# pytest local cache and bytecode (docs parity gate unit tests)
+.pytest_cache/
+__pycache__/

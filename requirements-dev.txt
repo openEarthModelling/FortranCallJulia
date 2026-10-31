@@ -1,0 +1,4 @@
+# Dev-only dependencies for the docs tree (NOT needed to build the site).
+# Install into the docs venv:  .venv-docs/bin/pip install -r requirements-dev.txt
+# CI (docs workflow) must install this file or `python -m pytest` will not exist.
+pytest==9.2.0

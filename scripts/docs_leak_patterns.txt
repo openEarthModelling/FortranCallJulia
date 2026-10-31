@@ -1,0 +1,8 @@
+# Leak patterns for the bilingual docs gate (scripts/docs_parity.py).
+# One substring per line; lines starting with '#' and blank lines are ignored.
+# A hit anywhere in any .md under a language tree fails the gate.
+# Keep these generic (no project-specific user names): they are meant to catch
+# absolute home paths and internal cluster hostnames leaking into public docs.
+/home/
+node0
+/public/home
