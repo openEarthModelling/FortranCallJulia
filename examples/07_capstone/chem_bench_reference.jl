@@ -1,7 +1,7 @@
 # Pure-Julia reference for the capstone performance comparison (no
 # Fortran, no bridge, no eval, no AOT library): the identical FjKinetics
 # chemistry kernel with the identical hot/frozen cell mix that
-# 2_aot_kinetics/main.f90 drives, so per-cell numbers are directly
+# 3_aot_kinetics/main.f90 drives, so per-cell numbers are directly
 # comparable across JIT / sysimage / AOT / native.
 #
 #   julia --project=scripts/sysimage_env examples/07_capstone/chem_bench_reference.jl

@@ -36,9 +36,9 @@ scripts/sysimage_env/
 # ChemMechSim dev-path entry points outside the repo, so a tracked copy
 # breaks instantiate on any other machine)
 examples/07_capstone/FjKinetics/Manifest.toml
-examples/07_capstone/2_aot_kinetics/dist/
-examples/07_capstone/2_aot_kinetics/build/
-examples/07_capstone/2_aot_kinetics/aot_bench
+examples/07_capstone/3_aot_kinetics/dist/
+examples/07_capstone/3_aot_kinetics/build/
+examples/07_capstone/3_aot_kinetics/aot_bench
 # figure data (regenerable: run the driver)
 examples/07_capstone/output/
 

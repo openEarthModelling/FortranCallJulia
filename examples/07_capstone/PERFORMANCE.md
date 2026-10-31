@@ -63,7 +63,7 @@ not a mode effect.
 
 ## Chemistry kernel micro-benchmark (identical 64-cell hot/frozen mix)
 
-`chem_bench_reference.jl` (pure Julia) and `2_aot_kinetics/` (standalone
+`chem_bench_reference.jl` (pure Julia) and `3_aot_kinetics/` (standalone
 compiled library) drive the same interleaved workload: odd cells at
 T = 17 (full 10-decade burn, ~100 internal steps each), even cells at
 T = 1.6 (frozen, one internal step), dt = 4e-4, state reset every call.

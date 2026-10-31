@@ -1,5 +1,5 @@
 /* kinetics.h -- C entry points of the compiled KineticsAOT chemistry
- * library (examples/07_capstone/2_aot_kinetics; built by build_lib.jl
+ * library (examples/07_capstone/3_aot_kinetics; built by build_lib.jl
  * with PackageCompiler create_library). Runtime lifecycle (init_julia /
  * shutdown_julia) comes from the julia.h that create_library ships in
  * the same dist/include directory.
