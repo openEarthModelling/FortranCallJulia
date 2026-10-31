@@ -1,0 +1,55 @@
+site_name: FortranCallJulia
+copyright: FortranCallJulia - MIT License
+
+theme:
+  name: material
+
+plugins:
+  - search
+  - i18n:
+      docs_structure: folder
+      languages:
+        - locale: en
+          default: true
+          name: English
+          build: true
+        - locale: zh
+          name: 简体中文
+          build: true
+
+exclude_docs: |
+  superpowers/**
+  references/**
+
+nav:
+  - index.md
+  - Introduction:
+      - intro/what-is-this.md
+      - intro/why-fortran-julia.md
+      - intro/architecture.md
+      - intro/validation.md
+  - User Guide:
+      - user/installation.md
+      - user/first-call.md
+      - user/two-sdks.md
+      - user/arrays-and-callbacks.md
+      - user/deployment-modes.md
+      - user/bring-your-own-kinetics.md
+      - user/known-limitations.md
+  - Developer Guide:
+      - developer/repository-tour.md
+      - developer/bridge-internals.md
+      - developer/acceptance-gates.md
+      - developer/lessons.md
+      - developer/rebuild.md
+      - developer/contributing.md
+      - developer/further-reading.md
+      - developer/annex-performance.md
+      - developer/annex-figures.md
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences
+  - pymdownx.details
+  - toc:
+      permalink: true

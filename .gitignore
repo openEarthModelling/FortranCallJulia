@@ -44,3 +44,7 @@ examples/07_capstone/output/
 
 # graphify knowledge-graph outputs (local only, never commit)
 graphify-out/
+
+# MkDocs docs toolchain and rendered site output
+.venv-docs/
+site/
