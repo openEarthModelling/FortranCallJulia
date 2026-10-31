@@ -196,14 +196,20 @@ carries the full JIT / sysimage / AOT / native comparison in
 `examples/07_capstone/PERFORMANCE.md`.
 
 The drivers write CSV figure data (`#` metadata header, column-name row,
-full-precision comma-separated values: `output/sod_final.csv`,
-`det_final.csv`, `det_front.csv`, resolved relative to the executable) and
-`figures/plot_capstone.py` renders the publication figures
-from it (PNG 600 dpi): Sod triptych vs the exact Riemann solution, the
-detonation structure quad with CJ reference lines and a reaction-layer
-inset, the front-trajectory secant, and the startup / steady-cost mode
-comparison. See `figures/FIGURES.md` for a per-figure walkthrough. Data
-files are gitignored; rerun the drivers to regenerate them.
+full-precision comma-separated values, resolved relative to the
+executable): the reacting-flow executable emits `output/sod_final.csv`,
+`det_final.csv`, `det_front.csv`; the GRI executable emits
+`output/gri_ignition.csv` and the native baseline script
+(`run_gri_native.jl`) emits `output/gri_native_series.csv`.
+`figures/plot_capstone.py` renders the publication figures from them
+(PNG 600 dpi): Sod triptych vs the exact Riemann solution, the detonation
+structure quad with CJ reference lines and a reaction-layer inset, the
+front-trajectory secant, the startup / steady-cost mode comparison, the
+GRI ignition delay with key-species histories, the bridge-vs-native
+overlay with per-point residual, the ignition heat-release rate, and a
+six-panel capstone overview. See `figures/FIGURES.md` for a per-figure
+walkthrough. Data files are gitignored; rerun the drivers to regenerate
+them.
 
 ### 5. Batch extraction
 
