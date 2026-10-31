@@ -14,6 +14,25 @@ Figure contracts (nature-figure five-point contract):
   fig4_performance           89 mm, a|b = startup (log) | steady per-cell
       cost.  Core conclusion: the embedding modes separate on startup cost
       while steady per-cell cost is indistinguishable within node-load noise.
+  fig5_gri_ignition         89 mm, a|b = T(t) with t_ign marker | key-species
+      mole fractions (log y).  Core conclusion: the 53-species GRI-Mech 3.0
+      ignition through the bridge shows the induction / thermal-runaway /
+      burnt-equilibrium structure with t_ign = 1.1075 ms.
+  fig6_bridge_vs_native     89 mm, a|b = T(t) bridge vs native overlay |
+      pointwise relative residuals (log y, conditioning-floored) with the
+      1e-8 acceptance line.  Core conclusion: two independent solves are
+      indistinguishable on the overlay; converged scalars gate below 1e-8,
+      while transition-window trajectories spread up to ~1e-5 -- solver
+      nondeterminism (adaptive stepping + threaded linear algebra), not
+      extraction error: the bridge copy is an exact double transfer and the
+      CSV round-trip is lossless, so every bit of the residual belongs to
+      the two solves themselves.
+  fig7_heat_release         89 mm, single panel: dT/dt (central differences,
+      no smoothing).  Core conclusion: the validation criterion -- ignition
+      delay = argmax dT/dt -- lands on the same t_ign.
+  fig8_capstone_overview    183 mm, 2x3 composite: Sod rho | det p | det Z |
+      front speed | ignition T | dT/dt.  Core conclusion: one page, the whole
+      capstone -- transport, detonation structure, propagation, chemistry.
 
 Data sources (all committed conventions):
   ../output/sod_final.csv, det_final.csv, det_front.csv, gri_ignition.csv,
@@ -26,7 +45,22 @@ Data sources (all committed conventions):
 
 Data integrity: every point of every curve is plotted, no smoothing, no
 averaging.  The only exclusion is recorded below (AOT_STEADY_EXCLUDED) with
-the reason given in PERFORMANCE.md.
+the reason given in PERFORMANCE.md.  Two recorded notes on the log axes:
+fig5b uses a display floor of 1e-16 (X_FLOOR) -- the mechanism's induction-
+period CO2/OH descend to ~1e-71/1e-51 and cannot enter a log axis spanning
+them usefully; sub-floor points are counted in the audit print, and the
+floor still shows the full CH4 decay (min 3.3e-15).  fig6b residuals that
+are exactly 0 are counted and annotated rather than plotted at a misleading
+floor.
+
+Species categorical palette (fig5b/fig6b/fig8e): validated with the dataviz
+six-checks validator (light surface, all pairs): #3B6FB6 / #2A9D8F / #9A4D8E /
+#D55E00.  The violet-blue pair sits in the 6-8 CVD floor band, legal with
+the secondary encoding shipped here: legend + line-end direct labels + four
+mutually distinct curve shapes (CH4/O2 monotone decay, CO2 monotone growth,
+OH single peak).  fig6a keeps the family role colors (blue solid = computed
+bridge, red dashed = native reference) with linestyle as the secondary
+encoding, as in fig1-3.
 
 Backend: Python/matplotlib exclusively (render, preview, export, QA).
 Exports: PNG 600 dpi + PDF (user contract; no SVG/TIFF).  The glyph and
@@ -86,6 +120,30 @@ MODE_COLOR = {
     "AOT": PALETTE["violet"],
     "pure Julia": PALETTE["neutral_mid"],
 }
+# Species identity colors (fig5b/fig6b/fig8e): a true categorical set, NOT
+# the semantic role palette -- validated (all pairs) with the dataviz
+# validator on the light surface; see the docstring for the CVD-floor note.
+# Assignment follows the species, never its rank on the axis.
+SPECIES_COLOR = {
+    "CH4": "#3B6FB6",   # fuel (consumed)
+    "O2": "#2A9D8F",    # oxidizer (consumed)
+    "CO2": "#9A4D8E",   # product (formed)
+    "OH": "#D55E00",    # radical intermediate (peaks at ignition)
+}
+GRI_COLUMNS = ["t_s", "T_K", "X_CH4", "X_O2", "X_CO2", "X_OH"]
+GRI_REL_TOL = 1.0e-8   # acceptance tolerance shared by the Fortran example
+# fig5b display floor: induction-period CO2/OH descend to ~1e-71/1e-51 (the
+# mechanism's nonzero initial guess); a log axis spanning them is useless.
+# 1e-16 still shows the full CH4 decay (min 3.3e-15); sub-floor points are
+# counted in the audit print, never silently dropped.
+X_FLOOR = 1.0e-16
+# fig6b conditioning floor for the residual DENOMINATOR: a relative residual
+# against a denormal-scale mole fraction (~1e-71 during induction, ~1e-14 in
+# CH4's burnt tail) is numerology, not agreement -- the denominator is
+# floored at a chemically meaningful 1e-10 so those points degrade to a
+# scaled absolute difference and sink to the display floor.  Every point is
+# still computed and drawn; sub-floor points are counted in the audit.
+R_DEN_FLOOR = 1.0e-10
 
 MM = 1 / 25.4
 W_DOUBLE = 183 * MM
@@ -205,6 +263,48 @@ def load_front(t_end):
     slope = (xf[-1] - xf[ia]) / (t[-1] - t[ia])
     assert abs(slope - DRIVER_SPEED) < 1e-3, (slope, DRIVER_SPEED)
     return t, xf, ia, slope
+
+
+def load_gri(name):
+    """One GRI ignition CSV (bridge gri_ignition.csv or native
+    gri_native_series.csv): same driver convention, '#' metadata carries
+    t_ign_s / T_end_K.  Both scalars are cross-checked against the arrays:
+    t_ign must be a sample time (it is defined as a grid point) and T_end
+    must equal the last temperature."""
+    path = OUT / name
+    text = path.read_text().splitlines()
+    hdr = [l for l in text if l.startswith("#")]
+    m = re.search(r"t_ign_s\s*=\s*([-+0-9.eE]+),\s*T_end_K\s*=\s*([-+0-9.eE]+)",
+                  " ".join(hdr))
+    assert m, hdr
+    meta = {"t_ign": float(m.group(1)), "T_end": float(m.group(2))}
+    df = read_output_csv(path, GRI_COLUMNS)
+    d = df.to_numpy()
+    assert d.shape == (2001, 6), d.shape
+    t, T = d[:, 0], d[:, 1]
+    assert abs(T[-1] - meta["T_end"]) / meta["T_end"] < 1e-12, "T_end header mismatch"
+    i_ign = int(np.argmin(np.abs(t - meta["t_ign"])))
+    assert abs(t[i_ign] - meta["t_ign"]) < 1e-15, "t_ign not on the sample grid"
+    return d, meta
+
+
+def load_gri_pair():
+    """Bridge + native GRI series with the shared-grid integrity gate: the
+    two runs must sit on the same 2001-point time grid (they are the same
+    solve path, one through the bridge, one direct), and the four acceptance
+    scalars (t_ign, T_end, X(CH4,0), X(CO2,end)) must hold to the example's
+    1e-8 gate before any figure is drawn from them."""
+    bridge, mb = load_gri("gri_ignition.csv")
+    native, mn = load_gri("gri_native_series.csv")
+    assert np.allclose(bridge[:, 0], native[:, 0], rtol=1e-12, atol=1e-15), \
+        "bridge/native time grids differ"
+    for key, vb, vn in (("t_ign", mb["t_ign"], mn["t_ign"]),
+                        ("T_end", mb["T_end"], mn["T_end"]),
+                        ("X_CH4_0", bridge[0, 2], native[0, 2]),
+                        ("X_CO2_end", bridge[-1, 4], native[-1, 4])):
+        rel = abs(vb - vn) / abs(vn)
+        assert rel < GRI_REL_TOL, (key, rel)
+    return bridge, native, mb, mn
 
 
 # ---------------------------------------------------------------- fig 1 ----
@@ -398,17 +498,321 @@ def fig4():
     )
 
 
+R_DEN_FLOOR = 1.0e-10
+# Full-size Unicode superscripts for the log-axis tick labels: mathtext
+# exponents render at ~70% of the tick fontsize (4.2 pt at 6 pt), below the
+# 5 pt glyph floor of the QA appendix; "10⁻¹⁶" strings keep every glyph at
+# the nominal size (DejaVu Sans supplies the superscript glyphs).
+_SUP = {"0": "⁰", "1": "¹", "2": "²", "3": "³",
+        "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷",
+        "8": "⁸", "9": "⁹", "-": "⁻"}
+
+
+def pow10_ticks(ax, exponents):
+    """Major ticks at 10**e for e in exponents, labelled with full-size
+    Unicode superscripts (mathtext exponents fall below the glyph floor)."""
+    from matplotlib.ticker import FixedFormatter, FixedLocator
+    ax.yaxis.set_major_locator(FixedLocator([10.0 ** e for e in exponents]))
+    ax.yaxis.set_major_formatter(
+        FixedFormatter(["10" + "".join(_SUP[c] for c in str(e))
+                        for e in exponents]))
+
+
+def gri_segment_rate(gri):
+    """|dT/dt| per sample interval -- the driver's own validation criterion
+    quantity (forward difference on consecutive samples), evaluated at the
+    segment midpoints.  Returns (t_mid_ms, rate_K_per_us, i_max); the grid
+    point AFTER the steepest segment is the ignition delay."""
+    t, T = gri[:, 0], gri[:, 1]
+    seg = np.abs(np.diff(T) / np.diff(t))          # K/s, 2000 segments
+    t_mid = 0.5 * (t[:-1] + t[1:]) * 1e3           # ms
+    return t_mid, seg * 1e-6, int(np.argmax(seg))
+
+
+# ---------------------------------------------------------------- fig 5 ----
+def fig5(gri, meta):
+    t_ms = gri[:, 0] * 1e3
+    T = gri[:, 1]
+    t_ign_ms = meta["t_ign"] * 1e3
+    fig, (axT, axX) = plt.subplots(
+        2, 1, figsize=(W_SINGLE, 100 * MM), sharex=True,
+        gridspec_kw=dict(height_ratios=[1.0, 1.3]))
+
+    # (a) temperature: induction plateau -> thermal runaway -> burnt plateau
+    style_axis(axT)
+    axT.plot(t_ms, T, color=PALETTE["blue_main"], lw=1.1, zorder=3)
+    axT.axvline(t_ign_ms, color=PALETTE["neutral_mid"], lw=0.8,
+                ls=(0, (3, 2)), zorder=2)
+    # annotate from the empty region below the burnt plateau -- near the
+    # line itself any text is crossed by the near-vertical rise
+    axT.annotate(f"t_ign = {t_ign_ms:.4f} ms",
+                 xy=(t_ign_ms, 2050), xytext=(2.9, 1800),
+                 arrowprops=dict(arrowstyle="-", lw=0.6,
+                                 color=PALETTE["neutral_mid"]),
+                 fontsize=6, color=PALETTE["neutral_black"])
+    axT.set_ylabel("T (K)", fontsize=7)
+    add_panel_label(axT, "a")
+
+    # (b) key-species mole fractions, log y: reactants decay, CO2 forms,
+    # OH spikes through the ignition layer and relaxes to equilibrium
+    style_axis(axX)
+    n_floor = 0
+    for k, sp in enumerate(SPECIES_COLOR):
+        x = gri[:, 2 + k]
+        n_floor += int(np.sum((x > 0.0) & (x < X_FLOOR)))
+        # mask sub-floor points instead of clipping them into the axis: a
+        # log axis cannot show them, and unmasked vertices leave the axes
+        # box in the PDF path geometry (collision audit)
+        m = x >= X_FLOOR
+        axX.plot(t_ms[m], x[m], color=SPECIES_COLOR[sp], lw=1.0, label=sp,
+                 zorder=3 + k)
+    # selective direct labels: the two curve ends isolated on the log axis
+    # (CH4 at ~1e-14, CO2 at 0.043, ~12 decades apart).  The O2/OH ends sit
+    # within half a decade of CO2 -- labels there would collide, so they
+    # ride on the legend plus unmistakable shapes (O2 flat at 0.19 then a
+    # step, OH invisible until it spikes through ignition).
+    axX.text(t_ms[-1] * 1.015, gri[-1, 2], "CH4", ha="left", va="center",
+             fontsize=5.5, color=SPECIES_COLOR["CH4"])
+    axX.text(t_ms[-1] * 1.015, gri[-1, 4] * 1.35, "CO2", ha="left",
+             va="bottom", fontsize=5.5, color=SPECIES_COLOR["CO2"])
+    axX.axvline(t_ign_ms, color=PALETTE["neutral_mid"], lw=0.8,
+                ls=(0, (3, 2)), zorder=2)
+    axX.set_yscale("log")
+    axX.set_ylim(X_FLOOR * 0.5, 0.5)
+    pow10_ticks(axX, [-16, -12, -8, -4, 0])
+    axX.set_xlim(0, t_ms[-1] * 1.16)
+    axX.set_xlabel("t (ms)", fontsize=7)
+    axX.set_ylabel("mole fraction", fontsize=7)
+    axX.legend(fontsize=5.5, loc="lower left", handlelength=1.4,
+               borderaxespad=0.3, labelspacing=0.3)
+    add_panel_label(axX, "b")
+
+    finalize(fig, "fig5_gri_ignition")
+    print(
+        "  panel audit: a T(t) + t_ign line | b CH4/O2/CO2/OH log-y, 2001\n"
+        "  samples each, no smoothing; display floor 1e-16, below it\n"
+        f"  {n_floor} induction-period points (CO2/OH down to ~1e-71);\n"
+        "  direct labels only where the log geometry isolates a curve."
+    )
+
+
+# ---------------------------------------------------------------- fig 6 ----
+def fig6(bridge, native):
+    t_ms = bridge[:, 0] * 1e3
+    fig, (axO, axR) = plt.subplots(2, 1, figsize=(W_SINGLE, 100 * MM),
+                                   sharex=True)
+
+    # (a) overlay: computed through the bridge (blue solid) vs the native
+    # Julia reference (red dashed on top) -- the family's coincidence idiom.
+    # The two solves are independent processes; they coincide to below the
+    # line weight (max |dT| ~ 0.04 K at the transition).
+    style_axis(axO)
+    axO.plot(t_ms, bridge[:, 1], color=PALETTE["blue_main"], lw=1.4,
+             label="bridge (Fortran extraction)", zorder=3)
+    axO.plot(t_ms, native[:, 1], color=PALETTE["red_strong"], lw=1.0,
+             ls=(0, (3, 2)), label="native (direct Julia)", zorder=4)
+    axO.set_ylabel("T (K)", fontsize=7)
+    axO.legend(fontsize=5.5, loc="lower right", handlelength=1.6,
+               borderaxespad=0.3)
+    add_panel_label(axO, "a")
+
+    # (b) pointwise relative residuals, conditioning-floored denominator
+    # (R_DEN_FLOOR): two independent solves agree on converged quantities to
+    # the 1e-8 gate; the transition window (t ~ t_ign) spreads to ~1e-5 --
+    # adaptive-step and threaded-LA nondeterminism between the runs, not
+    # extraction error (the bridge transfer and the CSV round-trip are
+    # bit-exact, so the residual belongs entirely to the solves).
+    style_axis(axR)
+    series = [("T", PALETTE["blue_main"], bridge[:, 1], native[:, 1])]
+    series += [(sp, SPECIES_COLOR[sp], bridge[:, 2 + k], native[:, 2 + k])
+               for k, sp in enumerate(SPECIES_COLOR)]
+    n_floor = 0
+    r_max = 0.0
+    for name, color, vb, vn in series:
+        r = np.abs(vb - vn) / np.maximum(np.abs(vn), R_DEN_FLOOR)
+        n_floor += int(np.sum(r < 1e-12))
+        r_max = max(r_max, r.max())
+        # sub-floor points masked (a log axis cannot show them; unmasked
+        # vertices leave the axes box in the PDF path geometry)
+        m = r >= 1e-12
+        axR.plot(t_ms[m], r[m], color=color, lw=0.7, label=name, zorder=3)
+    axR.axhline(GRI_REL_TOL, color=PALETTE["red_strong"], lw=1.0,
+                ls=(0, (3, 2)), zorder=4)
+    # short label at the right: induction-phase residuals already ride the
+    # 1e-8 band on the left, and the post-transition descent crosses it
+    # around t ~ 1.5-2 ms -- past t ~ 4 ms everything is below the gate
+    axR.text(t_ms[-1] * 0.98, GRI_REL_TOL * 1.6, "10⁻⁸ gate",
+             ha="right", va="bottom", fontsize=5.5,
+             color=PALETTE["red_strong"])
+    axR.set_yscale("log")
+    # headroom x10 keeps the transition peak clear of the one-row legend
+    axR.set_ylim(3e-13, r_max * 10)
+    pow10_ticks(axR, [-12, -10, -8, -6, -4])
+    axR.text(0.97, 0.95,
+             "two independent solves;\nextraction is bit-exact",
+             transform=axR.transAxes, ha="right", va="top", fontsize=5.5,
+             color=PALETTE["neutral_black"], linespacing=1.3)
+    axR.set_xlabel("t (ms)", fontsize=7)
+    axR.set_ylabel("rel. residual", fontsize=7)
+    axR.legend(fontsize=5.5, ncol=5, loc="upper left", columnspacing=0.8,
+               handlelength=1.1, borderaxespad=0.3, handletextpad=0.4)
+    add_panel_label(axR, "b")
+
+    finalize(fig, "fig6_bridge_vs_native")
+    print(
+        "  panel audit: a T overlay (blue=bridge, red dash=native on top) |\n"
+        f"  b residuals T+4 species, denominator floored at {R_DEN_FLOOR:g},\n"
+        f"  max {r_max:.2e} (transition window) vs the 1e-8 converged-scalar\n"
+        f"  gate; {n_floor} points below the 1e-12 display floor."
+    )
+
+
+# ---------------------------------------------------------------- fig 7 ----
+def fig7(gri, meta):
+    t_mid, rate, i_max = gri_segment_rate(gri)
+    t_ign_ms = meta["t_ign"] * 1e3
+    # the criterion lands on the same grid point the driver reports: the
+    # sample AFTER the steepest segment (the midpoint plotted is half a
+    # segment width away from it by construction)
+    t_after = gri[i_max + 1, 0] * 1e3
+    assert abs(t_after - t_ign_ms) < 1e-9, (t_after, t_ign_ms)
+    fig, ax = plt.subplots(figsize=(W_SINGLE, 62 * MM))
+    style_axis(ax)
+    ax.plot(t_mid, rate, color=PALETTE["blue_main"], lw=1.0, zorder=3)
+    ax.axvline(t_ign_ms, color=PALETTE["neutral_mid"], lw=0.8,
+               ls=(0, (3, 2)), zorder=2)
+    ax.plot(t_mid[i_max], rate[i_max], "o", color=PALETTE["blue_main"],
+            ms=3.5, mec="white", mew=0.5, zorder=5)
+    ax.text(t_ign_ms + 0.08, 0.93,
+            f"argmax |dT/dt| = t_ign = {t_ign_ms:.4f} ms",
+            transform=ax.get_xaxis_transform(), ha="left", va="top",
+            fontsize=6, color=PALETTE["neutral_black"])
+    ax.set_xlabel("t (ms)", fontsize=7)
+    ax.set_ylabel("|dT/dt| (K/µs)", fontsize=7)
+    finalize(fig, "fig7_heat_release",
+             alignment_kwargs=dict(require_panel_labels=False))
+    print(
+        "  panel audit: 2000 segment rates (forward differences at segment\n"
+        "  midpoints -- the driver's criterion quantity), no smoothing, no\n"
+        "  averaging; dot = argmax segment, line = t_ign from the CSV header."
+    )
+
+
+# ---------------------------------------------------------------- fig 8 ----
+def fig8(sod, det, cj, front, gri, meta):
+    t, xf, ia, slope = front
+    t_ms_g = gri[:, 0] * 1e3
+    t_ign_ms = meta["t_ign"] * 1e3
+    t_mid, rate, i_max = gri_segment_rate(gri)
+    fig, axes = plt.subplots(2, 3, figsize=(W_DOUBLE, 118 * MM))
+
+    # a: Sod rho vs exact Riemann solution (transport kernel)
+    ax = axes.flat[0]
+    style_axis(ax)
+    ax.plot(sod[:, 0], sod[:, 1], color=PALETTE["blue_main"], lw=0.9,
+            zorder=3)
+    ax.plot(sod[:, 0], sod[:, 5], color=PALETTE["red_strong"], lw=0.9,
+            ls=(0, (3, 2)), zorder=4)
+    ax.set_xlabel("x", fontsize=7)
+    ax.set_ylabel("ρ (Sod)", fontsize=7)
+    add_panel_label(ax, "a")
+
+    # b: detonation pressure with the CJ reference line
+    ax = axes.flat[1]
+    style_axis(ax)
+    ax.plot(det[:, 0], det[:, 3], color=PALETTE["blue_main"], lw=0.9,
+            zorder=3)
+    ax.axhline(cj["p_cj"], color=PALETTE["red_strong"], lw=0.9,
+               ls=(0, (3, 2)), zorder=4)
+    y0, y1 = ax.get_ylim()
+    ax.set_ylim(y0, cj["p_cj"] + 0.12 * (y1 - y0))
+    ax.text(0.02, (cj["p_cj"] - y0) / (ax.get_ylim()[1] - y0) + 0.035, "CJ",
+            transform=ax.transAxes, color=PALETTE["red_strong"], fontsize=6,
+            ha="left", va="bottom")
+    ax.set_xlabel("x", fontsize=7)
+    ax.set_ylabel("p (detonation)", fontsize=7)
+    add_panel_label(ax, "b")
+
+    # c: unburnt fraction Z -- the reaction layer cliff
+    ax = axes.flat[2]
+    style_axis(ax)
+    ax.plot(det[:, 0], det[:, 4], color=PALETTE["blue_main"], lw=0.9,
+            zorder=3)
+    ax.set_ylim(-0.06, 1.1)
+    ax.set_xlabel("x", fontsize=7)
+    ax.set_ylabel("Z (unburnt)", fontsize=7)
+    add_panel_label(ax, "c")
+
+    # d: front trajectory, measured secant vs CJ reference line
+    ax = axes.flat[3]
+    style_axis(ax)
+    ax.plot(t, xf, color=PALETTE["blue_main"], lw=0.7, zorder=2)
+    secant = xf[ia] + slope * (t - t[ia])
+    ax.plot(t, secant, color=PALETTE["blue_main"], lw=1.4, zorder=3.5)
+    ref = xf[-1] + cj["s_cj"] * (t - t[-1])
+    ax.plot(t, ref, color=PALETTE["red_strong"], lw=0.9, ls=(0, (3, 2)),
+            zorder=4)
+    dev = 100.0 * abs(slope - cj["s_cj"]) / cj["s_cj"]
+    ax.text(0.03, 0.97, f"secant {slope:.5f}, CJ {cj['s_cj']:.5f} "
+            f"(dev {dev:.3f}%)", transform=ax.transAxes, fontsize=5.5,
+            ha="left", va="top")
+    ax.set_xlabel("t", fontsize=7)
+    ax.set_ylabel("front position", fontsize=7)
+    add_panel_label(ax, "d")
+
+    # e: GRI ignition temperature with the t_ign marker (value annotated in
+    # fig5; here the line + panel f's argmax dot carry the association)
+    ax = axes.flat[4]
+    style_axis(ax)
+    ax.plot(t_ms_g, gri[:, 1], color=PALETTE["blue_main"], lw=0.9, zorder=3)
+    ax.axvline(t_ign_ms, color=PALETTE["neutral_mid"], lw=0.7,
+               ls=(0, (3, 2)), zorder=2)
+    ax.set_xlabel("t (ms)", fontsize=7)
+    ax.set_ylabel("T (ignition)", fontsize=7)
+    add_panel_label(ax, "e")
+
+    # f: the criterion quantity |dT/dt| -- argmax marks the same t_ign
+    ax = axes.flat[5]
+    style_axis(ax)
+    ax.plot(t_mid, rate, color=PALETTE["blue_main"], lw=0.9, zorder=3)
+    ax.axvline(t_ign_ms, color=PALETTE["neutral_mid"], lw=0.7,
+               ls=(0, (3, 2)), zorder=2)
+    ax.plot(t_mid[i_max], rate[i_max], "o", color=PALETTE["blue_main"],
+            ms=3.0, mec="white", mew=0.5, zorder=5)
+    ax.text(t_ign_ms + 0.08, 0.93, "argmax |dT/dt|",
+            transform=ax.get_xaxis_transform(), ha="left", va="top",
+            fontsize=5.5, color=PALETTE["neutral_black"])
+    ax.set_xlabel("t (ms)", fontsize=7)
+    ax.set_ylabel("|dT/dt| (K/µs)", fontsize=7)
+    add_panel_label(ax, "f")
+
+    finalize(fig, "fig8_capstone_overview")
+    print(
+        "  panel audit: a Sod ρ vs exact | b det p vs CJ | c Z cliff |\n"
+        "  d front + secant vs CJ | e ignition T + t_ign | f |dT/dt| + argmax\n"
+        "  -- every panel re-plots the same audited data as fig1/2/3/5/7."
+    )
+
+
 def main():
     sod = load_sod()
     det, cj, t_end = load_det()
     t, xf, ia, slope = load_front(t_end)
+    bridge, native, mb, mn = load_gri_pair()
     print(f"integrity: slope {slope:.5f} vs driver {DRIVER_SPEED} | "
           f"CJ {cj} | t_end {t_end}")
+    print(f"integrity: GRI t_ign {mb['t_ign']*1e3:.4f} ms (bridge) / "
+          f"{mn['t_ign']*1e3:.4f} ms (native), T_end {mb['T_end']:.1f} K / "
+          f"{mn['T_end']:.1f} K")
     print(f"exclusion: {AOT_STEADY_EXCLUDED[0]} — {AOT_STEADY_EXCLUDED[1]}")
     fig1(sod)
     fig2(det, cj)
     fig3(t, xf, ia, slope, cj, t_end)
     fig4()
+    fig5(bridge, mb)
+    fig6(bridge, native)
+    fig7(bridge, mb)
+    fig8(sod, det, cj, (t, xf, ia, slope), bridge, mb)
 
 
 if __name__ == "__main__":

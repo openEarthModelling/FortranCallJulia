@@ -1,20 +1,23 @@
 # Capstone 图集讲解（学术版）
 
-四张数据图全部由 [`plot_capstone.py`](plot_capstone.py) 从驱动的 CSV
-数据文件（`../output/*.csv`，已 gitignore；`#` 元信息头 + 列名行 + 全精度
-逗号分隔值）渲染，PNG 600 dpi + PDF，无
-手工后处理；性能常数在脚本内逐一标注 `../PERFORMANCE.md` 出处行。所有
-图共用同一编码约定：**蓝色 = 数值/计算结果，红色虚线 = 解析参考**
+数据图 fig1–8 全部由 [`plot_capstone.py`](plot_capstone.py) 从两个驱动
+可执行与原生基准脚本写出的 CSV 数据文件（`../output/*.csv`，已
+gitignore；`#` 元信息头 + 列名行 + 全精度逗号分隔值）渲染，PNG 600 dpi +
+PDF，无手工后处理；性能常数在脚本内逐一标注 `../PERFORMANCE.md` 出处行。
+所有图共用同一编码约定：**蓝色 = 数值/计算结果，红色虚线 = 解析参考**
 （参考线画在数据线上方，虚线缝隙露出下方数据，重合处以"红虚骑蓝实"
-呈现）。
+呈现）；物种身份（fig5b/fig6b）用独立的类别色板（见 fig5 节）。
 
 再生成方式（集群上）：
 
 ```bash
-cmake --build build --target ex_capstone_reacting_flow
+cmake --build build --target ex_capstone_reacting_flow ex_capstone_gri_ignition
 ./build/examples/ex_capstone_reacting_flow detonation 2700 0.3 sysimage   # det 两件数据
 ./build/examples/ex_capstone_reacting_flow                                 # sod 数据
-cd examples/07_capstone/figures && python3 plot_capstone.py
+cd build/examples
+julia --project=../../scripts/sysimage_env ../../examples/07_capstone/run_gri_native.jl
+./ex_capstone_gri_ignition                                                 # GRI 两件数据
+cd ../../examples/07_capstone/figures && python3 plot_capstone.py
 ```
 
 ---
@@ -188,6 +191,96 @@ b 联唯一的数据排除已在图内脚注与 PERFORMANCE.md 记录：AOT 的�
 
 ---
 
+## fig5_gri_ignition — GRI-Mech 3.0 均质点火（89 mm 双联）
+
+### 数学模型
+
+零维常容绝热均质反应器：53 组分 / 325 反应的 GRI-Mech 3.0 机理，
+化学源项 $\dot{\mathbf{Y}} = \boldsymbol{\omega}(\mathbf{Y}, T)$ 与能量
+方程耦合（绝热、常容）。初值为当量比 $\phi = 1$ 的 CH4/空气，
+1500 K、1 atm。系统刚性（诱导期链支反应与放热时间尺度相差量级），
+由 FBDF（reltol $10^{-8}$ / abstol $10^{-12}$）积分，均匀 saveat
+2001 点（$\Delta t = 2.5\,\mu$s）。点火判据采用 ChemMechSim 验证口径：
+$|dT/dt|$ 最陡段**之后的第一个格点**，即
+$t_\mathrm{ign} = 1.1075$ ms（图中 a 联灰色虚线）。
+
+### 物理图景
+
+诱导期（约 1.1 ms）内链支反应缓慢积累自由基（OH 从 $\sim10^{-51}$
+指数增长，b 联左下缘之外），CH4/O2 几乎不变、T 维持 1500 K 平台；
+热失控在约 0.05 ms 内把温度推至 $\sim$2915 K（过冲），CH4 耗尽到
+$10^{-14}$、CO2 生成至 0.043；随后自由基池部分复合，弛豫到平衡
+（$T_\mathrm{end} = 2902.6$ K，OH 平衡摩尔分数 0.024——高温解离使
+CO/H/O 组分留存，碳并不全部进入 CO2）。b 联四个关键物种：反应物
+（CH4 蓝 / O2 青绿）单调衰减，产物（CO2 紫）生成，自由基（OH 朱红）
+在点火层内成峰后弛豫到非零平衡值——四条曲线形状互异，本身就是
+色彩之外的辨识编码。
+
+### 显示与色板约定
+
+log 轴显示下限 $10^{-16}$：机理初始化使诱导期 CO2/OH 一度低至
+$\sim10^{-71}/10^{-51}$，跨越它们的 log 轴毫无可读性；下限之下仅
+2 个采样点（渲染审计有计数），而下限仍完整容纳 CH4 的全程衰减
+（最低 $3.3\times10^{-15}$）。线端直接标注只放在 log 几何上孤立的
+位置（CH4、CO2）；O2/OH 线端相距不足半个数量级，由图例与曲线形状
+承载。物种类别色板（#3B6FB6 / #2A9D8F / #9A4D8E / #D55E00）经
+dataviz 六项校验器全对通过；紫–蓝对 protan ΔE 7.5 落在 6–8 地板带，
+按规则以次级编码（图例 + 直接标注 + 互异形状）合法化。
+
+---
+
+## fig6_bridge_vs_native — 桥接 vs 原生逐点对照（89 mm 双联）
+
+### 对照协议
+
+同一条 FjKinetics 调用路径在两个独立进程各跑一遍：原生
+（`run_gri_native.jl` 直接 Julia）与桥接（Fortran 示例经桥批量提取
+`ts/T/X` 后自行落盘）。a 联 T(t) 叠加沿用家族语义（蓝实 = 桥接、
+红虚 = 原生在上，"红虚骑蓝实"读作重合）。b 联逐点相对残差
+$|\Delta q| / \max(|q_\mathrm{native}|, 10^{-10})$：分母条件化下限
+——对 $10^{-71}$ 量级的痕量值做相对残差是数字游戏，条件化后退化为
+缩放绝对差沉入显示底（低于 $10^{-12}$ 的点屏蔽并计数，不以假下限
+呈现）；红色虚线为验收门 $10^{-8}$。
+
+### 结果怎么读
+
+- **验收四门全过**（t_ign、T_end、X(CH4,0)、X(CO2,end)——均为
+  收敛量/鲁棒量）：rel diff = 0 / $1.7\times10^{-9}$ / 0 /
+  $6.8\times10^{-9}$，全部 $<10^{-8}$。
+- **过渡窗口（$t \approx t_\mathrm{ign} \pm 0.1$ ms）逐点残差升至
+  $10^{-5}$–$10^{-3}$**：两次独立求解的自适应步进与线程化线性代数
+  非确定性——点火时刻纳秒级抖动落在 277 K/采样 的陡段上被放大；
+  叠加图上完全不可见（$|\Delta T| \le 0.05$ K，低于线宽）。
+- 桥接提取通道本身比特级精确（`to_fortran` 是双精度整块拷贝；
+  CSV `es26.16e3` 十进制往返无损），因此残差全部属于两次求解本身。
+  这正是验收门设计在收敛标量、而非过渡段逐点值上的原因。
+
+---
+
+## fig7_heat_release — 放热率判据 |dT/dt|（89 mm 单栏）
+
+### 量的定义
+
+直接绘制驱动判据量：相邻采样段前向差分 $|\Delta T / \Delta t|$
+（2000 段、取段中点，无平滑、无平均——与 Fortran 侧 `maxloc` 完全
+同口径；脚本内断言 argmax 段后格点与 CSV 头部 t_ign 严格一致，
+1.1075 ms）。诱导期 $|dT/dt| < 0.005$ K/µs，点火处峰值 110.9 K/µs，
+随平衡趋近衰减回零。圆点 = argmax 段，灰虚线 = t_ign：峰即点火，
+与 fig5a 的温度台阶一一对应。
+
+---
+
+## fig8_capstone_overview — 收官总览（183 mm 2×3）
+
+一页看全整个 capstone，六联全部是已审计数据的重绘（无新数据通道）：
+**a** Sod ρ vs 精确 Riemann 解（输运内核，fig1）；**b** 爆震 p + CJ
+参考线、**c** Z 反应层悬崖（Strang 分裂耦合格式，fig2）；**d** 前沿
+轨迹 + 两点割线 vs CJ 参考线（传播速度 0.011%，fig3）；**e** GRI
+点火 T(t) + t_ign、**f** |dT/dt| + argmax 圆点（化学动力学与判据，
+fig5/fig7）。两个可执行、五份 CSV、一张图。
+
+---
+
 ## fig0_schematic — 耦合架构示意图
 
 （本节由 AI 生成草图填充：见 [fig0_schematic.png](fig0_schematic.png)。
@@ -219,15 +312,28 @@ b 联唯一的数据排除已在图内脚注与 PERFORMANCE.md 记录：AOT 的�
 7. Rackauckas, C., & Nie, Q. (2017). DifferentialEquations.jl — a
    performant and feature-rich ecosystem for solving differential
    equations in Julia. *Journal of Open Research Software*, **5**(1).
-   （化学侧刚性 ODE 栈，Rodas5P。）
+   （化学侧刚性 ODE 栈，Rodas5P/FBDF。）
+8. Smith, G. P., Golden, D. M., Frenklach, M., Moriarty, N. W.,
+   Eiteneer, B., Goldenberg, M., Bowman, C. T., Hanson, R. K., Song, S.,
+   Gardiner, W. C., Jr., Lissianski, V. V., & Qin, Z. (1999). GRI-Mech
+   3.0. http://www.me.berkeley.edu/gri_mech/ （fig5–8 的甲烷氧化
+   机理。）
 
 ---
 
 ## QA 附录
 
 每张图附带两份审计 JSON（随图提交）：`*.alignment.json`（渲染时面板
-对齐门，1.5 pt 容差）与 `*.collision-audit.json`（PDF 几何碰撞审计）。
-字形审计（5 pt 底线）在提交的 PDF 上执行，全部 PASS；最小字形 5.5 pt。
-产物按用户契约为 PNG 600 dpi + PDF（不导出 SVG/TIFF，为记录在案的
-契约豁免）。数据完整性：全部数据点全绘、无平滑、无平均；唯一排除
-（AOT 32 核跑）在图内与本文件双重记录。
+对齐门，1.5 pt 容差；fig7 单面板，不适用）与 `*.collision-audit.json`
+（PDF 几何碰撞审计）。字形审计（5 pt 底线）在提交的 PDF 上执行，
+全部 PASS；最小字形 5.5 pt。产物按用户契约为 PNG 600 dpi + PDF
+（不导出 SVG/TIFF，为记录在案的契约豁免）。数据完整性：全部数据
+点全绘、无平滑、无平均；记录在案的排除有三处 —— AOT 32 核跑
+（fig4，图内与本文件双重记录）、fig5b 物种摩尔分数显示下限
+（X < 10⁻¹⁶ 的点不进折线：对数轴下方数值无显示意义，且未遮蔽的
+折线顶点会在 PDF 路径几何中越出坐标框）、fig6b 残差显示遮蔽
+（分母条件化用 10⁻¹⁰ 地板，r < 10⁻¹² 的点不进折线，同理）。两处
+显示下限遮蔽的点数与遮蔽率由脚本打印，属显示层选择而非数据排除。
+对数轴刻度标签用全字号 Unicode 上标（10⁻¹⁶ 等）而非 mathtext
+指数 —— mathtext 指数字号约为主字号的 70%（6 pt 刻度下 4.2 pt，
+低于 5 pt 字形底线）。
