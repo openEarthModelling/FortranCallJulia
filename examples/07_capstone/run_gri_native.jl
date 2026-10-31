@@ -1,17 +1,26 @@
 # examples/07_capstone/run_gri_native.jl
 #
 # Native baseline for the bridge acceptance test (examples/07_capstone/
-# gri_ignition.f90): the SAME FjKinetics call path as the Fortran example,
+# 2_gri_ignition.f90): the SAME FjKinetics call path as the Fortran example,
 # run directly by julia -- no bridge, no Fortran. The ignition delay the
 # example recomputes in Fortran from extracted arrays must reproduce this
 # run to rel diff < 1e-8.
 #
-# Run from build/examples (that is also where the .dat is read by default):
+# Run from build/examples with the BUILD-PINNED Julia, not the juliaup shim
+# (that is also where the .dat is read by default):
 #
 #   cd build/examples
-#   julia --project=../../scripts/sysimage_env \
+#   /home/redacted/julia-1.12.7/bin/julia --project=../../scripts/sysimage_env \
 #       ../../examples/07_capstone/run_gri_native.jl
 #   ./ex_capstone_gri_ignition
+#
+# The version pin is load-bearing: the bridge executable embeds libjulia
+# 1.12.7, and the 1e-8 acceptance gates compare against THIS run. Generated
+# with a different Julia (e.g. the auto-updating juliaup release), the same
+# solve drifts up to ~1e-3 pointwise at the ignition transition (measured
+# 1.12.7 vs 1.13.2: T rel 1.5e-5, CH4 rel 0.54 at t~1.11 ms) and the gates
+# flake while wrongly blaming the bridge extraction. The guard below
+# refuses that case loudly instead.
 #
 # Output files:
 #   gri_native.dat (FJ_GRI_NATIVE_OUT overrides) -- one line
@@ -25,6 +34,17 @@
 #   metadata lines + column-name row); figures/plot_capstone.py overlays it
 #   on the bridge run's gri_ignition.csv (fig: bridge vs native)
 using FjKinetics
+
+# Acceptance-baseline contract: refuse to generate the baseline with any
+# Julia other than the one the bridge embeds (same rationale as the
+# FJ_BUILD_SYSIMAGE version guard in CMakeLists.txt).
+const BRIDGE_JULIA = v"1.12.7"   # the libjulia the bridge executable links
+VERSION == BRIDGE_JULIA || error(
+    "native baseline must be generated with the bridge-pinned Julia " *
+    "$BRIDGE_JULIA (this is $(VERSION)) -- use " *
+    "/home/redacted/julia-1.12.7/bin/julia, not the juliaup shim. A " *
+    "different runtime drifts at the ignition transition and fails the " *
+    "1e-8 gates while wrongly indicting the bridge extraction.")
 
 const OUT = get(ENV, "FJ_GRI_NATIVE_OUT", "gri_native.dat")
 const SERIES_OUT = get(

@@ -23,10 +23,14 @@
 ! spot values (CH4 at t=0, CO2 at t_end -- pinning the 4x2001 column-major
 ! matrix layout) must reproduce the native Julia run
 ! (examples/07_capstone/run_gri_native.jl, same FjKinetics call path) to a
-! relative difference < 1e-8 each. Generate the reference first:
+! relative difference < 1e-8 each. Generate the reference first -- with the
+! build-pinned Julia, NOT the juliaup shim (the bridge embeds libjulia
+! 1.12.7; a different runtime drifts at the ignition transition and fails
+! the gates below while wrongly blaming the extraction, so run_gri_native.jl
+! refuses to run under one):
 !
 !   cd build/examples
-!   julia --project=../../scripts/sysimage_env \
+!   /home/redacted/julia-1.12.7/bin/julia --project=../../scripts/sysimage_env \
 !       ../../examples/07_capstone/run_gri_native.jl
 !   ./ex_capstone_gri_ignition
 !
@@ -161,9 +165,11 @@ program ex_capstone_gri_ignition
     if (iostat /= 0) then
         write (error_unit, '(A)') 'FATAL: native baseline not found at ' // &
             trim(native_path) // ' -- generate it first:' // new_line('a') // &
-            '  julia --project=../../scripts/sysimage_env ' // &
+            '  /home/redacted/julia-1.12.7/bin/julia ' // &
+            '--project=../../scripts/sysimage_env ' // &
             '../../examples/07_capstone/run_gri_native.jl' // new_line('a') // &
-            '  (run from build/examples; or set FJ_GRI_NATIVE to the .dat path)'
+            '  (run from build/examples with the pinned 1.12.7 binary; or ' // &
+            'set FJ_GRI_NATIVE to the .dat path)'
         stop 1
     end if
     read (unit_nat, *, iostat=iostat) t_ign_nat, t_end_nat, x_ch4_nat, x_co2_nat
