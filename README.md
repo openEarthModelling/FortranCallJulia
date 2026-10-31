@@ -49,11 +49,13 @@ results come back through zero-copy or batch-extraction APIs.
 │   └── 07_capstone/      # Capstone, two executables: (1) reacting flow —
 │                         #   Fortran Euler driver + vendored Clawpack
 │                         #   kernel, Strang-split Catalyst chemistry over
-│                         #   the bridge (JIT / sysimage / AOT), CJ
-│                         #   detonation validated; (2) GRI-Mech 3.0
-│                         #   ignition delay through FjKinetics v0.2
-│                         #   (ChemMechSim), bridge-vs-native acceptance
-│                         #   < 1e-8 (JIT); see PERFORMANCE.md
+│                         #   the bridge (JIT / sysimage / AOT; mode
+│                         #   timings in PERFORMANCE.md), CJ detonation
+│                         #   validated; (2) GRI-Mech 3.0 ignition delay
+│                         #   through FjKinetics v0.2 (ChemMechSim),
+│                         #   bridge-vs-native acceptance < 1e-8 (gates
+│                         #   in 2_gri_ignition.f90, shown in figures/
+│                         #   FIGURES.md fig6)
 ├── scripts/              # Sysimage pipeline (build_sysimage.jl,
 │                         #   precompile.jl, install_sciml_env.jl)
 └── CMakeLists.txt
