@@ -1,0 +1,67 @@
+# CI for the bilingual MkDocs docs tree.
+#
+# Committed now, armed once the repository gets a remote (phase 0): with no
+# remote this workflow simply sits inert.  After the first push it gates
+# every docs-tree change (strict build + parity/leak gate + unit tests) and
+# deploys the rendered site to GitHub Pages from master.
+
+name: docs
+
+on:
+  push:
+    paths: &docs_paths
+      - docs/**
+      - mkdocs.yml
+      - scripts/docs_parity.py
+      - scripts/docs_leak_patterns.txt
+      - requirements-docs.txt
+      - requirements-dev.txt
+      - tests/**
+      - .github/workflows/docs.yml
+  pull_request:
+    paths: *docs_paths
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'  # match the local docs venv (.venv-docs)
+
+      # Dev deps (pytest) must be installed here, before the pytest step.
+      - name: Install pinned toolchain (docs + dev)
+        run: python3 -m pip install -r requirements-docs.txt -r requirements-dev.txt
+
+      - name: Strict build
+        run: mkdocs build --strict
+
+      - name: Parity and leak gate
+        run: python3 scripts/docs_parity.py --docs-dir docs
+
+      - name: Unit tests (parity gate)
+        run: python3 -m pytest tests/
+
+  deploy:
+    needs: lint
+    if: github.ref == 'refs/heads/master'  # PR refs never match: deploy is push-to-master only
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # mkdocs gh-deploy pushes to the gh-pages branch
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # full history so gh-deploy can build on the existing gh-pages branch
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install pinned toolchain
+        run: python3 -m pip install -r requirements-docs.txt
+
+      # Uses the workflow's GITHUB_TOKEN; no secrets needed.
+      - name: Deploy to GitHub Pages
+        run: mkdocs gh-deploy --force
