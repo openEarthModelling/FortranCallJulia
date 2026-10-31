@@ -10,9 +10,9 @@
 再生成方式（集群上）：
 
 ```bash
-cmake --build build --target ex_reacting_flow
-./build/examples/ex_reacting_flow detonation 2700 0.3 sysimage   # det 两件数据
-./build/examples/ex_reacting_flow                                 # sod 数据
+cmake --build build --target ex_capstone_reacting_flow
+./build/examples/ex_capstone_reacting_flow detonation 2700 0.3 sysimage   # det 两件数据
+./build/examples/ex_capstone_reacting_flow                                 # sod 数据
 cd examples/07_capstone/figures && python3 plot_capstone.py
 ```
 

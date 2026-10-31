@@ -1,6 +1,6 @@
-# examples/08_gri_ignition/run_native.jl
+# examples/07_capstone/run_gri_native.jl
 #
-# Native baseline for the bridge acceptance test (examples/08_gri_ignition/
+# Native baseline for the bridge acceptance test (examples/07_capstone/
 # gri_ignition.f90): the SAME FjKinetics call path as the Fortran example,
 # run directly by julia -- no bridge, no Fortran. The ignition delay the
 # example recomputes in Fortran from extracted arrays must reproduce this
@@ -10,8 +10,8 @@
 #
 #   cd build/examples
 #   julia --project=../../scripts/sysimage_env \
-#       ../../examples/08_gri_ignition/run_native.jl
-#   ./ex_gri_ignition
+#       ../../examples/07_capstone/run_gri_native.jl
+#   ./ex_capstone_gri_ignition
 #
 # Output file (FJ_GRI_NATIVE_OUT overrides): one line
 #   "t_ign_seconds T_end_K X_CH4_t0 X_CO2_tend"

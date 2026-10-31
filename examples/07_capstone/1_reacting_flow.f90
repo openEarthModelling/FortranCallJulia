@@ -1,4 +1,4 @@
-program ex_reacting_flow
+program ex_capstone_reacting_flow
     ! =========================================================================
     ! Capstone example: 1D reacting Euler flow.
     !
@@ -819,4 +819,4 @@ contains
         if (ios /= 0) error stop 'bad real command argument'
     end subroutine get_command_arg_real
 
-end program ex_reacting_flow
+end program ex_capstone_reacting_flow

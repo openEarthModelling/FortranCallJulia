@@ -1,5 +1,5 @@
 ! ==============================================================================
-! Example 08: GRI-Mech 3.0 ignition delay through the bridge (JIT mode)
+! Capstone example 2: GRI-Mech 3.0 ignition delay through the bridge (JIT)
 !
 ! Standalone homogeneous ignition benchmark -- Phase B chemistry integration
 ! without the flow solver. Stoichiometric CH4/air at 1500 K, 1 atm,
@@ -19,17 +19,17 @@
 ! Acceptance: the Fortran-computed t_ign, the extracted T_end, and two X
 ! spot values (CH4 at t=0, CO2 at t_end -- pinning the 4x2001 column-major
 ! matrix layout) must reproduce the native Julia run
-! (examples/08_gri_ignition/run_native.jl, same FjKinetics call path) to a
+! (examples/07_capstone/run_gri_native.jl, same FjKinetics call path) to a
 ! relative difference < 1e-8 each. Generate the reference first:
 !
 !   cd build/examples
 !   julia --project=../../scripts/sysimage_env \
-!       ../../examples/08_gri_ignition/run_native.jl
-!   ./ex_gri_ignition
+!       ../../examples/07_capstone/run_gri_native.jl
+!   ./ex_capstone_gri_ignition
 !
 ! (or point FJ_GRI_NATIVE at the gri_native.dat the script wrote)
 ! ==============================================================================
-program ex_gri_ignition
+program ex_capstone_gri_ignition
     use iso_c_binding
     use, intrinsic :: iso_fortran_env, only: error_unit
     use julia_high_level
@@ -55,7 +55,7 @@ program ex_gri_ignition
     character(len=512) :: project_path, native_path, cwd
     character(len=:), allocatable :: exe_dir
 
-    print *, "--- Example 08: GRI-Mech 3.0 ignition delay (bridge, JIT) ---"
+    print *, "--- Capstone 2: GRI-Mech 3.0 ignition delay (bridge, JIT) ---"
 
     ! --- 1. Project env: same probing chain as the capstone example ------
     ! The project must carry FortranBridge AND FjKinetics AND ChemMechSim
@@ -141,14 +141,14 @@ program ex_gri_ignition
         write (error_unit, '(A)') 'FATAL: native baseline not found at ' // &
             trim(native_path) // ' -- generate it first:' // new_line('a') // &
             '  julia --project=../../scripts/sysimage_env ' // &
-            '../../examples/08_gri_ignition/run_native.jl' // new_line('a') // &
+            '../../examples/07_capstone/run_gri_native.jl' // new_line('a') // &
             '  (run from build/examples; or set FJ_GRI_NATIVE to the .dat path)'
         stop 1
     end if
     read (unit_nat, *, iostat=iostat) t_ign_nat, t_end_nat, x_ch4_nat, x_co2_nat
     close (unit_nat)
     if (iostat /= 0) call fail('reading ' // trim(native_path) // &
-        ' (stale format: regenerate with the current run_native.jl)')
+        ' (stale format: regenerate with the current run_gri_native.jl)')
 
     ! gate FOUR quantities at the same tolerance: t_ign (the validation
     ! scalar), T_end, and two X spot values that pin the layout-sensitive
@@ -165,7 +165,7 @@ program ex_gri_ignition
         rel, ' / ', rel_t, ' / ', rel_x1, ' / ', rel_x2, '  (tol ', REL_TOL, ')'
     if (rel < REL_TOL .and. rel_t < REL_TOL .and. rel_x1 < REL_TOL &
         .and. rel_x2 < REL_TOL) then
-        print *, 'EX_GRI_IGNITION_PASS'
+        print *, 'EX_CAPSTONE_GRI_IGNITION_PASS'
     else
         call fail('bridge vs native rel diff exceeds tolerance (t_ign ' // &
                   trim(real_to_str(rel)) // ', T_end ' // trim(real_to_str(rel_t)) // &
@@ -195,4 +195,4 @@ contains
         write (s, '(ES12.4)') xval
     end function real_to_str
 
-end program ex_gri_ignition
+end program ex_capstone_gri_ignition
