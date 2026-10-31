@@ -16,6 +16,10 @@ plugins:
         - locale: zh
           name: 简体中文
           build: true
+          nav_translations:
+            Introduction: 入门
+            User Guide: 用户指南
+            Developer Guide: 开发者指南
 
 exclude_docs: |
   superpowers/**

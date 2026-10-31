@@ -1,6 +1,36 @@
 ---
-title: why-fortran-julia
+title: Why Fortran and Julia?
 sync: 2026-10-31
 ---
 
-PLACEHOLDER
+# 为什么是 Fortran 与 Julia？
+
+多数科学代码并非从零起步。本项目面向的典型局面是：一套成熟可信、性能已知、改动代价高昂的 Fortran 水力学代码，旁边是一个不断产出 Fortran 没有对等物的工具的 Julia 求解器生态。FortranCallJulia 的回答是：不必二选一。水力学留在 Fortran，求解器生态取自 Julia，两者在同一进程内耦合。
+
+## 留在 Fortran 的部分
+
+- **物理驱动器。** 经过数十年验证的数值方法，带有现成的验证基线。重写只会让这份信任清零，物理上却一无所获。
+- **主循环与 I/O。** 时间推进、网格管理、检查点、HPC 启动器集成——Fortran 工具链在这些环节早已被证明。
+- **交付形态。** 最终产物仍是一个由 gfortran 编出的可执行文件，集群调度器照常运行。Julia 是被链入，而不是被附带发布。
+
+## 取自 Julia 的部分
+
+- **活跃的刚性 ODE 生态。** OrdinaryDiffEq 求解器（FBDF、Rodas5P）直接积分刚性化学问题，无需手写隐式积分器；后续改进以包更新的形式到来。
+- **反应动力学即代码。** Catalyst 构建反应网络；GRI-Mech 3.0——53 物种、325 反应——经 `ChemMechSim.jl` 装入（已开源；本文验证使用 v1.2.0）。
+- **可组合，且 Fortran 侧不随之翻修。** 新求解器、新包版本、新模型——Fortran 代码始终调用同一组 `fcj_*` 入口。
+
+## 耦合方式，一句话的数值格式
+
+反应流收官示例把显式 Fortran Euler 步（Clawpack 核）与刚性 Julia 化学步通过 **Strang 分裂**耦合——半个水力步、一个完整化学步、再半个水力步——在保住时间二阶精度的同时，让两个世界各用最适合自己的积分方法。
+
+## 中间为什么要有一层 C 桥
+
+Julia 唯一稳定的嵌入面是它的 C API：`libjulia` 与 `jl_*` 函数族。`src/bridge` 里的桥是全系统唯一与该 API 对话的地方，其余部分一概不碰。把 C 集中在这里换来三件事：
+
+1. **GC 安全。** 递交给 Fortran 的每个对象都进入一份比 Julia 收集器寿命更长的 C 侧根集（`fcj_map`），随后显式释放。
+2. **错误纪律。** 每次调用都做异常检查；失败返回错误码，并可经 `get_last_error_message()` 取回人类可读的错误文本。
+3. **窄而稳的 ABI。** 约 105 个 `fcj_*` 符号——小到可以逐个审计，稳到 Fortran 与 Julia 可以在两侧各自演进。
+
+## 代价是什么
+
+这层桥并非没有约束：桥调用全部钉死在初始化 Julia 的线程上；数组通道支持 `Float64` / `ComplexF64`（标量则全类型）；支持平台为 Linux + gcc/gfortran。完整清单见[已知限制](../user/known-limitations.md)；背后的设计取舍接续于[架构](architecture.md)。
