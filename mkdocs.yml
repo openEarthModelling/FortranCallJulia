@@ -55,5 +55,6 @@ markdown_extensions:
   - admonition
   - pymdownx.superfences
   - pymdownx.details
+  - smarty
   - toc:
       permalink: true
