@@ -11,14 +11,22 @@ PDF，无手工后处理；性能常数在脚本内逐一标注 `../PERFORMANCE.
 再生成方式（集群上）：
 
 ```bash
-cmake --build build --target ex_capstone_reacting_flow ex_capstone_gri_ignition
+cmake --build build --target ex_capstone_reacting_flow
+cmake --build build --target ex_capstone_gri_ignition
 ./build/examples/ex_capstone_reacting_flow detonation 2700 0.3 sysimage   # det 两件数据
 ./build/examples/ex_capstone_reacting_flow                                 # sod 数据
 cd build/examples
-julia --project=../../scripts/sysimage_env ../../examples/07_capstone/run_gri_native.jl
+/home/redacted/julia-1.12.7/bin/julia --project=../../scripts/sysimage_env \
+    ../../examples/07_capstone/run_gri_native.jl                           # 必须用钉死的 1.12.7
 ./ex_capstone_gri_ignition                                                 # GRI 两件数据
 cd ../../examples/07_capstone/figures && python3 plot_capstone.py
 ```
+
+（`--target` 一次一个目标：本工程 CMake 下限 3.13，多目标单次 `--build`
+是 3.15 起的语法。原生基线必须用与桥接可执行内嵌 libjulia 同版的
+1.12.7 二进制生成——juliaup 的自动更新版本在点火过渡段漂移至
+~10⁻⁵–10⁻³，会让 1e-8 验收门误报提取错误；`run_gri_native.jl` 内有
+版本守卫直接拒绝。）
 
 ---
 
@@ -208,7 +216,9 @@ $t_\mathrm{ign} = 1.1075$ ms（图中 a 联灰色虚线）。
 
 诱导期（约 1.1 ms）内链支反应缓慢积累自由基（OH 从 $\sim10^{-51}$
 指数增长，b 联左下缘之外），CH4/O2 几乎不变、T 维持 1500 K 平台；
-热失控在约 0.05 ms 内把温度推至 $\sim$2915 K（过冲），CH4 耗尽到
+热失控的陡升段（$>5$ K/µs）宽约 0.05 ms，把温度推至约 2780 K 后
+继续攀升，至 $t \approx 1.25$ ms（$t_\mathrm{ign}$ 之后约 0.14 ms；
+2900 K 于 $t \approx 1.18$ ms 越过）达过冲峰 2914.9 K；CH4 耗尽到
 $10^{-14}$、CO2 生成至 0.043；随后自由基池部分复合，弛豫到平衡
 （$T_\mathrm{end} = 2902.6$ K，OH 平衡摩尔分数 0.024——高温解离使
 CO/H/O 组分留存，碳并不全部进入 CO2）。b 联四个关键物种：反应物
@@ -221,7 +231,8 @@ CO/H/O 组分留存，碳并不全部进入 CO2）。b 联四个关键物种：�
 log 轴显示下限 $10^{-16}$：机理初始化使诱导期 CO2/OH 一度低至
 $\sim10^{-71}/10^{-51}$，跨越它们的 log 轴毫无可读性；下限之下仅
 2 个采样点（渲染审计有计数），而下限仍完整容纳 CH4 的全程衰减
-（最低 $3.3\times10^{-15}$）。线端直接标注只放在 log 几何上孤立的
+（最低 $1.65\times10^{-15}$；脚本内断言高于下限并打印实测值，
+不转写常数）。线端直接标注只放在 log 几何上孤立的
 位置（CH4、CO2）；O2/OH 线端相距不足半个数量级，由图例与曲线形状
 承载。物种类别色板（#3B6FB6 / #2A9D8F / #9A4D8E / #D55E00）经
 dataviz 六项校验器全对通过；紫–蓝对 protan ΔE 7.5 落在 6–8 地板带，
@@ -235,25 +246,34 @@ dataviz 六项校验器全对通过；紫–蓝对 protan ΔE 7.5 落在 6–8 �
 
 同一条 FjKinetics 调用路径在两个独立进程各跑一遍：原生
 （`run_gri_native.jl` 直接 Julia）与桥接（Fortran 示例经桥批量提取
-`ts/T/X` 后自行落盘）。a 联 T(t) 叠加沿用家族语义（蓝实 = 桥接、
-红虚 = 原生在上，"红虚骑蓝实"读作重合）。b 联逐点相对残差
+`ts/T/X` 后自行落盘）。协议的运行时前提：原生基线必须由与桥接
+可执行内嵌 libjulia 同版的 **Julia 1.12.7** 生成，
+`run_gri_native.jl` 的版本守卫直接拒绝其他版本。来历（审查波实测）：
+跨版本生成基线时，同一求解在点火过渡段逐点漂移至
+$10^{-5}$–$10^{-3}$（1.12.7 vs 1.13.2：T 相对差 $1.5\times10^{-5}$，
+过渡段 CH4 相对差达 0.54），端值门余量随版本对波动——juliaup 基线
+曾给出 0 / $1.7\times10^{-9}$ / 0 / $6.8\times10^{-9}$（离门仅
+1.5 倍），下一次 juliaup 自动更新即可越门，并误报为"桥提取错误"。
+a 联 T(t) 叠加沿用家族语义（蓝实 = 桥接、红虚 = 原生在上，"红虚骑
+蓝实"读作重合）。b 联逐点相对残差
 $|\Delta q| / \max(|q_\mathrm{native}|, 10^{-10})$：分母条件化下限
 ——对 $10^{-71}$ 量级的痕量值做相对残差是数字游戏，条件化后退化为
 缩放绝对差沉入显示底（低于 $10^{-12}$ 的点屏蔽并计数，不以假下限
-呈现）；红色虚线为验收门 $10^{-8}$。
+呈现）；红色虚线为验收门 $10^{-8}$，灰色点线为显示底 $10^{-12}$。
 
 ### 结果怎么读
 
-- **验收四门全过**（t_ign、T_end、X(CH4,0)、X(CO2,end)——均为
-  收敛量/鲁棒量）：rel diff = 0 / $1.7\times10^{-9}$ / 0 /
-  $6.8\times10^{-9}$，全部 $<10^{-8}$。
-- **过渡窗口（$t \approx t_\mathrm{ign} \pm 0.1$ ms）逐点残差升至
-  $10^{-5}$–$10^{-3}$**：两次独立求解的自适应步进与线程化线性代数
-  非确定性——点火时刻纳秒级抖动落在 277 K/采样 的陡段上被放大；
-  叠加图上完全不可见（$|\Delta T| \le 0.05$ K，低于线宽）。
-- 桥接提取通道本身比特级精确（`to_fortran` 是双精度整块拷贝；
-  CSV `es26.16e3` 十进制往返无损），因此残差全部属于两次求解本身。
-  这正是验收门设计在收敛标量、而非过渡段逐点值上的原因。
+- **验收四门恰好为零**（t_ign、T_end、X(CH4,0)、X(CO2,end) 全部
+  rel diff = 0，逐位相等）：钉死运行时后收敛标量完全复现。
+- **全序列最大相对残差 $8.3\times10^{-13}$**（出现在 CO2 点火前
+  陡升段 $t \approx 1.01$ ms；T 本身仅 $\sim2\times10^{-16}$，ULP
+  量级），2001×5 个值全部低于 $10^{-12}$ 显示底——**b 联空面板即
+  结果本身**。3927/10005 个值逐位相同，其余微小差异来自同一运行时
+  内两个进程的符号代码生成项序差，不是提取误差。
+- 桥接提取通道因此被隔离证真：`to_fortran` 是双精度整块拷贝、CSV
+  `es26.16e3` 十进制往返无损；布局类 bug（列主序错位、物种行取错）
+  的特征误差在 $10^{-1}$ 量级，比门高七个数量级——四门的 0 就是
+  提取路径的指纹。
 
 ---
 
@@ -264,8 +284,10 @@ $|\Delta q| / \max(|q_\mathrm{native}|, 10^{-10})$：分母条件化下限
 直接绘制驱动判据量：相邻采样段前向差分 $|\Delta T / \Delta t|$
 （2000 段、取段中点，无平滑、无平均——与 Fortran 侧 `maxloc` 完全
 同口径；脚本内断言 argmax 段后格点与 CSV 头部 t_ign 严格一致，
-1.1075 ms）。诱导期 $|dT/dt| < 0.005$ K/µs，点火处峰值 110.9 K/µs，
-随平衡趋近衰减回零。圆点 = argmax 段，灰虚线 = t_ign：峰即点火，
+1.1075 ms）。诱导期前段（$t \lesssim 0.25$ ms）$|dT/dt| < 0.005$
+K/µs，此后随链支反应加速单调爬升（0.8 ms 处 0.10、1.0 ms 处
+0.58 K/µs），点火处峰值 110.9 K/µs，随平衡趋近衰减回零。
+圆点 = argmax 段，灰虚线 = t_ign：峰即点火，
 与 fig5a 的温度台阶一一对应。
 
 ---
