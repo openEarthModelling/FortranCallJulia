@@ -1,7 +1,8 @@
 # Capstone 图集讲解（学术版）
 
-四张数据图全部由 [`plot_capstone.py`](plot_capstone.py) 从驱动的 ASCII
-数据文件（`../output/*.dat`，已 gitignore）渲染，PNG 600 dpi + PDF，无
+四张数据图全部由 [`plot_capstone.py`](plot_capstone.py) 从驱动的 CSV
+数据文件（`../output/*.csv`，已 gitignore；`#` 元信息头 + 列名行 + 全精度
+逗号分隔值）渲染，PNG 600 dpi + PDF，无
 手工后处理；性能常数在脚本内逐一标注 `../PERFORMANCE.md` 出处行。所有
 图共用同一编码约定：**蓝色 = 数值/计算结果，红色虚线 = 解析参考**
 （参考线画在数据线上方，虚线缝隙露出下方数据，重合处以"红虚骑蓝实"

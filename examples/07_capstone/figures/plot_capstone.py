@@ -16,8 +16,11 @@ Figure contracts (nature-figure five-point contract):
       while steady per-cell cost is indistinguishable within node-load noise.
 
 Data sources (all committed conventions):
-  ../output/sod_final.dat, det_final.dat, det_front.dat  -- written by the
-  Fortran driver; headers carry the run parameters and CJ constants.
+  ../output/sod_final.csv, det_final.csv, det_front.csv, gri_ignition.csv,
+  gri_native_series.csv  -- written by the two capstone executables (and
+  run_gri_native.jl); '#' metadata header lines carry the run parameters
+  and CJ constants, the first data row names the columns, values are
+  comma-separated at full double precision.
   Performance constants are transcribed from PERFORMANCE.md with the
   section/line noted on each constant (numbers verified there against logs).
 
@@ -38,6 +41,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from matplotlib.transforms import ScaledTranslation
 
 FIGS = Path(__file__).resolve().parent
@@ -149,17 +153,28 @@ def finalize(fig, name, alignment_kwargs=None, pad=1.2):
 
 
 # -- data loading with integrity assertions ---------------------------------
+def read_output_csv(path, columns):
+    """Driver CSV convention: '#' metadata header lines, one column-name
+    row, comma-separated full-precision values.  The column contract is
+    asserted so a silently reshaped writer fails here, not downstream."""
+    df = pd.read_csv(path, comment="#")
+    assert list(df.columns) == columns, (path.name, list(df.columns))
+    return df
+
+
 def load_sod():
-    path = OUT / "sod_final.dat"
-    header = [l for l in path.read_text().splitlines() if l.startswith("#")]
-    assert header[1] == "# columns: x rho u p Z rho_exact u_exact p_exact", header[1]
-    d = np.loadtxt(path)
+    path = OUT / "sod_final.csv"
+    meta = path.read_text().splitlines()[0]
+    assert meta.startswith("# Sod tube final state: nx = 400,"), meta
+    df = read_output_csv(path, ["x", "rho", "u", "p", "Z",
+                                "rho_exact", "u_exact", "p_exact"])
+    d = df.to_numpy()
     assert d.shape == (400, 8), d.shape
     return d
 
 
 def load_det():
-    path = OUT / "det_final.dat"
+    path = OUT / "det_final.csv"
     text = path.read_text().splitlines()
     hdr = [l for l in text if l.startswith("#")]
     cj = {
@@ -172,16 +187,19 @@ def load_det():
     assert m, hdr[0]
     t_end = float(m.group(1))
     assert set(cj) == {"rho_cj", "u_cj", "p_cj", "s_cj"}, cj
-    d = np.loadtxt(path)
+    df = read_output_csv(path, ["x", "rho", "u", "p", "Z"])
+    d = df.to_numpy()
     assert d.shape == (2700, 5), d.shape
     return d, cj, t_end
 
 
 def load_front(t_end):
-    path = OUT / "det_front.dat"
-    d = np.loadtxt(path)
-    assert d.ndim == 2 and d.shape[1] == 2, d.shape
-    t, xf = d.T
+    path = OUT / "det_front.csv"
+    assert path.read_text().splitlines()[0] == \
+        "# detonation front trajectory (HLW 2000 Ex.2)"
+    df = read_output_csv(path, ["t", "x_front"])
+    t = df["t"].to_numpy()
+    xf = df["x_front"].to_numpy()
     # driver measurement window: first sample with t >= 0.5*t_final
     ia = int(np.argmax(t >= 0.5 * t_end))
     slope = (xf[-1] - xf[ia]) / (t[-1] - t[ia])
@@ -279,7 +297,7 @@ def fig2(det, cj):
              alignment_kwargs=dict(exclude_axes=[inset]))
     print(
         "  panel audit: a rho | b u | c p | d Z; CJ dashed reference from\n"
-        "  det_final.dat header (driver constants); inset zoom on the Z cliff,\n"
+        "  det_final.csv header (driver constants); inset zoom on the Z cliff,\n"
         "  excluded from alignment groups as an inset."
     )
 

@@ -139,7 +139,7 @@ program ex_capstone_reacting_flow
     double precision :: l1rho, l1u, l1p, sum0(3), sum1(3), mineig
     double precision :: rho_ex, u_ex, p_ex
 
-    ! --- figure data output (ASCII; consumed by figures/plot_capstone.py) --------
+    ! --- figure data output (CSV; consumed by figures/plot_capstone.py) --------
     integer :: u_out
     character(len=512) :: outdir
 
@@ -372,10 +372,10 @@ program ex_capstone_reacting_flow
     if (chemistry_on) then
         outdir = output_dir()
         call execute_command_line('mkdir -p ' // trim(outdir))
-        open(newunit=u_out, file=trim(outdir) // '/det_front.dat', &
+        open(newunit=u_out, file=trim(outdir) // '/det_front.csv', &
              status='replace', action='write')
         write(u_out, '(a)') '# detonation front trajectory (HLW 2000 Ex.2)'
-        write(u_out, '(a)') '# columns: t x_front'
+        write(u_out, '(a)') 't,x_front'
     end if
 
     call system_clock(c0)
@@ -415,7 +415,8 @@ program ex_capstone_reacting_flow
         call chemistry(dt/2)
         t = t + dt
         nsteps = nsteps + 1
-        if (chemistry_on) write(u_out, '(*(es26.16e3))') t, front_x()
+        ! CSV row: value, value, ... (the ':' stops the trailing separator)
+        if (chemistry_on) write(u_out, '(*(es26.16e3,:,","))') t, front_x()
 
         ! detonation-speed measurement window: second half of the run
         if (chemistry_on .and. .not. mark_set .and. t >= 0.5d0*t_final) then
@@ -438,11 +439,11 @@ program ex_capstone_reacting_flow
         ! sampling is already done for the L1 norms; emit it here)
         outdir = output_dir()
         call execute_command_line('mkdir -p ' // trim(outdir))
-        open(newunit=u_out, file=trim(outdir) // '/sod_final.dat', &
+        open(newunit=u_out, file=trim(outdir) // '/sod_final.csv', &
              status='replace', action='write')
         write(u_out, '(a,i0,a,f8.4,a,f5.2)') '# Sod tube final state: nx = ', mx, &
              ', t = ', t, ', gamma = ', gamma
-        write(u_out, '(a)') '# columns: x rho u p Z rho_exact u_exact p_exact'
+        write(u_out, '(a)') 'x,rho,u,p,Z,rho_exact,u_exact,p_exact'
         l1rho = 0.0d0; l1u = 0.0d0; l1p = 0.0d0
         do i = 1, mx
             call sod_sample(p_l, rho_l, u_l, p_r, rho_r, u_r, gamma, &
@@ -451,7 +452,7 @@ program ex_capstone_reacting_flow
             l1rho = l1rho + abs(q(1,i) - rho_ex)
             l1u = l1u + abs(q(2,i)/q(1,i) - u_ex)
             l1p = l1p + abs(pressure(q(1,i),q(2,i),q(3,i),gamma) - p_ex)
-            write(u_out, '(*(es26.16e3))') xlower + (dble(i)-0.5d0)*dx, q(1,i), &
+            write(u_out, '(*(es26.16e3,:,","))') xlower + (dble(i)-0.5d0)*dx, q(1,i), &
                  q(2,i)/q(1,i), pressure(q(1,i),q(2,i),q(3,i),gamma), 0.0d0, &
                  rho_ex, u_ex, p_ex
         end do
@@ -524,15 +525,15 @@ program ex_capstone_reacting_flow
             ' + chemistry ', n_bridge_chem, ' + shutdown 1)'
 
         ! figure data: final profiles with the CJ reference in the header
-        open(newunit=u_out, file=trim(output_dir()) // '/det_final.dat', &
+        open(newunit=u_out, file=trim(output_dir()) // '/det_final.csv', &
              status='replace', action='write')
         write(u_out, '(a,i0,a,f8.4)') '# CJ detonation final state (HLW 2000 Ex.2): nx = ', mx, &
              ', t = ', t
         write(u_out, '(a,es13.6,a,es13.6,a,es13.6,a,es13.6)') '# CJ reference: rho_cj = ', rho_cj, &
              ', u_cj = ', u_cj, ', p_cj = ', p_cj, ', s_cj = ', scj
-        write(u_out, '(a)') '# columns: x rho u p Z'
+        write(u_out, '(a)') 'x,rho,u,p,Z'
         do i = 1, mx
-            write(u_out, '(*(es26.16e3))') xlower + (dble(i)-0.5d0)*dx, q(1,i), q(2,i)/q(1,i), &
+            write(u_out, '(*(es26.16e3,:,","))') xlower + (dble(i)-0.5d0)*dx, q(1,i), q(2,i)/q(1,i), &
                  p_i(i), q(4,i)/q(1,i)
         end do
         close(u_out)
