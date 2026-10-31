@@ -15,12 +15,18 @@ Checks the docs site's language trees against each other:
 * Sync: paired pages whose frontmatter ``sync:`` dates differ produce a WARN
   on stderr but still exit 0.
 * Leak scan: every ``.md`` under every language tree (annex and draft pages
-  included) is scanned for the substrings listed in
-  ``scripts/docs_leak_patterns.txt`` (one per line, ``#`` lines are comments).
+  included) and every text asset under ``<docs-dir>/assets/`` (``*.html`` --
+  the published architecture diagram among them) is scanned for the
+  substrings listed in ``scripts/docs_leak_patterns.txt`` (one per line,
+  ``#`` lines are comments).
+* Frontmatter shape: a leading ``---`` block that is never closed fails the
+  gate loudly -- silently parsing the page body as metadata would let a body
+  ``annex: true`` exempt a page from pairing.
 
 Exit code: 0 = clean (WARNs allowed), 1 = missing pair / missing or empty
-title / leak pattern hit.  Pure stdlib; frontmatter is parsed by splitting the
-leading ``---`` block into ``key: value`` lines (no PyYAML).
+title / leak pattern hit / unterminated frontmatter.  Pure stdlib; frontmatter
+is parsed by splitting the leading ``---`` block into ``key: value`` lines
+(no PyYAML).
 """
 
 from __future__ import annotations
@@ -33,6 +39,12 @@ from typing import NamedTuple
 DEFAULT_DOCS_DIR = "docs"
 DEFAULT_LANGUAGES = "en,zh"
 PATTERNS_FILENAME = "docs_leak_patterns.txt"
+ASSETS_DIRNAME = "assets"
+ASSETS_GLOB = "*.html"
+
+
+class FrontmatterError(Exception):
+    """A page opens a ``---`` frontmatter block that is never closed."""
 
 
 class Page(NamedTuple):
@@ -46,6 +58,10 @@ def parse_frontmatter(text: str) -> dict:
 
     Only simple ``key: value`` lines are recognised; everything else in the
     block is ignored.  Returns ``{}`` when the file has no frontmatter block.
+    Raises :class:`FrontmatterError` when the opening ``---`` is never closed:
+    for a gate the safe semantics is loud, because an unterminated block would
+    parse body lines as metadata (a body ``annex: true`` would silently exempt
+    a page from pairing).
     """
     lines = text.splitlines()
     if not lines or lines[0].strip() != "---":
@@ -53,22 +69,40 @@ def parse_frontmatter(text: str) -> dict:
     meta = {}
     for line in lines[1:]:
         if line.strip() == "---":
-            break
+            return meta
         if ":" not in line:
             continue
         key, _, value = line.partition(":")
         meta[key.strip()] = value.strip()
-    return meta
+    raise FrontmatterError("frontmatter block opened but never closed")
 
 
-def collect_pages(lang_dir: Path) -> dict:
-    """Map every ``.md`` under ``lang_dir`` to ``{slug: Page}`` (slug = relative posix path)."""
+def collect_pages(lang_dir: Path) -> tuple:
+    """Map every ``.md`` under ``lang_dir`` to ``{slug: Page}`` (slug = relative posix path).
+
+    Returns ``(pages, malformed)`` where ``malformed`` lists the slugs whose
+    frontmatter block never closes (they are excluded from ``pages`` so the
+    pairing check does not cascade; the caller reports them as FAILs).
+    """
     pages = {}
+    malformed = []
     for path in sorted(lang_dir.rglob("*.md")):
         text = path.read_text(encoding="utf-8")
         slug = path.relative_to(lang_dir).as_posix()
-        pages[slug] = Page(path, parse_frontmatter(text), text)
-    return pages
+        try:
+            meta = parse_frontmatter(text)
+        except FrontmatterError:
+            malformed.append(slug)
+            continue
+        pages[slug] = Page(path, meta, text)
+    return pages, malformed
+
+
+def collect_assets(assets_dir: Path) -> list:
+    """List the publishable text assets under ``assets_dir`` (``*.html``)."""
+    if not assets_dir.is_dir():
+        return []
+    return sorted(assets_dir.rglob(ASSETS_GLOB))
 
 
 def load_patterns(patterns_file: Path) -> list:
@@ -108,7 +142,16 @@ def run_check(docs_dir: Path, languages: list, patterns_file: Path, out, err) ->
             ok = False
             trees[lang] = {}
         else:
-            trees[lang] = collect_pages(lang_dir)
+            pages, malformed = collect_pages(lang_dir)
+            for slug in malformed:
+                err.write(
+                    f"FAIL: unterminated frontmatter: {lang}/{slug} "
+                    f"(opening '---' never closed; body lines would parse "
+                    f"as metadata)\n"
+                )
+                problems += 1
+                ok = False
+            trees[lang] = pages
 
     base, others = languages[0], languages[1:]
 
@@ -178,16 +221,32 @@ def run_check(docs_dir: Path, languages: list, patterns_file: Path, out, err) ->
                     ok = False
                     break
 
+    # --- Leak scan (continued): published text assets under docs/assets ---
+    assets_scanned = 0
+    for path in collect_assets(docs_dir / ASSETS_DIRNAME):
+        assets_scanned += 1
+        text = path.read_text(encoding="utf-8")
+        for pattern in patterns:
+            if pattern in text:
+                rel = path.relative_to(docs_dir).as_posix()
+                err.write(f"FAIL: leak: {rel} contains pattern {pattern!r}\n")
+                leaks += 1
+                problems += 1
+                ok = False
+                break
+
     langs_label = "+".join(languages)
     if ok:
         out.write(
             f"OK: {len(paired)} paired, {len(exempt)} exempt, "
-            f"{scanned} pages leak-scanned ({langs_label})\n"
+            f"{scanned} pages + {assets_scanned} asset file(s) leak-scanned "
+            f"({langs_label})\n"
         )
     else:
         out.write(
             f"FAILED: {problems} problem(s), {len(paired)} paired, "
-            f"{len(exempt)} exempt, {leaks} leak(s) ({langs_label}); "
+            f"{len(exempt)} exempt, {leaks} leak(s) in {scanned} pages + "
+            f"{assets_scanned} asset file(s) ({langs_label}); "
             f"details on stderr\n"
         )
     return ok
@@ -197,7 +256,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description="Bilingual docs parity and leak gate "
         "(exit 0 = clean, warnings allowed; exit 1 = missing pair / "
-        "missing or empty title / leak)."
+        "missing or empty title / leak / unterminated frontmatter)."
     )
     parser.add_argument(
         "--docs-dir",

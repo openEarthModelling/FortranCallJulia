@@ -9,6 +9,7 @@ three initial patterns).
 """
 
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -20,7 +21,7 @@ import docs_parity  # noqa: E402
 DEFAULT_SYNC = "2026-10-31"
 
 
-def write_page(docs_dir, lang, rel, title, sync=DEFAULT_SYNC, extra_fm="", body="Ordinary content."):
+def write_page(docs_dir, lang, rel, title, sync=DEFAULT_SYNC, extra_fm: Sequence[str] = (), body="Ordinary content."):
     """Create docs_dir/lang/rel with the given frontmatter and body."""
     path = docs_dir / lang / rel
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -128,6 +129,48 @@ def test_leak_pattern_fails(tmp_path, capsys):
     assert rc == 1
     assert "user/deploy.md" in err
     assert "leak" in err
+
+
+def test_asset_leak_fails(tmp_path, capsys):
+    make_clean_site(tmp_path)
+    # A clean text asset under docs/assets must pass (and be counted in the
+    # summary line; that line goes to stdout, hence the direct main() call).
+    asset = tmp_path / "assets" / "diagram.html"
+    asset.parent.mkdir(parents=True, exist_ok=True)
+    asset.write_text("<html><body>sanitized diagram</body></html>", encoding="utf-8")
+    rc = docs_parity.main(["--docs-dir", str(tmp_path)])
+    captured = capsys.readouterr()
+    assert rc == 0
+    assert "FAIL" not in captured.err
+    assert "1 asset file(s) leak-scanned" in captured.out
+    # The same asset carrying a leak pattern must FAIL the gate -- published
+    # assets are scanned just like pages.
+    asset.write_text(
+        "<html><body>generated from /home/redacted/site/out.html</body></html>",
+        encoding="utf-8",
+    )
+    rc, err = run_gate(tmp_path, capsys)
+    assert rc == 1
+    assert "assets/diagram.html" in err
+    assert "leak" in err
+
+
+def test_unterminated_frontmatter_fails(tmp_path, capsys):
+    make_clean_site(tmp_path)
+    # A leading '---' that is never closed must fail loudly: parsing on would
+    # treat body lines as metadata, so a body `annex: true` would silently
+    # exempt the page from pairing.
+    path = tmp_path / "en" / "user" / "unterminated.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(
+        "---\ntitle: unterminated\nsync: 2026-10-31\n\n"
+        "annex: true\nonly in the body\n",
+        encoding="utf-8",
+    )
+    rc, err = run_gate(tmp_path, capsys)
+    assert rc == 1
+    assert "user/unterminated.md" in err
+    assert "unterminated frontmatter" in err
 
 
 def test_stale_sync_warns_not_fails(tmp_path, capsys):
