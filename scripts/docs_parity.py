@@ -8,17 +8,19 @@ Checks the docs site's language trees against each other:
   versa.  Pages whose frontmatter carries ``annex: true`` (permanent
   single-language appendix) or ``draft: true`` (unfinished) are exempt from
   pairing -- but never from the leak scan.
-* Title set: the set of frontmatter ``title:`` values of paired pages must be
-  identical across language trees.
+* Titles: every paired page must carry a frontmatter ``title:`` that exists
+  and is non-empty in every language tree.  Titles are *translated* per locale
+  on purpose (each tree's nav renders from its own pages' titles), so titles
+  that differ across trees are expected and never fail the gate.
 * Sync: paired pages whose frontmatter ``sync:`` dates differ produce a WARN
   on stderr but still exit 0.
 * Leak scan: every ``.md`` under every language tree (annex and draft pages
   included) is scanned for the substrings listed in
   ``scripts/docs_leak_patterns.txt`` (one per line, ``#`` lines are comments).
 
-Exit code: 0 = clean (WARNs allowed), 1 = missing pair / title-set mismatch /
-leak pattern hit.  Pure stdlib; frontmatter is parsed by splitting the leading
-``---`` block into ``key: value`` lines (no PyYAML).
+Exit code: 0 = clean (WARNs allowed), 1 = missing pair / missing or empty
+title / leak pattern hit.  Pure stdlib; frontmatter is parsed by splitting the
+leading ``---`` block into ``key: value`` lines (no PyYAML).
 """
 
 from __future__ import annotations
@@ -133,24 +135,20 @@ def run_check(docs_dir: Path, languages: list, patterns_file: Path, out, err) ->
         else:
             paired.append(slug)
 
-    # --- Title set: paired pages must carry the same set of titles per tree ---
-    title_sets = {lang: set() for lang in languages}
+    # --- Titles: every paired page must carry a non-empty title in every tree.
+    # Titles are translated per locale (each tree's nav renders from its own
+    # pages' titles), so differing titles between trees are fine; only a
+    # missing or empty title fails.
     for slug in paired:
         for lang in languages:
             title = trees[lang][slug].frontmatter.get("title")
-            if title is not None:
-                title_sets[lang].add(title)
-    for lang in others:
-        only_base = title_sets[base] - title_sets[lang]
-        only_lang = title_sets[lang] - title_sets[base]
-        if only_base or only_lang:
-            err.write(
-                f"FAIL: title set mismatch ({base} vs {lang}): "
-                f"only in {base}: {sorted(only_base)}; "
-                f"only in {lang}: {sorted(only_lang)}\n"
-            )
-            problems += 1
-            ok = False
+            if title is None or not title.strip():
+                err.write(
+                    f"FAIL: missing title: {lang}/{slug} "
+                    f"(frontmatter title: must exist and be non-empty)\n"
+                )
+                problems += 1
+                ok = False
 
     # --- Sync dates: mismatched paired dates WARN but do not fail ---
     for slug in paired:
@@ -199,7 +197,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(
         description="Bilingual docs parity and leak gate "
         "(exit 0 = clean, warnings allowed; exit 1 = missing pair / "
-        "title-set mismatch / leak)."
+        "missing or empty title / leak)."
     )
     parser.add_argument(
         "--docs-dir",

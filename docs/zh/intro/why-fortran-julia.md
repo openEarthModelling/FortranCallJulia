@@ -1,5 +1,5 @@
 ---
-title: Why Fortran and Julia?
+title: 为什么是 Fortran 与 Julia？
 sync: 2026-10-31
 ---
 

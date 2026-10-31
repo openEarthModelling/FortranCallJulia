@@ -1,5 +1,5 @@
 ---
-title: Architecture
+title: 架构
 sync: 2026-10-31
 ---
 

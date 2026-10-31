@@ -143,14 +143,26 @@ def test_stale_sync_warns_not_fails(tmp_path, capsys):
     assert "zh=2026-10-01" in err
 
 
-def test_title_mismatch_fails(tmp_path, capsys):
+def test_title_missing_fails(tmp_path, capsys):
     make_clean_site(tmp_path)
-    # Same slugs, but the title SETS differ across the two trees.
-    write_page(tmp_path, "en", "user/renamed.md", "new-title")
-    write_page(tmp_path, "zh", "user/renamed.md", "old-title")
+    # Paired slug whose zh title is absent from the frontmatter entirely.
+    write_page(tmp_path, "en", "user/notitle.md", "has-title")
+    write_page(tmp_path, "zh", "user/notitle.md", None)
     rc, err = run_gate(tmp_path, capsys)
     assert rc == 1
+    assert "zh/user/notitle.md" in err
     assert "title" in err
+    # An empty title string is just as bad.
+    write_page(tmp_path, "zh", "user/notitle.md", "")
+    rc, err = run_gate(tmp_path, capsys)
+    assert rc == 1
+    assert "zh/user/notitle.md" in err
+    # A translated (differing) title on a healthy pair must NOT fail:
+    # each locale's nav renders from its own pages' titles.
+    write_page(tmp_path, "zh", "user/notitle.md", "中文标题")
+    rc, err = run_gate(tmp_path, capsys)
+    assert rc == 0
+    assert "FAIL" not in err
 
 
 def test_slug_mismatch_detected(tmp_path, capsys):

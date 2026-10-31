@@ -1,5 +1,5 @@
 ---
-title: FortranCallJulia
+title: 在 Fortran 中嵌入 Julia 运行时
 sync: 2026-10-31
 ---
 

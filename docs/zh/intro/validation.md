@@ -1,5 +1,5 @@
 ---
-title: Validation
+title: 验证
 sync: 2026-10-31
 ---
 
