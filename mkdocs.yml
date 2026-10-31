@@ -16,6 +16,36 @@ plugins:
         - locale: zh
           name: 简体中文
           build: true
+          # zh-only annex: the global nav above lists only pages available in
+          # the default (en) build; this per-locale nav adds the single-language
+          # figures annex, which mkdocs-static-i18n resolves per language in
+          # folder mode. annex-performance (en-only) resolves here through the
+          # plugin's default-language fallback.
+          nav:
+            - index.md
+            - Introduction:
+                - intro/what-is-this.md
+                - intro/why-fortran-julia.md
+                - intro/architecture.md
+                - intro/validation.md
+            - User Guide:
+                - user/installation.md
+                - user/first-call.md
+                - user/two-sdks.md
+                - user/arrays-and-callbacks.md
+                - user/deployment-modes.md
+                - user/bring-your-own-kinetics.md
+                - user/known-limitations.md
+            - Developer Guide:
+                - developer/repository-tour.md
+                - developer/bridge-internals.md
+                - developer/acceptance-gates.md
+                - developer/lessons.md
+                - developer/rebuild.md
+                - developer/contributing.md
+                - developer/further-reading.md
+                - developer/annex-performance.md
+                - developer/annex-figures.md
           nav_translations:
             Introduction: 入门
             User Guide: 用户指南
@@ -49,12 +79,20 @@ nav:
       - developer/contributing.md
       - developer/further-reading.md
       - developer/annex-performance.md
-      - developer/annex-figures.md
 
 markdown_extensions:
   - admonition
   - pymdownx.superfences
   - pymdownx.details
   - smarty
+  # Math rendering for the figures annex ($$...$$ / $...$), the only
+  # math-bearing pages on the site; loaded after smarty so math spans are
+  # stashed before smart-quote/dash processing touches them.
+  - pymdownx.arithmatex:
+      generic: true
   - toc:
       permalink: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
