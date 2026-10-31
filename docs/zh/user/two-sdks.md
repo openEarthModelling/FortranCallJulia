@@ -64,7 +64,8 @@ interface 块，约 105 个符号，其上什么都没有。`julia_high_level`
 ## Fast Path
 
 当同一个 bitstype 签名的函数要在紧循环里反复调用时，降级为一次性注册的裸函数
-指针。摘自 `examples/04_performance/2_call_overhead.f90`（计时代码略）：
+指针。摘自 `examples/04_performance/2_call_overhead.f90`（计时代码略；`~3.8 ns`
+行内注释为本站所加）：
 
 ```fortran
     abstract interface

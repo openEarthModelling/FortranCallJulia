@@ -31,7 +31,8 @@ reach. `bridge_internal.h` is private: the native element accessors
 cache-clear hooks `fcj_shutdown` walks. The "~105 exported `fcj_*` symbols"
 headline used across this site counts the whole `fcj_` namespace across
 these sources; the binding layer `src/julia_binding.f90` declares 58 of
-them (53 public plus the internal element accessors), and the rest are
+them (52 of the 53 public functions -- `fcj_ready` is never bound -- plus
+the 6 internal element accessors), and the rest are
 internal helpers that never cross the ABI.
 
 ## Core: lifecycle and the root set

@@ -14,7 +14,7 @@ search should be enough.
 
 | Entry | What it is |
 |---|---|
-| `src/bridge/` | The C heart of the bridge: 8 files, ~100 exported `fcj_*` symbols ([bridge internals](bridge-internals.md)) |
+| `src/bridge/` | The C heart of the bridge: 8 files, ~105 exported `fcj_*` symbols ([bridge internals](bridge-internals.md)) |
 | `src/FortranBridge/` | The Julia-side package: 5 submodules behind `FortranBridge.jl` |
 | `src/julia_binding.f90` | `julia_low_level`: the `bind(c)` truth over the `fcj_*` C ABI |
 | `src/julia_sdk.f90` | `julia_high_level`: `type(JuliaValue)`, boxing, converters, `%to_fortran` |
@@ -24,7 +24,7 @@ search should be enough.
 | `docs/` | This bilingual MkDocs site (`en` default, `zh` mirror) |
 | `tests/` | Site parity tests (`test_docs_parity.py`) -- the docs gates, not the physics gates |
 | `CMakeLists.txt` | Build: the `fcj_middleware` static library, examples, `FJ_BUILD_SYSIMAGE` |
-| `README.md` | Project overview, build recipe, the Fast Path contract |
+| `README.md` | Gateway to this documentation site: links into both locales, the headline numbers, and the local build recipe |
 | `plan.md` | The running development log: every wave, incident, and decision, dated |
 | `embedding.md` | Curated notes on embedding Julia from C, with third-party pointers |
 | `requirements*.txt` | Python dependencies for the docs build (`-docs`) and dev tooling (`-dev`) |
@@ -74,8 +74,8 @@ reading order.
 | `06_sciml` | callback, batch data, SciML demo | OrdinaryDiffEq across the bridge |
 | `07_capstone` | reacting flow, GRI ignition, `3_aot_kinetics/`, `FjKinetics/`, `figures/`, `PERFORMANCE.md` | everything at once, plus the acceptance gates |
 
-`examples/legacy/` keeps the ten pre-package examples (`01_hello.f90` ...
-`10_external_script.f90`) for archaeology; nothing links against them.
+`examples/legacy/` keeps the eleven pre-package examples (`01_hello.f90` ...
+`11_all_types.f90`) for archaeology; nothing links against them.
 `examples/CMakeLists.txt` builds one executable per numbered source, copies
 the Julia runtime and project next to the executables, and adds the `MyLib`
 AOT demo when its `dist/` exists.

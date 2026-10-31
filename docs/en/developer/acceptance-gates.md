@@ -28,9 +28,10 @@ page; here we keep the mechanics and the maintenance discipline.
 
 The detonation gate is the headline physics check: at nx = 2700 the
 computed front speed is **7.12391** against the analytic CJ speed
-**7.12470** -- a deviation of **0.011%**, with burned-state
-`(rho, u, p)` within 0.02%. (At nx = 400 the same gate fails loudly at
-+8.53% and says so: under-resolution is an error, not a pass.)
+**7.12470** -- a deviation of **0.011%**, with the burned state within
+0.025% of CJ (u 0.025%, p 0.023%, rho 0.018%). (At nx = 400 the same gate
+fails loudly at +8.53% and says so: under-resolution is an error, not a
+pass.)
 
 ## The four-quantity GRI gate
 
@@ -100,8 +101,9 @@ bridge's extraction as the suspect, because the bridge is the side being
 tested.
 
 This is not hypothetical; it happened. A baseline regenerated under a
-shim pointing at 1.13.2 made the four gates report margins around 1e-9 --
-apparently passing, actually poisoned -- and on the transition window the
+shim pointing at 1.13.2 left two of the four gates showing nonzero
+margins (0 / 1.74e-9 / 0 / 6.75e-9, the worst 6.75e-9) -- apparently
+passing, actually poisoned -- and on the transition window the
 pointwise drift reached **T rel 1.5e-5** and **CH4 rel 0.54**. The
 1e-8 door was being crossed by a *baseline skew*, while the investigation
 initially chased solver nondeterminism and thread ordering. Re-generating

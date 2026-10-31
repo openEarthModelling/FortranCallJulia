@@ -89,7 +89,8 @@ capstone 驱动用一个分支在前两种形态间切换，摘自
 
 sysimage 形态下，镜像已经把预编译模块绑定在 `Main` 里，于是 JIT 路径需要的那
 次运行时 `import` 根本不发生。capstone 统计的 init/setup 桥调用：sysimage
-形态 13 次，JIT 形态 15 次，差的正是那次 import。
+形态 13 次，JIT 形态 15 次，差的就是那串缺失的 import——`import FjKinetics`
+加上其后的再探测。
 
 ## 形态 3：AOT——Julia 变成一个普通共享库
 

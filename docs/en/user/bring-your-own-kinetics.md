@@ -70,7 +70,9 @@ ChemMechSim).
 
 ChemMechSim.jl is an open-source Julia package for Cantera-YAML reaction
 mechanisms; it bundles GRI-Mech 3.0 itself (53 species, 325 reactions) at
-`examples/mechanism/gri30.yaml`. One version note before you compare digits:
+`examples/mechanism/gri30.yaml` inside the ChemMechSim package -- that
+path is in the package, not in this repository. One version note before
+you compare digits:
 the General registry currently carries v1.0.0 while the repository is at
 v1.2.0, and every validation number on this site was produced against
 **v1.2.0** -- check which one your environment actually resolved.

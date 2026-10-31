@@ -6,7 +6,8 @@ sync: 2026-10-31
 # Validation
 
 Every headline number on this site comes from an acceptance gate that was
-actually run, not from design intent. Three gates anchor the project. Each
+actually run, not from design intent. Three headline gates anchor the
+project -- the second of them itself a bundle of four internal gates. Each
 one compares the bridge against an independent baseline, and each one only
 counts when both sides run the **same pinned Julia 1.12.7** -- a comparison
 across Julia versions measures version drift, not the bridge.
@@ -23,15 +24,15 @@ to Catalyst chemistry through Strang splitting.
 | Analytic CJ speed | 7.12470 |
 | Deviation | **0.011%** |
 
-The simulated wave speed agreeing with the analytic CJ value to four digits
+The simulated wave speed landing within 0.011% of the analytic CJ value
 means the operator splitting, the bridge crossings inside it, and the Julia
 chemistry integrator all conserve the physics to within discretization error.
 
-## Gate 2: bridge vs native, four gates, zero deviation
+## Gate 2: bridge vs native -- four internal gates, zero deviation
 
 The GRI ignition case (`gri_ignition`) is run twice: once through the bridge
-and once as a native Julia baseline. Four acceptance gates compare the
-outputs.
+and once as a native Julia baseline. Four internal acceptance gates compare
+the outputs.
 
 | Setting | Result |
 |---|---|
@@ -74,5 +75,5 @@ validation used v1.2.0), network construction (Catalyst), stiff integration
 | GRI ignition delay | t_ign = 1.1075 ms (argmax abs(dT/dt)) | `gri_ignition`, GRI-Mech 3.0 via ChemMechSim.jl v1.2.0 |
 
 Reproduction steps, timing methodology, and the deployment-mode ladder
-(JIT 17.3 s -> sysimage 1.90 s -> AOT first call ~12 μs) are covered in the
+(JIT 17.3 s → sysimage 1.90 s → AOT first call ~12 μs) are covered in the
 [User Guide](../user/deployment-modes.md) and the developer annexes.

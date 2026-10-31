@@ -12,7 +12,7 @@ sync: 2026-10-31
 
 | 条目 | 是什么 |
 |---|---|
-| `src/bridge/` | 桥的 C 心脏：8 个文件、约 100 个导出的 `fcj_*` 符号（[桥内部](bridge-internals.md)） |
+| `src/bridge/` | 桥的 C 心脏：8 个文件、约 105 个导出的 `fcj_*` 符号（[桥内部](bridge-internals.md)） |
 | `src/FortranBridge/` | Julia 侧包：`FortranBridge.jl` 之下的 5 个子模块 |
 | `src/julia_binding.f90` | `julia_low_level`：覆盖 `fcj_*` C ABI 的 `bind(c)` 真相本体 |
 | `src/julia_sdk.f90` | `julia_high_level`：`type(JuliaValue)`、装箱、转换器、`%to_fortran` |
@@ -22,7 +22,7 @@ sync: 2026-10-31
 | `docs/` | 本双语 MkDocs 站点（`en` 默认，`zh` 镜像） |
 | `tests/` | 站点双语对拍测试（`test_docs_parity.py`）——文档门，不是物理门 |
 | `CMakeLists.txt` | 构建：`fcj_middleware` 静态库、示例、`FJ_BUILD_SYSIMAGE` |
-| `README.md` | 项目概览、构建配方、Fast Path 契约 |
+| `README.md` | 通向本文档站点的大门：两个语言的入口、头条数字与本地构建配方 |
 | `plan.md` | 滚动开发日志：每一波、每次事故与决策，带日期 |
 | `embedding.md` | 从 C 嵌入 Julia 的精选笔记，附第三方指引 |
 | `requirements*.txt` | 文档构建（`-docs`）与开发工具（`-dev`）的 Python 依赖 |
@@ -67,8 +67,8 @@ src/FortranBridge.jl` 之下有五个子模块：
 | `06_sciml` | 回调、批量取数、SciML demo | 跨桥的 OrdinaryDiffEq |
 | `07_capstone` | 反应流、GRI 点火、`3_aot_kinetics/`、`FjKinetics/`、`figures/`、`PERFORMANCE.md` | 一切合体，外加验收门 |
 
-`examples/legacy/` 保留包化之前的十个示例（`01_hello.f90` ...
-`10_external_script.f90`）供考古；没有任何东西链接它们。
+`examples/legacy/` 保留包化之前的十一个示例（`01_hello.f90` ...
+`11_all_types.f90`）供考古；没有任何东西链接它们。
 `examples/CMakeLists.txt` 为每个编号源文件构建一个可执行文件，把 Julia 运
 行时和项目拷到可执行文件旁，并在 `dist/` 存在时加入 `MyLib` AOT 演示。
 

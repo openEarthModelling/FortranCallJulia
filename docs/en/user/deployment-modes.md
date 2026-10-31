@@ -107,7 +107,8 @@ another minor version is rejected by the sysimage build guard
 In sysimage mode the image already binds the precompiled modules in
 `Main`, so the runtime `import` the JIT path needs simply does not run.
 The capstone counts 13 init/setup bridge calls in sysimage mode against
-15 in JIT, and the difference is exactly that missing import.
+15 in JIT, and the difference is that missing import sequence: the
+`import FjKinetics` eval plus the re-probe that follows it.
 
 ## Mode 3: AOT -- Julia as an ordinary shared library
 

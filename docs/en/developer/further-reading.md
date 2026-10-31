@@ -10,8 +10,9 @@ resources a maintainer will actually want open in a second tab --
 official manuals for the machinery we embed, the packaging tools we build
 with, and the domain references behind the validation problems. Each
 entry says which page of ours it backs. (A local mirror of some of these
-documents travels with the repository for offline work; it is excluded
-from this site, so every link here goes to the live upstream source.)
+documents sits in this repository's main checkout for offline work, but
+it is untracked and never published, so every link here goes to the live
+upstream source.)
 
 ## Embedding Julia from C
 

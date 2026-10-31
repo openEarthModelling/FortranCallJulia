@@ -65,7 +65,8 @@ FjKinetics v0.2 在这个基类型下带两个求解器：`OneStepSolver`（
 ## 路线一：ChemMechSim 与 GRI-Mech 3.0 capstone
 
 ChemMechSim.jl 是一个处理 Cantera-YAML 反应机理的开源 Julia 包；它自带
-GRI-Mech 3.0（53 个组分、325 个反应），位于 `examples/mechanism/gri30.yaml`。
+GRI-Mech 3.0（53 个组分、325 个反应），位于 ChemMechSim 包内的
+`examples/mechanism/gri30.yaml`——该路径在包里，不在本仓库。
 对数字之前先记一条版本事项：General 注册表目前收的是 v1.0.0，而仓库已到
 v1.2.0；本站所有验证数字都是对着 **v1.2.0** 产出的——先确认你的环境解析到的
 是哪一个。

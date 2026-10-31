@@ -69,7 +69,8 @@ per-grid-cell call inside a hydrodynamics loop, it is not.
 
 When the same bitstype-signature function is called in a tight loop, drop
 to a raw function pointer registered once. From
-`examples/04_performance/2_call_overhead.f90` (timing scaffolding elided):
+`examples/04_performance/2_call_overhead.f90` (timing scaffolding elided;
+the `~3.8 ns` call-site comment added here):
 
 ```fortran
     abstract interface
