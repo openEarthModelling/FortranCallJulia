@@ -15,6 +15,9 @@
 !      bridge traffic, one fcj_to_fortran per array
 !   4. ignition delay computed IN FORTRAN with the validation criterion
 !      (grid point after the steepest |dT/dt| segment)
+!   5. figure data: the full extracted trajectory lands in
+!      examples/07_capstone/output/gri_ignition.csv (same CSV convention
+!      as the reacting-flow driver; consumed by figures/plot_capstone.py)
 !
 ! Acceptance: the Fortran-computed t_ign, the extracted T_end, and two X
 ! spot values (CH4 at t=0, CO2 at t_end -- pinning the 4x2001 column-major
@@ -52,7 +55,8 @@ program ex_capstone_gri_ignition
     integer(kind=c_int) :: rc
     integer :: k, imax, iostat, unit_nat, st
     logical :: lex
-    character(len=512) :: project_path, native_path, cwd
+    character(len=512) :: project_path, native_path, cwd, outdir
+    integer :: u_out
     character(len=:), allocatable :: exe_dir
 
     print *, "--- Capstone 2: GRI-Mech 3.0 ignition delay (bridge, JIT) ---"
@@ -132,6 +136,23 @@ program ex_capstone_gri_ignition
     if (t_ign_f /= t_ign_jl) &
         call fail('fortran/julia t_ign disagree on identical arrays')
 
+    ! --- 4.5 figure data: full trajectory CSV for figures/plot_capstone.py --
+    ! same exe-relative output dir + CSV convention as the reacting-flow
+    ! driver ('#' metadata lines, column-name row, full-precision values)
+    outdir = output_dir()
+    call execute_command_line('mkdir -p ' // trim(outdir))
+    open(newunit=u_out, file=trim(outdir) // '/gri_ignition.csv', &
+         status='replace', action='write')
+    write(u_out, '(a)') '# GRI-Mech 3.0 ignition: stoich CH4/air, 1500 K, 1 atm, constant volume'
+    write(u_out, '(a,es26.16e3,a,es26.16e3)') '# t_ign_s = ', t_ign_f, &
+        ', T_end_K = ', T(NSAMPLE)
+    write(u_out, '(a)') 't_s,T_K,X_CH4,X_O2,X_CO2,X_OH'
+    do k = 1, NSAMPLE
+        write(u_out, '(*(es26.16e3,:,","))') ts(k), T(k), &
+            x_at(1, k), x_at(2, k), x_at(3, k), x_at(4, k)
+    end do
+    close(u_out)
+
     ! --- 5. Acceptance vs the native Julia run ----------------------------
     call get_environment_variable('FJ_GRI_NATIVE', native_path, status=st)
     if (st /= 0) native_path = 'gri_native.dat'
@@ -176,6 +197,22 @@ program ex_capstone_gri_ignition
     call julia_shutdown()
 
 contains
+
+    ! absolute location of examples/07_capstone/output, resolved from the
+    ! running executable the same way the reacting-flow driver does, so
+    ! both executables of the merged capstone share one output dir
+    function output_dir() result(d)
+        character(len=512) :: d
+        character(len=:), allocatable :: exe_dir
+        character(len=512) :: cwd_
+        exe_dir = julia_executable_dir()
+        if (len_trim(exe_dir) == 0) error stop 'FATAL: cannot resolve executable dir for output'
+        d = trim(exe_dir) // '/../../examples/07_capstone/output'
+        if (d(1:1) /= '/') then
+            call getcwd(cwd_)
+            d = trim(cwd_) // '/' // trim(d)
+        end if
+    end function output_dir
 
     subroutine fail(reason)
         character(len=*), intent(in) :: reason
