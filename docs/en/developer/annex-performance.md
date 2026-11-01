@@ -140,7 +140,7 @@ OrdinaryDiffEq 7.8.1 (the unpinned float), the per-cell
 internal steps instead of 1, a burning cell ~50 000 instead of ~100,
 ~3.5 MB allocated per cell — turning the nx=2700 chemistry budget into
 hours. FjKinetics pins its tested line in `[compat]`; the sysimage and
-AOT environments resolve through it. Details: plan.md, commit d2ba6ff.
+AOT environments resolve through it.
 
 ## First-init artifact downloads (self-containedness)
 

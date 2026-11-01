@@ -1,6 +1,6 @@
 ---
 title: Repository tour
-sync: 2026-10-31
+sync: 2026-11-01
 ---
 
 # Repository tour
@@ -25,8 +25,6 @@ search should be enough.
 | `tests/` | Site parity tests (`test_docs_parity.py`) -- the docs gates, not the physics gates |
 | `CMakeLists.txt` | Build: the `fcj_middleware` static library, examples, `FJ_BUILD_SYSIMAGE` |
 | `README.md` | Gateway to this documentation site: links into both locales, the headline numbers, and the local build recipe |
-| `plan.md` | The running development log: every wave, incident, and decision, dated |
-| `embedding.md` | Curated notes on embedding Julia from C, with third-party pointers |
 | `requirements*.txt` | Python dependencies for the docs build (`-docs`) and dev tooling (`-dev`) |
 
 ## `src/`: the bridge in three languages
@@ -95,8 +93,8 @@ The pinned-environment story behind the first three is
 
 ## `docs/`, `tests/`, and the site gates
 
-`docs/` holds `en/` (default locale) and `zh/` (mirror), plus the excluded
-`superpowers/` working notes. `tests/test_docs_parity.py` drives
+`docs/` holds `en/` (default locale) and `zh/` (mirror).
+`tests/test_docs_parity.py` drives
 `scripts/docs_parity.py`: every page must exist in both locales with a
 translated title, the `sync` stamps must agree, and no page may leak
 machine-specific strings (local paths, hostnames) -- the same sanitization

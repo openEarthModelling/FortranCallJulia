@@ -1,6 +1,6 @@
 ---
 title: 仓库导览
-sync: 2026-10-31
+sync: 2026-11-01
 ---
 
 # 仓库导览
@@ -23,8 +23,6 @@ sync: 2026-10-31
 | `tests/` | 站点双语对拍测试（`test_docs_parity.py`）——文档门，不是物理门 |
 | `CMakeLists.txt` | 构建：`fcj_middleware` 静态库、示例、`FJ_BUILD_SYSIMAGE` |
 | `README.md` | 通向本文档站点的大门：两个语言的入口、头条数字与本地构建配方 |
-| `plan.md` | 滚动开发日志：每一波、每次事故与决策，带日期 |
-| `embedding.md` | 从 C 嵌入 Julia 的精选笔记，附第三方指引 |
 | `requirements*.txt` | 文档构建（`-docs`）与开发工具（`-dev`）的 Python 依赖 |
 
 ## `src/`：三种语言写成的桥
@@ -86,8 +84,8 @@ src/FortranBridge.jl` 之下有五个子模块：
 
 ## `docs/`、`tests/` 与站点门
 
-`docs/` 放 `en/`（默认语言）与 `zh/`（镜像），外加被排除在站点外的
-`superpowers/` 工作笔记。`tests/test_docs_parity.py` 驱动
+`docs/` 放 `en/`（默认语言）与 `zh/`（镜像）。
+`tests/test_docs_parity.py` 驱动
 `scripts/docs_parity.py`：每个页面必须在两个语言下都存在、标题已翻译、
 `sync` 戳一致，且任何页面都不得泄漏机器特征串（本机路径、主机名）——也
 正是散文页写作时遵守的同一条脱敏规则。
