@@ -3,7 +3,7 @@
 # Committed now, armed once the repository gets a remote (phase 0): with no
 # remote this workflow simply sits inert.  After the first push it gates
 # every docs-tree change (strict build + parity/leak gate + unit tests) and
-# deploys the rendered site to GitHub Pages from master.
+# deploys the rendered site to GitHub Pages from main.
 
 name: docs
 
@@ -47,7 +47,7 @@ jobs:
 
   deploy:
     needs: lint
-    if: github.ref == 'refs/heads/master'  # PR refs never match: deploy is push-to-master only
+    if: github.ref == 'refs/heads/main'  # PR refs never match: deploy is push-to-main only
     runs-on: ubuntu-latest
     permissions:
       contents: write  # mkdocs gh-deploy pushes to the gh-pages branch
