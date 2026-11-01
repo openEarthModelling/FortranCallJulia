@@ -1,0 +1,1458 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../two-sdks/">
+      
+      
+        <link rel="next" href="../deployment-modes/">
+      
+      
+        
+          <link rel="alternate" href="../../../user/arrays-and-callbacks/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>数组与回调 - FortranCallJulia</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../" title="FortranCallJulia" class="md-header__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FortranCallJulia
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              数组与回调
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../user/arrays-and-callbacks/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="FortranCallJulia" class="md-nav__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FortranCallJulia
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    在 Fortran 中嵌入 Julia 运行时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FortranCallJulia 是什么？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/why-fortran-julia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    为什么是 Fortran 与 Julia？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../first-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一次调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../two-sdks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    两套 SDK，两种速度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数组与回调
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数组与回调
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wrap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数组进桥：零拷贝 wrap 还是深拷贝
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数组出桥：先导航，再一次拷完
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fortran" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调：Fortran 当右端函数
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        两条通道共守的规矩
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        接下来去哪
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    交付形态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bring-your-own-kinetics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自带动力学
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    已知限制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发者指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发者指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/repository-tour/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    仓库导览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/bridge-internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    桥内部
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/acceptance-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验收门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教训
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零重建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    贡献指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/further-reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    延伸阅读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/annex-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance annex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/annex-figures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    图集讲解（学术版）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wrap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数组进桥：零拷贝 wrap 还是深拷贝
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数组出桥：先导航，再一次拷完
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fortran" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调：Fortran 当右端函数
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        两条通道共守的规矩
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        接下来去哪
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="_1">数组与回调<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>标量已经<a href="../first-call/">初次过桥</a>；真正的计算要搬数组，还需要双向的控制流。本页
+补齐剩下的数据管道：数组免拷贝进 Julia、一次调用整块取回、以及一个 <code>bind(c)</code>
+Fortran 子程序被 Julia 当作右端函数调用。这一切都架在
+<a href="../two-sdks/">两套 SDK，两种速度</a>的那两层之上。</p>
+<h2 id="wrap">数组进桥：零拷贝 wrap 还是深拷贝<a class="headerlink" href="#wrap" title="Permanent link">&para;</a></h2>
+<p>两个 rank 泛型函数决定数组怎么过桥，区别只在内存所有权。二者都是单一的
+assumed-rank 入口，extents 从 <code>size(arr, k)</code> 推导——不存在一个可能与数组不一致
+的、由调用方提供的长度——并且都接受 1 到 16 维、连续的 <code>real(kind=8)</code> 数据。</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>julia_wrap_array(arr)</code></th>
+<th><code>julia_copy_array(arr)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Julia 拿到什么</td>
+<td>一个指向<strong>你的</strong>内存的 <code>Array{Float64,N}</code> 头</td>
+<td>一个新分配的 <code>Array{Float64,N}</code>，数据 memcpy 进去</td>
+</tr>
+<tr>
+<td>数据搬运</td>
+<td>零：wrap 只建头部，不搬载荷</td>
+<td>一次完整拷贝（结果取回还要再一次）</td>
+</tr>
+<tr>
+<td>Julia 侧写入</td>
+<td>立刻落在你的 Fortran 数组里</td>
+<td>落在 Julia 的副本里</td>
+</tr>
+<tr>
+<td>所有权</td>
+<td>你的；Julia 永远不会释放这块内存</td>
+<td>Julia 的，由 GC 管理</td>
+</tr>
+<tr>
+<td>什么时候用</td>
+<td>原地核、大网格、热循环</td>
+<td>Julia 侧要持有该数组，或者你不想让两门语言共享内存</td>
+</tr>
+</tbody>
+</table>
+<p>两者都选择响亮拒绝而不是瞎猜：rank 超过 16、任一维长度为零（零长数组上
+<code>c_loc</code> 非法）、或实参不连续，都会得到一个无效的 <code>JuliaValue</code> 加一条打到
+<code>error_unit</code> 的诊断。</p>
+<p>wrap 的实际样子，摘自 <code>examples/01_basics/2_zero_copy_arrays.f90</code>：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! 2. Box the Fortran Array into a Julia Object</span>
+<span class="w">    </span><span class="c">!    This creates a Julia Array header pointing to the EXISTING Fortran memory.</span>
+<span class="w">    </span><span class="c">!    NO DATA COPY happens here. Extents are derived from size() by the SDK.</span>
+<span class="w">    </span><span class="n">dummy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_wrap_array</span><span class="p">(</span><span class="n">simulation_grid</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c">! 3. Call Julia Function with the Array</span>
+<span class="w">    </span><span class="c">!    Julia sees a standard Matrix{Float64}.</span>
+<span class="w">    </span><span class="c">!    Any changes Julia makes are written directly to 'simulation_grid'.</span>
+<span class="w">    </span><span class="c">!    ExamplesLib.update_simulation_state!(grid, dt)</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia</span><span class="p">%</span><span class="k">call</span><span class="p">(</span><span class="s2">"ExamplesLib.update_simulation_state!"</span><span class="p">,</span><span class="w"> </span><span class="n">dummy</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5d0</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c">! 4. Verify Changes in Fortran</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"After Julia Update:"</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"Grid(1,1) [Expected &gt; 0]: "</span><span class="p">,</span><span class="w"> </span><span class="n">simulation_grid</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"Grid(50,50):              "</span><span class="p">,</span><span class="w"> </span><span class="n">simulation_grid</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+</code></pre></div>
+<p><code>simulation_grid</code> 初始为零；调用之后它的元素不是零了。这就是零拷贝的证据——若
+发生了拷贝，Fortran 数组读出来应该仍是 <code>0.0</code>。wrap 附带一条规矩：头部指向你的
+内存，而所有权标志声明 Julia 不会释放它；因此，只要还有任何句柄可能够到这块
+内存，让它活着、别挪动，就是你这边的责任。</p>
+<p>N 维是字面意思：rank 并不封顶在 2 或 3。同一个 wrap 走裸 C ABI 的样子，摘自
+<code>examples/01_basics/2_arrays.f90</code>：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! --- 3. Hypermatrix (4D, zero-copy through the rank-generic API) ---</span>
+<span class="w">    </span><span class="c">! The high-level SDK form is simply  vec_obj = julia_wrap_array(hyper)</span>
+<span class="w">    </span><span class="c">! (extents derived from size()); here we exercise the raw C form and</span>
+<span class="w">    </span><span class="c">! verify the wrap via introspection.</span>
+<span class="w">    </span><span class="n">hyper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0d0</span>
+<span class="w">    </span><span class="n">raw_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">c_loc</span><span class="p">(</span><span class="n">hyper</span><span class="p">)</span>
+<span class="w">    </span><span class="n">dims</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">2_c_long</span><span class="p">,</span><span class="w"> </span><span class="mi">3_c_long</span><span class="p">,</span><span class="w"> </span><span class="mi">4_c_long</span><span class="p">,</span><span class="w"> </span><span class="mi">5_c_long</span><span class="p">]</span>
+<span class="w">    </span><span class="n">wrapped_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fcj_wrap_array</span><span class="p">(</span><span class="n">raw_ptr</span><span class="p">,</span><span class="w"> </span><span class="mi">4_c_long</span><span class="p">,</span><span class="w"> </span><span class="n">dims</span><span class="p">)</span>
+<span class="w">    </span><span class="n">mat_obj</span><span class="p">%</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fcj_retain</span><span class="p">(</span><span class="n">wrapped_ptr</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"  3. Rank-4 wrap: ndims="</span><span class="p">,</span><span class="w"> </span><span class="n">mat_obj</span><span class="p">%</span><span class="n">ndims</span><span class="p">(),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">             </span><span class="s2">" sizes="</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">mat_obj</span><span class="p">%</span><span class="n">size_dim</span><span class="p">(</span><span class="n">k</span><span class="p">),</span><span class="w"> </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+</code></pre></div>
+<p>深拷贝是同一个调用形状、另一笔账。下面两段都跑在 3000 x 3000 的矩阵上（约
+72 MB），摘自 <code>examples/04_performance/3_memory_transfer.f90</code>：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! Step 1: Explicit Deep Copy to Julia</span>
+<span class="w">    </span><span class="n">wrapped_array</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_copy_array</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+<span class="w">    </span><span class="c">! Step 2: Call function (returns new array)</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia</span><span class="p">%</span><span class="k">call</span><span class="p">(</span><span class="s2">"perf_scale_matrix"</span><span class="p">,</span><span class="w"> </span><span class="n">wrapped_array</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0d0</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! Step 1: Wrap (O(1))</span>
+<span class="w">    </span><span class="c">! The rank-generic wrapper derives the extents from size()</span>
+<span class="w">    </span><span class="n">wrapped_array</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_wrap_array</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c">! Step 2: Call In-Place Function</span>
+<span class="w">    </span><span class="c">! We pass the wrapped array. No data moves.</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia</span><span class="p">%</span><span class="k">call</span><span class="p">(</span><span class="s2">"perf_scale_matrix_bang"</span><span class="p">,</span><span class="w"> </span><span class="n">wrapped_array</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0d0</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="_2">数组出桥：先导航，再一次拷完<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>结果以句柄回来。两个访问器在结果对象里导航，一次调用把数据搬走：</p>
+<ul>
+<li><code>%element(i)</code>——从 1 开始的线性索引，返回已 retain 的句柄。</li>
+<li><code>%property(name)</code>（及其兄弟 <code>%get_field(name)</code>）——经 <code>Base.getproperty</code>
+  的按名访问：结构体字段、<code>NamedTuple</code> 键、求解器的解对象。</li>
+<li><code>%to_fortran(buf, n)</code>——<strong>一次</strong>调用把一个稠密数组拷进你的 Fortran 缓冲；
+  <code>real</code> 与 <code>complex</code> 两个重载按缓冲类型解析。</li>
+</ul>
+<p>摘自 <code>examples/06_sciml/2_batch_data.f90</code>（<code>fail</code> 是该示例自己的中止辅助例程）：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_eval</span><span class="p">(</span><span class="s1">' (a = [7.0,8.0,9.0],) '</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">d</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'julia_eval NamedTuple failed'</span><span class="p">)</span>
+<span class="w">    </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">%</span><span class="n">property</span><span class="p">(</span><span class="s2">"a"</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'property("a") failed: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">to_fortran</span><span class="p">(</span><span class="n">rbuf</span><span class="p">,</span><span class="w"> </span><span class="mi">3_c_int64_t</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'to_fortran on NamedTuple property failed: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+</code></pre></div>
+<p>错误套路就是<a href="../first-call/">初次调用</a>里的家规：检查句柄或返回码，
+<code>get_last_error_message()</code> 带回 Julia 侧的文本。例如对两个元素的向量做越界的
+<code>%element(5)</code>，会返回无效句柄并填好错误消息。</p>
+<p>批量取数同时也是最便宜的过桥方式。逐元素访问每一跳都是一次桥跳；
+<code>%to_fortran</code> 整个数组只跳一次。同一笔账还说：当一个循环放在哪边都行时，把它
+放进 Julia、带着数组过一次桥——<code>examples/04_performance/4_access_patterns.f90</code>
+在百万元素规模上量的正是这笔账。</p>
+<h2 id="fortran">回调：Fortran 当右端函数<a class="headerlink" href="#fortran" title="Permanent link">&para;</a></h2>
+<p>数组搬数据；回调把控制权交给 Fortran。<code>julia_callback</code> 把一个 <code>bind(c)</code> 子程序
+指针包成 Julia 可调用对象 <code>f(du, u, p, t)</code>——DifferentialEquations 一类求解器
+期待的签名——于是求解器每一步都调进你的 Fortran。这个可调用对象通过 <code>ccall</code>
+调你的子程序，创建时传入的上下文指针在每次调用时原样送达。</p>
+<p>子程序签的是一份六参数契约。下面这个摘自 <code>examples/06_sciml/1_callback.f90</code>，
+是无状态指数衰减 <code>du = -k*u</code>：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="k">subroutine </span><span class="n">rhs</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">du</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="p">)</span><span class="w"> </span><span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ctx</span><span class="w">        </span><span class="c">! unused (stateless RHS)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int64_t</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">du</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_double</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="w">  </span><span class="c">! unused (autonomous RHS)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">err</span>
+
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_double</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">u_arr</span><span class="p">(:),</span><span class="w"> </span><span class="n">du_arr</span><span class="p">(:)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span>
+
+<span class="w">        </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0_c_int</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0_c_int64_t</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">u_arr</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
+<span class="w">        </span><span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">du</span><span class="p">,</span><span class="w"> </span><span class="n">du_arr</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="w">            </span><span class="n">du_arr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">K_DECAY</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">u_arr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">    end subroutine </span><span class="n">rhs</span>
+</code></pre></div>
+<p>这份契约有三个要点：</p>
+<ul>
+<li><strong><code>u</code> 与 <code>du</code> 是直接指进 Julia 数组的裸指针</strong>——上面的零拷贝通道反着走。你
+  读 <code>u</code>、写 <code>du</code>，原地、各 <code>n</code> 个元素；每一步什么都不需要编组。</li>
+<li><strong><code>err</code> 是错误通道。</strong> 返回非零，Julia 侧就 throw；桥接住异常，在 Fortran 调
+  用点经 <code>get_last_error_message()</code> 浮出水面。任何 Fortran 失败都不会无声
+  通过。</li>
+<li><strong><code>ctx</code> 是你的</strong>——创建时传入的任意 <code>type(c_ptr)</code>，每次调用原样奉还（这个
+  无状态 RHS 不用它）。</li>
+</ul>
+<p>接线只要三步，同一示例：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! 2. Wrap the bind(c) RHS into a Julia callable (already retained)</span>
+<span class="w">    </span><span class="n">fn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">c_funloc</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+<span class="w">    </span><span class="n">cb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_callback</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span><span class="w"> </span><span class="nb">c_null_ptr</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">cb</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        write</span><span class="w"> </span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="s1">'FATAL: julia_callback failed: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">()</span>
+<span class="w">        </span><span class="k">stop </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="w">    </span><span class="c">! 3. Box f's arguments: du (Float64 vector workspace, zero-copy),</span>
+<span class="w">    </span><span class="c">!    u = [1.0], p = 0.0, t = 0.0 (p is ignored by the bridge closure)</span>
+<span class="w">    </span><span class="n">du_f</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_c_double</span>
+<span class="w">    </span><span class="n">u_f</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_c_double</span>
+<span class="w">    </span><span class="n">du_boxed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_wrap_array</span><span class="p">(</span><span class="n">du_f</span><span class="p">)</span>
+<span class="w">    </span><span class="n">u_boxed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_wrap_array</span><span class="p">(</span><span class="n">u_f</span><span class="p">)</span>
+<span class="w">    </span><span class="n">p_boxed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_box_real</span><span class="p">(</span><span class="mf">0.0_c_double</span><span class="p">)</span>
+<span class="w">    </span><span class="n">t_boxed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_box_real</span><span class="p">(</span><span class="mf">0.0_c_double</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">du_boxed</span><span class="p">%</span><span class="n">is_valid</span><span class="p">()</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">u_boxed</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        write</span><span class="w"> </span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="s1">'FATAL: boxing du/u failed'</span>
+<span class="w">        </span><span class="k">stop </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="w">    </span><span class="c">! 4. Invoke the Julia callable f(du, u, p, t); it ccalls back into</span>
+<span class="w">    </span><span class="c">!    rhs, which writes du in place.</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cb</span><span class="p">%</span><span class="n">call_value</span><span class="p">(</span><span class="n">du_boxed</span><span class="p">,</span><span class="w"> </span><span class="n">u_boxed</span><span class="p">,</span><span class="w"> </span><span class="n">p_boxed</span><span class="p">,</span><span class="w"> </span><span class="n">t_boxed</span><span class="p">)</span>
+</code></pre></div>
+<p><code>call_value</code> 之后，<code>du_f(1)</code> 已经是 <code>-K_DECAY * 1.0</code>：RHS 直接写进了被 wrap 成
+<code>du</code> 的那个 Fortran 数组。桥还会把这个可调用对象绑定到 <code>Main.FJ_CALLBACK</code>，
+于是用 <code>julia_eval_string</code> 拼出来的求解器代码能按名字找到它。端到端版本——
+Tsit5 积分谐振子、对解析解校验到约 1e-9——是
+<code>examples/06_sciml/3_sciml_demo.f90</code>。</p>
+<p>两个方向都靠蹦床。这一侧把你的 <code>bind(c)</code> 地址装箱成不透明指针、在 Julia 里闭
+包化。另一个方向上，<code>get_function_pointer</code> 让桥生成一个扎根在 <code>Main</code> 的
+<code>@cfunction</code> 蹦床，把一个 Julia 函数的裸 C 指针交给 Fortran，每次调用约
+3.8 ns；那条路径与它的硬边界属于<a href="../two-sdks/">两套 SDK，两种速度</a>。</p>
+<h2 id="_3">两条通道共守的规矩<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>一个线程。</strong> 每次桥调用——wrap、取数、回调调用——都发生在初始化运行时的
+   那个线程上。回调也不例外：求解器在调用它的线程上执行，而在这座桥里那永远
+   是 init 线程。</li>
+<li><strong>数组元素类型只有 <code>Float64</code> 与 <code>ComplexF64</code>。</strong> wrap 只收连续的
+   <code>real(c_double)</code>；<code>%to_fortran</code> 只填 <code>real</code> 或 <code>complex</code> 缓冲。标量不受此
+   限——每种标量类型都能装箱。这是已知限制，记录在
+   <a href="../known-limitations/">已知限制</a>。</li>
+<li><strong>预算单位是过桥次数，不是调用次数。</strong> 泛型调用约 815 ns、Fast Path 调用约
+   3.8 ns（10 万次迭代平均）；相对真实求解器工作都是噪声。但一个逐元素循环若
+   百万次跨桥，就百万次付这跳的钱。把循环挪进某一侧，别把元素来回搬。</li>
+</ol>
+<h2 id="_4">接下来去哪<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../deployment-modes/">交付形态</a>——同一份程序按 JIT、sysimage 或 AOT 库交付：
+  变的是启动，不是你刚学会掂量的每次调用开销。</li>
+<li><a href="../bring-your-own-kinetics/">自带动力学</a>——这些通道在 capstone 尺度上的
+  应用，背后是一个真实的化学动力学包。</li>
+<li><a href="../known-limitations/">已知限制</a>——线程钉死、数组类型、平台支持，一份诚实的
+  清单。</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      FortranCallJulia - MIT License
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

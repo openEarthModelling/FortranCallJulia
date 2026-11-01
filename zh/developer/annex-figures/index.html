@@ -1,0 +1,2113 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../annex-performance/">
+      
+      
+      
+        
+          <link rel="alternate" href="/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>图集讲解（学术版） - FortranCallJulia</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#capstone" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../" title="FortranCallJulia" class="md-header__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FortranCallJulia
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              图集讲解（学术版）
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="FortranCallJulia" class="md-nav__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FortranCallJulia
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    在 Fortran 中嵌入 Julia 运行时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FortranCallJulia 是什么？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/why-fortran-julia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    为什么是 Fortran 与 Julia？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/first-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一次调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/two-sdks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    两套 SDK，两种速度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/arrays-and-callbacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数组与回调
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/deployment-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    交付形态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/bring-your-own-kinetics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自带动力学
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    已知限制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发者指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发者指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../repository-tour/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    仓库导览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridge-internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    桥内部
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../acceptance-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验收门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教训
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零重建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    贡献指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../further-reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    延伸阅读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annex-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance annex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    图集讲解（学术版）
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    图集讲解（学术版）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fig1_sod_transport-sod-u-p183-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig1_sod_transport — Sod 激波管三联图（ρ / u / p，183 mm 双栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig1_sod_transport — Sod 激波管三联图（ρ / u / p，183 mm 双栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学模型与精确解
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数值方法与预期误差
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        物理图景
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig2_detonation_structure-cj-183-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig2_detonation_structure — CJ 爆震结构四联（183 mm 双栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig2_detonation_structure — CJ 爆震结构四联（183 mm 双栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cj-znd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        物理图景：CJ 与 ZND 结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        怎么读这张图
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig3_front_speed-89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig3_front_speed — 前沿轨迹与爆速（89 mm 单栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig3_front_speed — 前沿轨迹与爆速（89 mm 单栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学与测量协议
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        怎么读
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig4_performance-89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig4_performance — 四模式成本对比（89 mm 单栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig4_performance — 四模式成本对比（89 mm 单栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学/统计口径
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        统计判据（为何&rdquo;重叠&rdquo;是有意义的结论）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig5_gri_ignition-gri-mech-30-89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig5_gri_ignition — GRI-Mech 3.0 均质点火（89 mm 双联）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig5_gri_ignition — GRI-Mech 3.0 均质点火（89 mm 双联）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        物理图景
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        显示与色板约定
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig6_bridge_vs_native-vs-89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig6_bridge_vs_native — 桥接 vs 原生逐点对照（89 mm 双联）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig6_bridge_vs_native — 桥接 vs 原生逐点对照（89 mm 双联）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        对照协议
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结果怎么读
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig7_heat_release-dtdt89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig7_heat_release — 放热率判据 |dT/dt|（89 mm 单栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig7_heat_release — 放热率判据 |dT/dt|（89 mm 单栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        量的定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig8_capstone_overview-183-mm-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig8_capstone_overview — 收官总览（183 mm 2×3）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig0_schematic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig0_schematic — 耦合架构示意图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参考文献
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QA 附录
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#fig1_sod_transport-sod-u-p183-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig1_sod_transport — Sod 激波管三联图（ρ / u / p，183 mm 双栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig1_sod_transport — Sod 激波管三联图（ρ / u / p，183 mm 双栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学模型与精确解
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数值方法与预期误差
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        物理图景
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig2_detonation_structure-cj-183-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig2_detonation_structure — CJ 爆震结构四联（183 mm 双栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig2_detonation_structure — CJ 爆震结构四联（183 mm 双栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cj-znd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        物理图景：CJ 与 ZND 结构
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        怎么读这张图
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig3_front_speed-89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig3_front_speed — 前沿轨迹与爆速（89 mm 单栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig3_front_speed — 前沿轨迹与爆速（89 mm 单栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学与测量协议
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        怎么读
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig4_performance-89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig4_performance — 四模式成本对比（89 mm 单栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig4_performance — 四模式成本对比（89 mm 单栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学/统计口径
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        统计判据（为何&rdquo;重叠&rdquo;是有意义的结论）
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig5_gri_ignition-gri-mech-30-89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig5_gri_ignition — GRI-Mech 3.0 均质点火（89 mm 双联）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig5_gri_ignition — GRI-Mech 3.0 均质点火（89 mm 双联）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数学模型
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        物理图景
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        显示与色板约定
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig6_bridge_vs_native-vs-89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig6_bridge_vs_native — 桥接 vs 原生逐点对照（89 mm 双联）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig6_bridge_vs_native — 桥接 vs 原生逐点对照（89 mm 双联）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        对照协议
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        结果怎么读
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig7_heat_release-dtdt89-mm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig7_heat_release — 放热率判据 |dT/dt|（89 mm 单栏）
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="fig7_heat_release — 放热率判据 |dT/dt|（89 mm 单栏）">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        量的定义
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig8_capstone_overview-183-mm-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig8_capstone_overview — 收官总览（183 mm 2×3）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fig0_schematic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fig0_schematic — 耦合架构示意图
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        参考文献
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QA 附录
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<p>本附件仅以中文发布。</p>
+<p>迁移自仓库内 <code>examples/07_capstone/figures/FIGURES.md</code>（2026-10-26
+学术版）。全部数据、图表与结论一字未动；叙述中标识测量机器的表述
+按公开文档规范做了通用化（统一为「共享构建主机」一类表述），命令
+块中缩短的路径均有随文标注。</p>
+<h1 id="capstone">Capstone 图集讲解（学术版）<a class="headerlink" href="#capstone" title="Permanent link">&para;</a></h1>
+<p>数据图 fig1–8 全部由 <code>plot_capstone.py</code> 从两个驱动
+可执行与原生基准脚本写出的 CSV 数据文件（<code>../output/*.csv</code>，已
+gitignore；<code>#</code> 元信息头 + 列名行 + 全精度逗号分隔值）渲染，PNG 600 dpi +
+PDF，无手工后处理；性能常数在脚本内逐一标注 <code>../PERFORMANCE.md</code> 出处行。
+所有图共用同一编码约定：<strong>蓝色 = 数值/计算结果，红色虚线 = 解析参考</strong>
+（参考线画在数据线上方，虚线缝隙露出下方数据，重合处以&rdquo;红虚骑蓝实&rdquo;
+呈现）；物种身份（fig5b/fig6b）用独立的类别色板（见 fig5 节）。</p>
+<p>再生成方式（共享构建主机上）：</p>
+<div class="highlight"><pre><span></span><code>cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>ex_capstone_reacting_flow
+cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>--target<span class="w"> </span>ex_capstone_gri_ignition
+./build/examples/ex_capstone_reacting_flow<span class="w"> </span>detonation<span class="w"> </span><span class="m">2700</span><span class="w"> </span><span class="m">0</span>.3<span class="w"> </span>sysimage<span class="w">   </span><span class="c1"># det 两件数据</span>
+./build/examples/ex_capstone_reacting_flow<span class="w">                                 </span><span class="c1"># sod 数据</span>
+<span class="nb">cd</span><span class="w"> </span>build/examples
+julia<span class="w"> </span>--project<span class="o">=</span>../../scripts/sysimage_env<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>../../examples/07_capstone/run_gri_native.jl<span class="w">                           </span><span class="c1"># 必须用钉死的 1.12.7</span>
+./ex_capstone_gri_ignition<span class="w">                                                 </span><span class="c1"># GRI 两件数据</span>
+<span class="nb">cd</span><span class="w"> </span>../../examples/07_capstone/figures<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>python3<span class="w"> </span>plot_capstone.py
+</code></pre></div>
+<p>（注：上一命令块中的 <code>julia</code> 在源文档里写作指向安装路径的绝对路径，
+此处按公开文档规范缩短——指 <strong>PATH 上的 Julia 1.12.7 二进制</strong>，
+不要用 juliaup 的版本 shim。）</p>
+<p>（<code>--target</code> 一次一个目标：本工程 CMake 下限 3.13，多目标单次 <code>--build</code>
+是 3.15 起的语法。原生基线必须用与桥接可执行内嵌 libjulia 同版的
+1.12.7 二进制生成——juliaup 的自动更新版本在点火过渡段漂移至
+~10⁻⁵–10⁻³，会让 1e-8 验收门误报提取错误；<code>run_gri_native.jl</code> 内有
+版本守卫直接拒绝。）</p>
+<hr />
+<h2 id="fig1_sod_transport-sod-u-p183-mm">fig1_sod_transport — Sod 激波管三联图（ρ / u / p，183 mm 双栏）<a class="headerlink" href="#fig1_sod_transport-sod-u-p183-mm" title="Permanent link">&para;</a></h2>
+<p><img alt="fig1：Sod 激波管三联图（ρ / u / p）" src="/assets/figs/fig1_sod_transport.png" /></p>
+<h3 id="_1">数学模型与精确解<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>惰性输运路径验证的是一维 Euler 方程组的守恒形式</p>
+<div class="arithmatex">\[
+\partial_t \mathbf{U} + \partial_x \mathbf{F}(\mathbf{U}) = 0,\qquad
+\mathbf{U} = \begin{pmatrix}\rho\\ \rho u\\ E\end{pmatrix},\quad
+\mathbf{F} = \begin{pmatrix}\rho u\\ \rho u^2 + p\\ u(E+p)\end{pmatrix},
+\]</div>
+<p>理想气体 <span class="arithmatex">\(p = (\gamma-1)\bigl(E - \tfrac12 \rho u^2\bigr)\)</span>，<span class="arithmatex">\(\gamma = 1.4\)</span>。
+初值为经典 Sod / Toro Test 1 间断：左态 <span class="arithmatex">\((\rho,u,p) = (1,\,0,\,1)\)</span>，
+右态 <span class="arithmatex">\((0.125,\,0,\,0.1)\)</span>，<span class="arithmatex">\(t = 0.2\)</span>。该 Riemann 问题有闭式自相似解，
+由五种波型之三构成：<strong>左行稀疏波扇</strong>（扇内各量是 <span class="arithmatex">\(x/t\)</span> 的函数）、
+<strong>接触间断</strong>（密度跳跃、压力与速度连续）与<strong>右行激波</strong>。中间星区
+<span class="arithmatex">\((p_*, u_*)\)</span> 由非线性方程 <span class="arithmatex">\(f(p_*) = 0\)</span> 的 Newton 迭代求得（<span class="arithmatex">\(f\)</span> 为
+跨左、右波速度增量之差）；驱动内的求解器 <code>sod_star_state</code> 残差
+<span class="arithmatex">\(\sim 1.1\times10^{-16}\)</span>（机器精度），跨激波状态由 Rankine–Hugoniot
+跳跃关系连接。图中红色虚线即该精确解的逐格采样。</p>
+<h3 id="_2">数值方法与预期误差<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<p>数值解（蓝线）是一阶 Godunov 有限体积格式：分段常数重构 + 逐界面
+精确 Riemann 通量（vendored Clawpack <code>rp1</code> 内核），<span class="arithmatex">\(n_x = 400\)</span>，
+<span class="arithmatex">\(\Delta x = 1.25\times10^{-3}\)</span>。一阶格式的数值耗散把间断抹成宽度
+<span class="arithmatex">\(O(\Delta x)\)</span> 的过渡层——图中激波与接触间断处蓝线比红线&rdquo;缓&rdquo;正是此
+效应，网格加密即收窄，属格式的<strong>预期行为而非错误</strong>。定量地，
+<span class="arithmatex">\(L^1\)</span> 误差（逐格对精确解）</p>
+<div class="arithmatex">\[
+L^1(q) = \frac{1}{n_x}\sum_i |q_i - q_{\mathrm{exact}}(x_i)|
+\]</div>
+<p>为 <span class="arithmatex">\(\rho\ 1.89\times10^{-3}\)</span>、<span class="arithmatex">\(u\ 2.49\times10^{-3}\)</span>、
+<span class="arithmatex">\(p\ 1.09\times10^{-3}\)</span>，与一阶精度 <span class="arithmatex">\(O(\Delta x)\)</span> 一致。守恒格式的
+结构保证也同时被验证：质量与总能量漂移 <span class="arithmatex">\(\sim 10^{-13}\)</span>（机器精度级），
+动量变化与出流边界的净压力冲量 <span class="arithmatex">\((p_L - p_R)\,t\)</span> 严格对账
+（<span class="arithmatex">\(0.180 = 0.180\)</span>）。</p>
+<h3 id="_3">物理图景<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>初始压差驱动气体向右流动：稀疏波把左端高压气等熵膨胀降压，接触面
+（密度界面）与激波以不同速度右行；速度场在两波之间形成平台 <span class="arithmatex">\(u_*\)</span>
+（接触面两侧速度、压力相等是界面无压差扰动的体现）。这张图成立即
+说明：<strong>耦合化学之前，输运内核对非线性双曲守恒律的全部波系（光滑
+扇、线性间断、非线性间断）都算对了</strong>。</p>
+<hr />
+<h2 id="fig2_detonation_structure-cj-183-mm">fig2_detonation_structure — CJ 爆震结构四联（183 mm 双栏）<a class="headerlink" href="#fig2_detonation_structure-cj-183-mm" title="Permanent link">&para;</a></h2>
+<p><img alt="fig2：CJ 爆震结构四联" src="/assets/figs/fig2_detonation_structure.png" /></p>
+<h3 id="_4">数学模型<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>验证算例为 HLW 2000 Ex.2：带单步 Arrhenius 放热源的反应 Euler 方程组</p>
+<div class="arithmatex">\[
+\partial_t \mathbf{U} + \partial_x \mathbf{F}(\mathbf{U}) = \mathbf{S}(\mathbf{U}),\qquad
+\mathbf{U} = \begin{pmatrix}\rho\\ \rho u\\ E\\ \rho Z\end{pmatrix},\quad
+\mathbf{S} = \begin{pmatrix}0\\0\\0\\-K\rho Z\end{pmatrix},\quad
+K = K_0\,e^{-E_a/(RT)},
+\]</div>
+<p><span class="arithmatex">\(Z\)</span> 为未燃反应物分数（<span class="arithmatex">\(Z=1\)</span> 新鲜气体、<span class="arithmatex">\(Z=0\)</span> 完全燃烧），<span class="arithmatex">\(\gamma=1.4\)</span>，
+比放热 <span class="arithmatex">\(q\)</span> 取 HLW 参数。数值格式为 <strong>Strang 算子分裂</strong>（二阶时间精度）：</p>
+<div class="arithmatex">\[
+\mathcal{L}_{2}(\Delta t) =
+\mathcal{C}(\tfrac{\Delta t}{2})\;
+\mathcal{T}(\Delta t)\;
+\mathcal{C}(\tfrac{\Delta t}{2}),
+\]</div>
+<p>输运 <span class="arithmatex">\(\mathcal{T}\)</span> 用无源 Godunov（<code>rp1_reacting</code>），化学 <span class="arithmatex">\(\mathcal{C}\)</span>
+是逐格刚性 ODE 求解——刚性与放热时间尺度相差量级，这正是交给 Julia
+侧 Rodas5P（abstol <span class="arithmatex">\(10^{-10}\)</span> / reltol <span class="arithmatex">\(10^{-8}\)</span>）的部分。每个非空
+化学半步跨 Fortran–Julia 桥<strong>一次批量调用</strong>（活跃格打包、冻结格跳过）。</p>
+<h3 id="cj-znd">物理图景：CJ 与 ZND 结构<a class="headerlink" href="#cj-znd" title="Permanent link">&para;</a></h3>
+<p>自持爆震的经典图景是 ZND 模型：<strong>前导激波</strong>把未燃气 <span class="arithmatex">\((1,0,1,Z{=}1)\)</span>
+绝热压缩到 von Neumann 态（高压高温但尚未反应）；高温在<strong>诱导期</strong>内
+指数放大 Arrhenius 源项，随后燃烧层内 <span class="arithmatex">\(Z\to 0\)</span>、放热 <span class="arithmatex">\(q\)</span> 转化为内能
+与动能，支撑激波继续前进。稳态传播的终态由 <strong>Chapman–Jouguet 条件</strong>
+唯一确定：Rayleigh 线（连接初态与终态、斜率由波速 <span class="arithmatex">\(D\)</span> 决定的动量-
+能量约束）与放热 Hugoniot 曲线<strong>相切</strong>，切点满足声速条件
+<span class="arithmatex">\(u + c = D\)</span>——即 CJ 点。该点给出解析参考值</p>
+<div class="arithmatex">\[
+\rho_{cj} = 1.6812,\quad u_{cj} = 2.8867,\quad p_{cj} = 21.5672,\quad
+s_{cj} = 7.1247 .
+\]</div>
+<h3 id="_5">怎么读这张图<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>a/b/c 三联（ρ/u/p）中红色虚线即上述 CJ 值。波后大段平台与三条参考线
+重合，说明燃烧产物已松弛到 CJ 终态——定量偏差 <span class="arithmatex">\(\le 0.025\%\)</span>（最差
+u 0.025%、p 0.023%、ρ 0.018%）。前沿处 ρ/p 的小尖峰是 von Neumann
+态的残余（被 <span class="arithmatex">\(O(\Delta x)\)</span> 耗散部分抹平，<span class="arithmatex">\(n_x = 2700\)</span>、
+<span class="arithmatex">\(\Delta x = 1.11\times10^{-3}\)</span>）。d 联的 Z 悬崖即反应层，inset 放大
+显示其宽度仅 <strong>≈3 个网格</strong>：诱导区 + 燃烧区在该分辨率下已接近可分辨
+极限——这正是 HLW 采用修正分数步（避免分裂误差把薄反应层推错位置）
+的动机，也是此算例成为耦合格式试金石的原因。</p>
+<hr />
+<h2 id="fig3_front_speed-89-mm">fig3_front_speed — 前沿轨迹与爆速（89 mm 单栏）<a class="headerlink" href="#fig3_front_speed-89-mm" title="Permanent link">&para;</a></h2>
+<p><img alt="fig3：前沿轨迹与爆速" src="/assets/figs/fig3_front_speed.png" /></p>
+<h3 id="_6">数学与测量协议<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h3>
+<p>CJ 爆震以常速 <span class="arithmatex">\(s_{cj}\)</span> 自持传播，故前沿轨迹 <span class="arithmatex">\(x_f(t)\)</span> 应为直线。数值上
+前沿位置由 Z=0.5 等值线定位：从右向左扫描找到第一个 <span class="arithmatex">\(Z&lt;0.5\)</span> 的格，
+格内线性插值（<code>front_x</code>），每个输运步采样一次（2608 个样本）。测速
+采用<strong>两点割线</strong>：</p>
+<div class="arithmatex">\[
+s = \frac{x_b - x_a}{t_b - t_a} = 7.12391,\qquad
+t_a = \text{首个 } t \ge 0.5\,t_{final}\text{ 的样本},\ t_b = t_{final},
+\]</div>
+<p>测速窗口刻意取<strong>后半程</strong>：起爆建立期内轨迹偏离直线（图左下角可见），
+属初始瞬态；后半程直线段才承载稳态波速信息。与 <span class="arithmatex">\(s_{cj} = 7.12470\)</span>
+的偏差为 <strong>0.011%</strong>——这是守恒格式数值耗散对波速的高阶小量影响；
+按 Lax–Wendroff 型收敛定理，守恒相容格式随网格加密收敛到正确的
+弱解传播速度，此处 0.011% 即 <span class="arithmatex">\(n_x = 2700\)</span> 下的有限分辨率残差。</p>
+<h3 id="_7">怎么读<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h3>
+<p>珠串点 = 采样密度（细线连全部 2608 步，珠串每 25 步取一）；灰色底带
+= 驱动的测速窗口；蓝色粗线 = 上述割线，两个白边圆点是测速端点
+<span class="arithmatex">\((t_a, x_a)\)</span>、<span class="arithmatex">\((t_b, x_b)\)</span>；红色虚线 = 过同一终点、斜率 <span class="arithmatex">\(s_{cj}\)</span> 的
+CJ 参考线。红虚骑在蓝割线上方且缝隙对齐——两条线在图尺度上不可分，
+本身就是&rdquo;数值波速 = CJ 波速&rdquo;的直接视觉证据。</p>
+<hr />
+<h2 id="fig4_performance-89-mm">fig4_performance — 四模式成本对比（89 mm 单栏）<a class="headerlink" href="#fig4_performance-89-mm" title="Permanent link">&para;</a></h2>
+<p><img alt="fig4：四模式成本对比" src="/assets/figs/fig4_performance.png" /></p>
+<h3 id="_8">数学/统计口径<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>启动时间</strong>（a 联，对数轴）：Julia 运行时与代码就绪的全部成本。
+  jit 模式需载入 ~92 个包缓存（15.1–20.2 s）；sysimage 把全部依赖
+  烤进 1.2 GB 镜像，只剩镜像载入（0.93–2.37 s，页缓存冷热差异）；
+  AOT 自含库的 init 为 0.58–1.97 s（冷/热页缓存区间）；纯 Julia
+  参考实现 17.5 s（单次，菱形标记）。</li>
+<li><strong>稳态每格成本</strong>（b 联，线性轴，µs/格）：化学总时 ÷ 活跃格数
+  （25245 次格求解）。jit 175–190、sysimage 159–198、AOT 236–361、
+  纯 Julia 309 µs。</li>
+</ul>
+<p>关键结论由两联对比给出：<strong>模式的差别全部集中在启动段</strong>（约一个量级
+的分离）；稳态每格成本四组范围互相重叠、<strong>在主机负载噪声内不可区分</strong>
+——因为热路径是同一份编译好的内核（<code>FjKinetics.step_chemistry!</code>，
+Rodas5P），桥接本身每半步只增加 µs 级的调用解析开销。</p>
+<h3 id="_9">统计判据（为何&rdquo;重叠&rdquo;是有意义的结论）<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h3>
+<p>共享主机运行间噪声 ~±20%。判别两组差异是否真实，用的是<strong>同批背靠背
+对比 + 批间方向翻转检验</strong>：若差值方向在不同批次间翻转（本仓库实测：
+同批内 sysimage 4.02 s &lt; jit 4.79 s，换 cwd 复跑 4.99 s &gt; 4.43 s），
+则差异归属噪声而非模式效应。此外&rdquo;零 JIT&rdquo;由<strong>首个非空化学调用</strong>计时
+证明：7.1–8.0 ms 为纯求解量级（若发生运行时编译，尖峰应为 100 ms–s
+级），四个运行无一出现。</p>
+<p>b 联唯一的数据排除已在图内脚注与 PERFORMANCE.md 记录：AOT 的一次
+32 核独占物理核跑（191 µs）与 1 核共享主机跑不可比，不计入范围。</p>
+<hr />
+<h2 id="fig5_gri_ignition-gri-mech-30-89-mm">fig5_gri_ignition — GRI-Mech 3.0 均质点火（89 mm 双联）<a class="headerlink" href="#fig5_gri_ignition-gri-mech-30-89-mm" title="Permanent link">&para;</a></h2>
+<p><img alt="fig5：GRI-Mech 3.0 均质点火" src="/assets/figs/fig5_gri_ignition.png" /></p>
+<h3 id="_10">数学模型<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h3>
+<p>零维常容绝热均质反应器：53 组分 / 325 反应的 GRI-Mech 3.0 机理，
+化学源项 <span class="arithmatex">\(\dot{\mathbf{Y}} = \boldsymbol{\omega}(\mathbf{Y}, T)\)</span> 与能量
+方程耦合（绝热、常容）。初值为当量比 <span class="arithmatex">\(\phi = 1\)</span> 的 CH4/空气，
+1500 K、1 atm。系统刚性（诱导期链支反应与放热时间尺度相差量级），
+由 FBDF（reltol <span class="arithmatex">\(10^{-8}\)</span> / abstol <span class="arithmatex">\(10^{-12}\)</span>）积分，均匀 saveat
+2001 点（<span class="arithmatex">\(\Delta t = 2.5\,\mu\)</span>s）。点火判据采用 ChemMechSim 验证口径：
+<span class="arithmatex">\(|dT/dt|\)</span> 最陡段<strong>之后的第一个格点</strong>，即
+<span class="arithmatex">\(t_\mathrm{ign} = 1.1075\)</span> ms（图中 a 联灰色虚线）。</p>
+<h3 id="_11">物理图景<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h3>
+<p>诱导期（约 1.1 ms）内链支反应缓慢积累自由基（OH 从 <span class="arithmatex">\(\sim10^{-51}\)</span>
+指数增长，b 联左下缘之外），CH4/O2 几乎不变、T 维持 1500 K 平台；
+热失控的陡升段（<span class="arithmatex">\(&gt;5\)</span> K/µs）宽约 0.05 ms，把温度推至约 2780 K 后
+继续攀升，至 <span class="arithmatex">\(t \approx 1.25\)</span> ms（<span class="arithmatex">\(t_\mathrm{ign}\)</span> 之后约 0.14 ms；
+2900 K 于 <span class="arithmatex">\(t \approx 1.18\)</span> ms 越过）达过冲峰 2914.9 K；CH4 耗尽到
+<span class="arithmatex">\(10^{-14}\)</span>、CO2 生成至 0.043；随后自由基池部分复合，弛豫到平衡
+（<span class="arithmatex">\(T_\mathrm{end} = 2902.6\)</span> K，OH 平衡摩尔分数 0.024——高温解离使
+CO/H/O 组分留存，碳并不全部进入 CO2）。b 联四个关键物种：反应物
+（CH4 蓝 / O2 青绿）单调衰减，产物（CO2 紫）生成，自由基（OH 朱红）
+在点火层内成峰后弛豫到非零平衡值——四条曲线形状互异，本身就是
+色彩之外的辨识编码。</p>
+<h3 id="_12">显示与色板约定<a class="headerlink" href="#_12" title="Permanent link">&para;</a></h3>
+<p>log 轴显示下限 <span class="arithmatex">\(10^{-16}\)</span>：机理初始化使诱导期 CO2/OH 一度低至
+<span class="arithmatex">\(\sim10^{-71}/10^{-51}\)</span>，跨越它们的 log 轴毫无可读性；下限之下仅
+2 个采样点（渲染审计有计数），而下限仍完整容纳 CH4 的全程衰减
+（最低 <span class="arithmatex">\(1.65\times10^{-15}\)</span>；脚本内断言高于下限并打印实测值，
+不转写常数）。线端直接标注只放在 log 几何上孤立的
+位置（CH4、CO2）；O2/OH 线端相距不足半个数量级，由图例与曲线形状
+承载。物种类别色板（#3B6FB6 / #2A9D8F / #9A4D8E / #D55E00）经
+dataviz 六项校验器全对通过；紫–蓝对 protan ΔE 7.5 落在 6–8 地板带，
+按规则以次级编码（图例 + 直接标注 + 互异形状）合法化。</p>
+<hr />
+<h2 id="fig6_bridge_vs_native-vs-89-mm">fig6_bridge_vs_native — 桥接 vs 原生逐点对照（89 mm 双联）<a class="headerlink" href="#fig6_bridge_vs_native-vs-89-mm" title="Permanent link">&para;</a></h2>
+<p><img alt="fig6：桥接 vs 原生逐点对照" src="/assets/figs/fig6_bridge_vs_native.png" /></p>
+<h3 id="_13">对照协议<a class="headerlink" href="#_13" title="Permanent link">&para;</a></h3>
+<p>同一条 FjKinetics 调用路径在两个独立进程各跑一遍：原生
+（<code>run_gri_native.jl</code> 直接 Julia）与桥接（Fortran 示例经桥批量提取
+<code>ts/T/X</code> 后自行落盘）。协议的运行时前提：原生基线必须由与桥接
+可执行内嵌 libjulia 同版的 <strong>Julia 1.12.7</strong> 生成，
+<code>run_gri_native.jl</code> 的版本守卫直接拒绝其他版本。来历（审查波实测）：
+跨版本生成基线时，同一求解在点火过渡段逐点漂移至
+<span class="arithmatex">\(10^{-5}\)</span>–<span class="arithmatex">\(10^{-3}\)</span>（1.12.7 vs 1.13.2：T 相对差 <span class="arithmatex">\(1.5\times10^{-5}\)</span>，
+过渡段 CH4 相对差达 0.54），端值门余量随版本对波动——juliaup 基线
+曾给出 0 / <span class="arithmatex">\(1.7\times10^{-9}\)</span> / 0 / <span class="arithmatex">\(6.8\times10^{-9}\)</span>（离门仅
+1.5 倍），下一次 juliaup 自动更新即可越门，并误报为&rdquo;桥提取错误&rdquo;。
+a 联 T(t) 叠加沿用家族语义（蓝实 = 桥接、红虚 = 原生在上，&rdquo;红虚骑
+蓝实&rdquo;读作重合）。b 联逐点相对残差
+<span class="arithmatex">\(|\Delta q| / \max(|q_\mathrm{native}|, 10^{-10})\)</span>：分母条件化下限
+——对 <span class="arithmatex">\(10^{-71}\)</span> 量级的痕量值做相对残差是数字游戏，条件化后退化为
+缩放绝对差沉入显示底（低于 <span class="arithmatex">\(10^{-12}\)</span> 的点屏蔽并计数，不以假下限
+呈现）；红色虚线为验收门 <span class="arithmatex">\(10^{-8}\)</span>，灰色点线为显示底 <span class="arithmatex">\(10^{-12}\)</span>。</p>
+<h3 id="_14">结果怎么读<a class="headerlink" href="#_14" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>验收四门恰好为零</strong>（t_ign、T_end、X(CH4,0)、X(CO2,end) 全部
+  rel diff = 0，逐位相等）：钉死运行时后收敛标量完全复现。</li>
+<li><strong>全序列最大相对残差 <span class="arithmatex">\(8.3\times10^{-13}\)</span></strong>（出现在 CO2 点火前
+  陡升段 <span class="arithmatex">\(t \approx 1.01\)</span> ms；T 本身仅 <span class="arithmatex">\(\sim2\times10^{-16}\)</span>，ULP
+  量级），2001×5 个值全部低于 <span class="arithmatex">\(10^{-12}\)</span> 显示底——<strong>b 联空面板即
+  结果本身</strong>。3927/10005 个值逐位相同，其余微小差异来自同一运行时
+  内两个进程的符号代码生成项序差，不是提取误差。</li>
+<li>桥接提取通道因此被隔离证真：<code>to_fortran</code> 是双精度整块拷贝、CSV
+  <code>es26.16e3</code> 十进制往返无损；布局类 bug（列主序错位、物种行取错）
+  的特征误差在 <span class="arithmatex">\(10^{-1}\)</span> 量级，比门高七个数量级——四门的 0 就是
+  提取路径的指纹。</li>
+</ul>
+<hr />
+<h2 id="fig7_heat_release-dtdt89-mm">fig7_heat_release — 放热率判据 |dT/dt|（89 mm 单栏）<a class="headerlink" href="#fig7_heat_release-dtdt89-mm" title="Permanent link">&para;</a></h2>
+<p><img alt="fig7：放热率判据 |dT/dt|" src="/assets/figs/fig7_heat_release.png" /></p>
+<h3 id="_15">量的定义<a class="headerlink" href="#_15" title="Permanent link">&para;</a></h3>
+<p>直接绘制驱动判据量：相邻采样段前向差分 <span class="arithmatex">\(|\Delta T / \Delta t|\)</span>
+（2000 段、取段中点，无平滑、无平均——与 Fortran 侧 <code>maxloc</code> 完全
+同口径；脚本内断言 argmax 段后格点与 CSV 头部 t_ign 严格一致，
+1.1075 ms）。诱导期前段（<span class="arithmatex">\(t \lesssim 0.25\)</span> ms）<span class="arithmatex">\(|dT/dt| &lt; 0.005\)</span>
+K/µs，此后随链支反应加速单调爬升（0.8 ms 处 0.10、1.0 ms 处
+0.58 K/µs），点火处峰值 110.9 K/µs，随平衡趋近衰减回零。
+圆点 = argmax 段，灰虚线 = t_ign：峰即点火，
+与 fig5a 的温度台阶一一对应。</p>
+<hr />
+<h2 id="fig8_capstone_overview-183-mm-23">fig8_capstone_overview — 收官总览（183 mm 2×3）<a class="headerlink" href="#fig8_capstone_overview-183-mm-23" title="Permanent link">&para;</a></h2>
+<p><img alt="fig8：收官总览" src="/assets/figs/fig8_capstone_overview.png" /></p>
+<p>一页看全整个 capstone，六联全部是已审计数据的重绘（无新数据通道）：
+<strong>a</strong> Sod ρ vs 精确 Riemann 解（输运内核，fig1）；<strong>b</strong> 爆震 p + CJ
+参考线、<strong>c</strong> Z 反应层悬崖（Strang 分裂耦合格式，fig2）；<strong>d</strong> 前沿
+轨迹 + 两点割线 vs CJ 参考线（传播速度 0.011%，fig3）；<strong>e</strong> GRI
+点火 T(t) + t_ign、<strong>f</strong> |dT/dt| + argmax 圆点（化学动力学与判据，
+fig5/fig7）。两个可执行、五份 CSV、一张图。</p>
+<hr />
+<h2 id="fig0_schematic">fig0_schematic — 耦合架构示意图<a class="headerlink" href="#fig0_schematic" title="Permanent link">&para;</a></h2>
+<p>（本节为 AI 生成概念草图预留：该图在本页迁移时尚未生成。其为概念
+示意（mechanism/architecture draft），不承载定量数据；生成后，图与
+provenance 记录将收录在仓库 <code>examples/07_capstone/figures/fig0_schematic/</code>。）</p>
+<hr />
+<h2 id="_16">参考文献<a class="headerlink" href="#_16" title="Permanent link">&para;</a></h2>
+<ol>
+<li>Sod, G. A. (1978). A survey of several finite difference methods for
+   systems of nonlinear hyperbolic conservation laws. <em>Journal of
+   Computational Physics</em>, <strong>27</strong>(1), 1–31.</li>
+<li>Toro, E. F. (2009). <em>Riemann Solvers and Numerical Methods for Fluid
+   Dynamics</em> (3rd ed.), §4.5（精确 Riemann 求解器）及 Test 1。Springer.</li>
+<li>Helzel, C., LeVeque, R. J., &amp; Warneke, G. (2000). A modified fractional
+   step method for the accurate approximation of detonation waves.
+   <em>SIAM Journal on Scientific Computing</em>, <strong>22</strong>(4), 1489–1510.
+   （Ex.2 算例与修正分数步来源。）</li>
+<li>LeVeque, R. J. (2002). <em>Finite Volume Methods for Hyperbolic Problems</em>.
+   Cambridge University Press.（波传播算法 / Clawpack 内核。）</li>
+<li>Strang, G. (1968). On the construction and comparison of difference
+   schemes. <em>SIAM Journal on Numerical Analysis</em>, <strong>5</strong>(3), 506–517.
+   （算子分裂的二阶性。）</li>
+<li>Fickett, W., &amp; Davis, W. C. (1979). <em>Detonation: Theory and Experiment</em>.
+   University of California Press.（CJ 条件、Rayleigh 线–Hugoniot 几何
+   与 ZND 结构的标准参考；ZND 原始工作见 Zel&rsquo;dovich (1940)、
+   von Neumann (1942)、Döring (1943)。）</li>
+<li>Rackauckas, C., &amp; Nie, Q. (2017). DifferentialEquations.jl — a
+   performant and feature-rich ecosystem for solving differential
+   equations in Julia. <em>Journal of Open Research Software</em>, <strong>5</strong>(1).
+   （化学侧刚性 ODE 栈，Rodas5P/FBDF。）</li>
+<li>Smith, G. P., Golden, D. M., Frenklach, M., Moriarty, N. W.,
+   Eiteneer, B., Goldenberg, M., Bowman, C. T., Hanson, R. K., Song, S.,
+   Gardiner, W. C., Jr., Lissianski, V. V., &amp; Qin, Z. (1999). GRI-Mech
+   3.0. http://www.me.berkeley.edu/gri_mech/ （fig5–8 的甲烷氧化
+   机理。）</li>
+</ol>
+<hr />
+<h2 id="qa">QA 附录<a class="headerlink" href="#qa" title="Permanent link">&para;</a></h2>
+<p>每张图附带两份审计 JSON（随图提交）：<code>*.alignment.json</code>（渲染时面板
+对齐门，1.5 pt 容差；fig7 单面板，不适用）与 <code>*.collision-audit.json</code>
+（PDF 几何碰撞审计）。字形审计（5 pt 底线）在提交的 PDF 上执行，
+全部 PASS；最小字形 5.5 pt。产物按用户契约为 PNG 600 dpi + PDF
+（不导出 SVG/TIFF，为记录在案的契约豁免）。数据完整性：全部数据
+点全绘、无平滑、无平均；记录在案的排除有三处 —— AOT 32 核跑
+（fig4，图内与本文件双重记录）、fig5b 物种摩尔分数显示下限
+（X &lt; 10⁻¹⁶ 的点不进折线：对数轴下方数值无显示意义，且未遮蔽的
+折线顶点会在 PDF 路径几何中越出坐标框）、fig6b 残差显示遮蔽
+（分母条件化用 10⁻¹⁰ 地板，r &lt; 10⁻¹² 的点不进折线，同理）。两处
+显示下限遮蔽的点数与遮蔽率由脚本打印，属显示层选择而非数据排除。
+对数轴刻度标签用全字号 Unicode 上标（10⁻¹⁶ 等）而非 mathtext
+指数 —— mathtext 指数字号约为主字号的 70%（6 pt 刻度下 4.2 pt，
+低于 5 pt 字形底线）。</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      FortranCallJulia - MIT License
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

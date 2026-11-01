@@ -1,0 +1,1453 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../repository-tour/">
+      
+      
+        <link rel="next" href="../acceptance-gates/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../zh/developer/bridge-internals/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Bridge internals - FortranCallJulia</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#bridge-internals" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="FortranCallJulia" class="md-header__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FortranCallJulia
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Bridge internals
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../zh/developer/bridge-internals/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="FortranCallJulia" class="md-nav__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FortranCallJulia
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FortranCallJulia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Introduction
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What is FortranCallJulia?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/why-fortran-julia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why Fortran and Julia?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/first-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first call
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/two-sdks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Two SDKs, two speeds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/arrays-and-callbacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays and callbacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/deployment-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/bring-your-own-kinetics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bring your own kinetics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Known limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../repository-tour/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository tour
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridge internals
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridge internals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-eight-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The eight files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-lifecycle-and-the-root-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core: lifecycle and the root set
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dispatch-and-boxing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dispatch and boxing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-array-channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The array channel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callback-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Callback access
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#signals-and-error-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Signals and error transport
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to go next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../acceptance-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acceptance gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lessons
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rebuild from zero
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../further-reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Further reading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annex-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance annex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-eight-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The eight files
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#core-lifecycle-and-the-root-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core: lifecycle and the root set
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#dispatch-and-boxing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dispatch and boxing
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-array-channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The array channel
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callback-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Callback access
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#signals-and-error-transport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Signals and error transport
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to go next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="bridge-internals">Bridge internals<a class="headerlink" href="#bridge-internals" title="Permanent link">&para;</a></h1>
+<p>Eight C files, four responsibility groups, one contract. The user-facing
+pages describe the bridge from outside &ndash; the <code>fcj_*</code> ABI, the two Fortran
+SDK layers, the numbers. This page opens the box: what each file owns, how
+the GC debt is paid, and where the Julia 1.12 C API forced workarounds. It
+is written for maintainers changing <code>src/bridge/</code>; nothing here is needed
+to <em>use</em> the bridge.</p>
+<p>The <a href="../../intro/architecture/">architecture page</a> gives the same system in
+one screen; read that first if you are new.</p>
+<h2 id="the-eight-files">The eight files<a class="headerlink" href="#the-eight-files" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Files</th>
+<th>Owns</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Core</td>
+<td><code>core.c</code>, <code>memory.c</code></td>
+<td>lifecycle (<code>fcj_init</code> / <code>fcj_init_ex</code> / <code>fcj_shutdown</code>), thread pinning, the GC root set</td>
+</tr>
+<tr>
+<td>Dispatch &amp; boxing</td>
+<td><code>dispatch.c</code>, <code>types.c</code></td>
+<td><code>fcj_call*</code> / <code>fcj_call_kwargs</code>, the function-name cache, scalar boxing (<code>fcj_box_*</code>)</td>
+</tr>
+<tr>
+<td>Array channel</td>
+<td><code>arrays.c</code>, <code>extract.c</code></td>
+<td>N-D zero-copy wraps, deep copies, batch extraction to Fortran</td>
+</tr>
+<tr>
+<td>Callback access</td>
+<td><code>callbacks.c</code>, <code>accessors.c</code></td>
+<td><code>@cfunction</code> trampolines, <code>get_field</code> / <code>get_property</code>, native <code>Float64</code> element access</td>
+</tr>
+</tbody>
+</table>
+<p>Two headers frame them. <code>bridge.h</code> is the public contract: 53 <code>fcj_</code>
+functions plus <code>fcj_options_t</code> &ndash; everything a Fortran <code>bind(c)</code> layer can
+reach. <code>bridge_internal.h</code> is private: the native element accessors
+(<code>fcj_get_real</code> and siblings), shared helpers, and the per-module
+cache-clear hooks <code>fcj_shutdown</code> walks. The &ldquo;~105 exported <code>fcj_*</code> symbols&rdquo;
+headline used across this site counts the whole <code>fcj_</code> namespace across
+these sources; the binding layer <code>src/julia_binding.f90</code> declares 58 of
+them (52 of the 53 public functions &ndash; <code>fcj_ready</code> is never bound &ndash; plus
+the 6 internal element accessors), and the rest are
+internal helpers that never cross the ABI.</p>
+<h2 id="core-lifecycle-and-the-root-set">Core: lifecycle and the root set<a class="headerlink" href="#core-lifecycle-and-the-root-set" title="Permanent link">&para;</a></h2>
+<p><code>core.c</code> owns the state machine. <code>fcj_state</code> is <code>_Atomic</code>; every entry
+point checks it through <code>fcj_ready()</code> before touching Julia. The thread
+rule from <a href="../../user/known-limitations/">Known limitations</a> is enforced,
+not documented, in <code>check_thread()</code> (verbatim from <code>src/bridge/core.c</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="nf">check_thread</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pthread_self</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">main_thread_id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">msg</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+<span class="w">        </span><span class="n">snprintf</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span><span class="w"> </span><span class="s">"Thread Error: Julia called from thread %p, runtime owned by thread %p"</span><span class="p">,</span>
+<span class="w">                 </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">(),</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">main_thread_id</span><span class="p">);</span>
+<span class="w">        </span><span class="n">set_error</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// Fail</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c1">// OK</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Failure semantics split by entry point: <code>fcj_init</code> aborts the process on
+failure (the original contract), while <code>fcj_init_ex</code> returns an error code
+and leaves the reason in <code>fcj_get_last_error()</code> &ndash; surfaced in Fortran as
+<code>get_last_error_message()</code>. <code>fcj_shutdown</code> is one-way: the state machine
+never returns to READY, and re-initialization after shutdown is rejected
+loudly rather than attempted.</p>
+<p><code>memory.c</code> is the GC story, and its header comment states the design
+better than a paraphrase would (from <code>src/bridge/memory.c</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// fcj_retain/fcj_release keep their bind(C) signatures but no longer round-trip</span>
+<span class="c1">// through Julia (retain_obj/release_obj in GCManager.jl) on the hot path.</span>
+<span class="c1">// Retained objects live in a Julia Vector{Any} reachable through the constant</span>
+<span class="c1">// binding `Main.FJ_ROOTS` ... bookkeeping is a pure-C ptr -&gt; slot hash map with</span>
+<span class="c1">// per-pointer refcounts, mirroring GCManager's REF_COUNTS/PTR_CACHE logic.</span>
+</code></pre></div>
+<p>The mechanics that matter to a maintainer:</p>
+<ul>
+<li><strong>A C static is not a GC root.</strong> Any function or value cached in a
+  <code>static</code> must be routed through <code>fcj_retain</code> (a module binding counts;
+  a bare static does not). The one sanctioned exception is immortal
+  singletons kept alive by their Base binding, such as the <code>ComplexF64</code>
+  type object cached in <code>types.c</code>.</li>
+<li><strong><code>fcj_map</code> is open-addressing with tombstones and refcounts</strong> &ndash;
+  deleted entries tombstone so probe chains stay intact, and a pointer
+  retained twice occupies one slot with a count of two.</li>
+<li><strong>No locking anywhere in these statics.</strong> The single-thread contract
+  (<code>check_thread</code>) is the lock. Break the contract and you have a data
+  race, not a bug report.</li>
+</ul>
+<h2 id="dispatch-and-boxing">Dispatch and boxing<a class="headerlink" href="#dispatch-and-boxing" title="Permanent link">&para;</a></h2>
+<p><code>dispatch.c</code> turns names into calls. The function-name cache is a fixed
+256-slot table hashed with FNV-1a; cache hits are routed through
+<code>fcj_retain</code> so the cached <code>jl_function_t*</code> is rooted. Two invalidation
+rules a maintainer must never undo:</p>
+<ol>
+<li>The cache is cleared <strong>first</strong> in <code>fcj_shutdown</code> &ndash; before anything
+   else could still dereference it.</li>
+<li><strong>Every <code>julia_eval_string</code> invalidates the name caches.</strong> An eval can
+   redefine <code>f</code> from a function to a closure, and a stale cache entry
+   would call the captured old object forever. (The Fast Path registry
+   keeps its captured-object semantics by design and documents it;
+   see <a href="../../user/two-sdks/">Two SDKs, two speeds</a>.)</li>
+</ol>
+<p><code>fcj_call1_float64</code> through the N-argument family and <code>fcj_call_kwargs</code>
+(the keyword-argument path) all funnel through the same
+<code>jl_call</code>/exception-check tail. <code>types.c</code> boxes Fortran scalars into Julia
+objects &ndash; <code>fcj_box_float64</code>, <code>fcj_box_string</code>, and the rest &ndash; plus the
+cached <code>ComplexF64</code> datatype noted above.</p>
+<h2 id="the-array-channel">The array channel<a class="headerlink" href="#the-array-channel" title="Permanent link">&para;</a></h2>
+<p><code>arrays.c</code> wraps Fortran memory as a Julia <code>Array</code> of any rank 1 through
+<code>FCJ_MAX_NDIM</code>, zero-copy, via <code>jl_ptr_to_array</code>. The wrap path, verbatim
+from <code>src/bridge/arrays.c</code> (the three guard helpers are the same shape,
+elided for length):</p>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="nf">fcj_wrap_array</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">ndim</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">*</span><span class="w"> </span><span class="n">dims</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">fcj_ready</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">set_error</span><span class="p">(</span><span class="s">"Julia runtime not initialized or already shut down"</span><span class="p">);</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">check_thread</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">jl_value_t</span><span class="w"> </span><span class="o">*</span><span class="n">array_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">jl_value_t</span><span class="w"> </span><span class="o">*</span><span class="n">dims_tuple</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">JL_GC_PUSH2</span><span class="p">(</span><span class="o">&amp;</span><span class="n">array_type</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">dims_tuple</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">array_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">array_type_for_ndim</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span><span class="w"> </span><span class="s">"fcj_wrap_array"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="n">dims_tuple</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">make_dims_tuple</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span><span class="w"> </span><span class="n">dims</span><span class="p">,</span><span class="w"> </span><span class="s">"fcj_wrap_array"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="n">jl_array_t</span><span class="w"> </span><span class="o">*</span><span class="n">arr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jl_ptr_to_array</span><span class="p">(</span><span class="n">array_type</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">dims_tuple</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">check_julia_exception</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">JL_GC_POP</span><span class="p">();</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">JL_GC_POP</span><span class="p">();</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">arr</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>Two disciplines visible in that excerpt, both load-bearing everywhere in
+the bridge: local values are rooted with <code>JL_GC_PUSH2</code> for the duration of
+a call, and any error path <code>set_error</code>s a reason before returning NULL.
+The deep-copy sibling <code>fcj_copy_array</code> allocates a fresh Julia array and
+memcpys in, with an overflow-checked extent product before the allocation.</p>
+<p><code>extract.c</code> is the return leg: <code>fcj_to_fortran</code> (one bulk copy into a
+Fortran buffer, length-checked), <code>fcj_get_element</code>, <code>fcj_get_property</code>.
+The bulk path is a single <code>memcpy</code> from <code>jl_array_data_</code> with an <code>n == len</code>
+check &ndash; which is why the extraction channel is bit-exact and why the
+acceptance gates can put a 1e-8 door in front of it
+(<a href="../acceptance-gates/">acceptance gates</a>).</p>
+<h2 id="callback-access">Callback access<a class="headerlink" href="#callback-access" title="Permanent link">&para;</a></h2>
+<p><code>callbacks.c</code> runs the other direction: Fortran <code>bind(c)</code> subroutines
+wrapped into Julia-callable objects through <code>@cfunction</code> trampolines, with
+the calling context carried opaquely. This is the machinery behind the
+OrdinaryDiffEq callback demos of <code>examples/06_sciml/1_callback.f90</code>. The
+hard rule from the user pages holds at this level too: a trampoline frame
+cannot host a Julia exception, so a throwing callee is undefined behavior
+&ndash; validate on the Fortran side, return sentinels.</p>
+<p><code>accessors.c</code> implements <code>%element</code> and <code>%property</code>, and here the Julia
+1.12 C API forced the most instructive workarounds in the tree. The header
+of <code>extract.c</code> records them (from <code>src/bridge/extract.c</code>):</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 1.12.7 API notes (verified against include/julia/julia.h):</span>
+<span class="c1">//  - jl_get_property does not exist; jl_get_field exists but only reads</span>
+<span class="c1">//    plain struct fields (no getproperty overloads, no NamedTuples), so</span>
+<span class="c1">//    the contract's fallback applies: Base.getproperty is cached once and</span>
+<span class="c1">//    jl_call-ed, matching helper_getfield semantics in Accessors.jl;</span>
+<span class="c1">//    getproperty dispatches on Symbol, so the name is interned with</span>
+<span class="c1">//    jl_symbol (immortal, globally rooted) instead of boxed as a String;</span>
+<span class="c1">//  - jl_arrayref does not exist either (removed with the Memory-backed</span>
+<span class="c1">//    array rewrite), so element boxing goes through a cached</span>
+<span class="c1">//    Base.getindex binding -- the same numeric boxing jl_arrayref used to</span>
+<span class="c1">//    perform.</span>
+</code></pre></div>
+<p>Read that as the general lesson: when a <code>jl_*</code> convenience is missing,
+cache the equivalent Base function once (rooted through <code>fcj_retain</code>) and
+<code>jl_call</code> it &ndash; do not hand-roll struct offsets. <code>bridge_internal.h</code> adds
+the native element accessors (<code>fcj_get_real</code> / <code>fcj_set_real</code> and 2- and
+3-index forms): direct <code>Float64</code> reads and writes into wrapped memory, no
+boxing, used by the hot per-cell paths.</p>
+<h2 id="signals-and-error-transport">Signals and error transport<a class="headerlink" href="#signals-and-error-transport" title="Permanent link">&para;</a></h2>
+<p>The bridge never writes <code>jl_options.handle_signals</code>: GC safepoint polling
+depends on Julia&rsquo;s own signal handlers, and disabling them crashes at a
+safepoint &ndash; reliably, not occasionally (<a href="../lessons/">Lessons</a>). The
+<code>handle_signals=0</code> option offered by <code>fcj_options_t</code> means &ldquo;no takeover&rdquo;:
+after a successful init the bridge resets <code>SIGINT</code>/<code>SIGTERM</code> to <code>SIG_DFL</code>,
+leaving the GC-critical handlers intact.</p>
+<p>Errors travel one channel: the per-runtime last-error buffer, read through
+<code>fcj_get_last_error()</code> and surfaced as <code>get_last_error_message()</code>. A
+Julia-side exception is caught at the call boundary, formatted into that
+buffer, and the call returns an invalid handle or NULL &ndash; the process keeps
+running.</p>
+<h2 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../acceptance-gates/">Acceptance gates</a> &ndash; how you prove you did not
+  break any of this.</li>
+<li><a href="../rebuild/">Rebuild from zero</a> &ndash; the sysimage and AOT builds that wrap
+  this core for deployment.</li>
+<li><a href="../lessons/">Lessons</a> &ndash; the incidents that put these rules in writing.</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      FortranCallJulia - MIT License
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

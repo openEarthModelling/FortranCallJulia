@@ -1,0 +1,1389 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../deployment-modes/">
+      
+      
+        <link rel="next" href="../known-limitations/">
+      
+      
+        
+          <link rel="alternate" href="../../../user/bring-your-own-kinetics/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>自带动力学 - FortranCallJulia</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../" title="FortranCallJulia" class="md-header__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FortranCallJulia
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              自带动力学
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../user/bring-your-own-kinetics/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="FortranCallJulia" class="md-nav__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FortranCallJulia
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    在 Fortran 中嵌入 Julia 运行时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FortranCallJulia 是什么？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/why-fortran-julia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    为什么是 Fortran 与 Julia？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../first-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一次调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../two-sdks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    两套 SDK，两种速度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../arrays-and-callbacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数组与回调
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    交付形态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自带动力学
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自带动力学
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstractkineticssolver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        契约：AbstractKineticsSolver
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chemmechsim-gri-mech-30-capstone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        路线一：ChemMechSim 与 GRI-Mech 3.0 capstone
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        路线二：实现接口
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        接下来去哪
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    已知限制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发者指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发者指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/repository-tour/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    仓库导览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/bridge-internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    桥内部
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/acceptance-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验收门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教训
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零重建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    贡献指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/further-reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    延伸阅读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/annex-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance annex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/annex-figures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    图集讲解（学术版）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#abstractkineticssolver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        契约：AbstractKineticsSolver
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chemmechsim-gri-mech-30-capstone" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        路线一：ChemMechSim 与 GRI-Mech 3.0 capstone
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        路线二：实现接口
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        接下来去哪
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="_1">自带动力学<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>capstone 没有把化学动力学写死。Fortran 驱动经由 FjKinetics——
+<code>examples/07_capstone/FjKinetics/</code> 下的一个小型 Julia 包，其 v0.2 把所有
+机理收拢到一个接口背后——推进网格，于是流场求解器永远不需要知道自己烧的是
+什么化学。接入你自己的动力学有两条路：</p>
+<ol>
+<li><strong>直接用 ChemMechSim。</strong> 一个加载 Cantera-YAML 反应机理的开源 Julia 包；
+   capstone 的 GRI-Mech 3.0 基准在它上面原样运行。</li>
+<li><strong>实现 <code>AbstractKineticsSolver</code>。</strong> 两个方法、一份契约——你的机理落进同一
+   条 Fortran 调用的背后。</li>
+</ol>
+<h2 id="abstractkineticssolver">契约：<code>AbstractKineticsSolver</code><a class="headerlink" href="#abstractkineticssolver" title="Permanent link">&para;</a></h2>
+<p>基类型及其含义，逐字摘自
+<code>examples/07_capstone/FjKinetics/src/FjKinetics.jl</code>：</p>
+<div class="highlight"><pre><span></span><code><span class="s">"""</span>
+<span class="s">    AbstractKineticsSolver</span>
+
+<span class="s">Common base of the chemistry solvers. The mechanism-agnostic contract is</span>
+<span class="s">[`step_chemistry!`](@ref)(solver, Y, T, rho, dt): `Y` is `ncell x nspec`</span>
+<span class="s">species MASS fractions in the solver's species order, `T` cell temperatures,</span>
+<span class="s">`rho` cell densities; all are advanced in place by `dt`.</span>
+<span class="s">"""</span>
+<span class="k">abstract</span><span class="w"> </span><span class="k">type</span> <span class="kt">AbstractKineticsSolver</span><span class="w"> </span><span class="k">end</span>
+</code></pre></div>
+<p>一个求解器＝这个基类型加两个方法。下面四个定义同样逐字摘自该文件（两行
+<code>nspecies</code> 与两个 <code>step_chemistry!</code> 签名位于文件的不同位置；函数体略去）：</p>
+<div class="highlight"><pre><span></span><code><span class="n">nspecies</span><span class="p">(</span><span class="n">ks</span><span class="o">::</span><span class="kt">KineticsSolver</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ks</span><span class="o">.</span><span class="n">nspec</span>
+<span class="n">nspecies</span><span class="p">(</span><span class="n">gs</span><span class="o">::</span><span class="kt">GriSolver</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gs</span><span class="o">.</span><span class="n">nspec</span>
+
+<span class="k">function</span><span class="w"> </span><span class="n">step_chemistry!</span><span class="p">(</span><span class="n">ks</span><span class="o">::</span><span class="kt">KineticsSolver</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="o">::</span><span class="kt">AbstractMatrix</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">Real</span><span class="p">},</span>
+<span class="w">                         </span><span class="n">T</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">Real</span><span class="p">},</span><span class="w"> </span><span class="n">rho</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">Real</span><span class="p">},</span>
+<span class="w">                         </span><span class="n">dt</span><span class="o">::</span><span class="kt">Real</span><span class="p">)</span>
+
+<span class="k">function</span><span class="w"> </span><span class="n">step_chemistry!</span><span class="p">(</span><span class="n">gs</span><span class="o">::</span><span class="kt">GriSolver</span><span class="p">,</span><span class="w"> </span><span class="n">Y</span><span class="o">::</span><span class="kt">AbstractMatrix</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">Real</span><span class="p">},</span>
+<span class="w">                         </span><span class="n">T</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">Real</span><span class="p">},</span><span class="w"> </span><span class="n">rho</span><span class="o">::</span><span class="kt">AbstractVector</span><span class="p">{</span><span class="o">&lt;:</span><span class="kt">Real</span><span class="p">},</span>
+<span class="w">                         </span><span class="n">dt</span><span class="o">::</span><span class="kt">Real</span><span class="p">)</span>
+</code></pre></div>
+<p>从这些名字里读出契约：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Y</code></td>
+<td><code>ncell x nspec</code> 的组分<strong>质量分数</strong>，按求解器的组分顺序排列，原地推进</td>
+</tr>
+<tr>
+<td><code>T</code></td>
+<td>网格温度，原地推进</td>
+</tr>
+<tr>
+<td><code>rho</code></td>
+<td>网格密度；即使机理用不到它，它也是契约的一部分——单步机理用不到，GRI-Mech 3.0 离不开</td>
+</tr>
+<tr>
+<td><code>dt</code></td>
+<td>每个网格推进多远</td>
+</tr>
+<tr>
+<td><code>nspecies(solver)</code></td>
+<td>Fortran 侧每个网格要打包的 <code>nspec</code> 列</td>
+</tr>
+</tbody>
+</table>
+<p>FjKinetics v0.2 在这个基类型下带两个求解器：<code>OneStepSolver</code>（
+<code>KineticsSolver</code> 的别名——反应流 capstone 的单步 Arrhenius 机理）与
+<code>GriSolver</code>（经 ChemMechSim 的完整机理）。</p>
+<h2 id="chemmechsim-gri-mech-30-capstone">路线一：ChemMechSim 与 GRI-Mech 3.0 capstone<a class="headerlink" href="#chemmechsim-gri-mech-30-capstone" title="Permanent link">&para;</a></h2>
+<p>ChemMechSim.jl 是一个处理 Cantera-YAML 反应机理的开源 Julia 包；它自带
+GRI-Mech 3.0（53 个组分、325 个反应），位于 ChemMechSim 包内的
+<code>examples/mechanism/gri30.yaml</code>——该路径在包里，不在本仓库。
+对数字之前先记一条版本事项：General 注册表目前收的是 v1.0.0，而仓库已到
+v1.2.0；本站所有验证数字都是对着 <strong>v1.2.0</strong> 产出的——先确认你的环境解析到的
+是哪一个。</p>
+<p>安装只需一个脚本。<code>scripts/install_sciml_env.jl</code>——用桥所嵌入的同一个
+Julia 1.12.x 运行——创建临时环境 <code>scripts/sysimage_env</code>，并把 FortranBridge、
+FjKinetics 与你的 ChemMechSim checkout 一起 develop 进去
+（<code>CHEMMECHSIM_PATH</code> 覆盖 checkout 的位置）。capstone 可执行文件启动时探测
+的就是这个环境；<code>FJ_KINETICS_PROJECT</code> 可以改指别处。</p>
+<p>然后构建示例，先生成 native 基线（<code>run_gri_native.jl</code>，用钉版本的 Julia
+跑——它拒绝在版本 shim 下运行，因为漂移的基线会打挂验收门，还把账错算到桥
+头上）。基准的桥这一侧，摘自 <code>examples/07_capstone/2_gri_ignition.f90</code>
+——整个化学驱动放在一个 eval 里，于是 Julia 侧的 throw 表现为一个无效结果，
+原因在 <code>get_last_error_message()</code> 里：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="k">call </span><span class="n">julia_eval_string</span><span class="p">(</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="s1">'function fj_gri_run() :: NamedTuple'</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="s1">'    gs = FjKinetics.build_gri30_kinetics()'</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="s1">'    return FjKinetics.run_gri_ignition(gs)'</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="nb">new_line</span><span class="p">(</span><span class="s1">'a'</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="s1">'end'</span><span class="p">)</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dummy</span><span class="p">%</span><span class="k">call</span><span class="p">(</span><span class="s1">'fj_gri_run'</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">res</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'fj_gri_run failed: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+</code></pre></div>
+<p>解出来的数组按批拷回——<code>ts</code>（2001 个点）、<code>T</code>（2001）以及展平进一个缓冲的
+<code>4 x 2001</code> 摩尔分数矩阵 <code>X</code>：每个数组一次 <code>%to_fortran</code>，逐元素的桥流量为
+零。<code>ts</code> 与 <code>X</code> 两段，逐字摘录：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="p">%</span><span class="n">property</span><span class="p">(</span><span class="s1">'ts'</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">v</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'property ts: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="p">%</span><span class="n">to_fortran</span><span class="p">(</span><span class="n">ts</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">NSAMPLE</span><span class="p">,</span><span class="w"> </span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int64_t</span><span class="p">))</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'to_fortran ts: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+
+<span class="w">    </span><span class="c">! Matrix{Float64} 4x2001, bulk-copied into the flat buffer</span>
+<span class="w">    </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">res</span><span class="p">%</span><span class="n">property</span><span class="p">(</span><span class="s1">'X'</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">v</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'property X: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">v</span><span class="p">%</span><span class="n">to_fortran</span><span class="p">(</span><span class="n">Xflat</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">NSP_OUT</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">NSAMPLE</span><span class="p">,</span><span class="w"> </span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int64_t</span><span class="p">))</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'to_fortran X: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+</code></pre></div>
+<p>（夹在中间的 <code>T</code> 段形状完全相同。）判决权随后在 Fortran 手里——点火判据直接
+在取回的数组上计算，与验证脚本用的是同一条：</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="k">do </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">NSAMPLE</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span>
+<span class="w">        </span><span class="n">dtdt</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">abs</span><span class="p">((</span><span class="n">T</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">T</span><span class="p">(</span><span class="n">k</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">ts</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">ts</span><span class="p">(</span><span class="n">k</span><span class="p">)))</span>
+<span class="w">    </span><span class="k">end do</span>
+<span class="k">    </span><span class="n">imax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">maxloc</span><span class="p">(</span><span class="n">dtdt</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w">          </span><span class="c">! first occurrence, like Julia's argmax</span>
+<span class="w">    </span><span class="n">t_ign_f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ts</span><span class="p">(</span><span class="n">imax</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+<p>验收是对着 native 运行过四道门——Fortran 算出的 <code>t_ign</code>、取回的 <code>T_end</code>、
+外加两个钉死列主序矩阵布局的 <code>X</code> 抽查值——每个的相对差都在 1e-8 以内
+（<a href="../../intro/validation/">验证</a>）。跑出来的头条数字：化学计量比 CH4/空气、
+1500 K、1 atm、定容绝热，延迟取在 <code>argmax |dT/dt|</code> 处，<strong>t_ign = 1.1075 ms</strong>。</p>
+<p><strong>先钉住环境，再怪别的。</strong> FjKinetics 的 <code>[compat]</code> 钉死了求解栈——
+Catalyst ~16.2、OrdinaryDiffEq ~6.111、SciMLBase ~2.155——因为一个未钉住的
+环境曾经漂到 OrdinaryDiffEq 7.x 线上，其步长控制器把每网格的
+<code>reinit!</code>/<code>step!</code> 模式拖慢约 <strong>700 倍</strong>（一个冻结网格要跑 982 步内部步而不是
+1 步）。如果逐网格化学突然变得极慢，先查解析结果；桥是惯常的嫌疑人，也通常
+是无辜的。</p>
+<h2 id="_2">路线二：实现接口<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<p>你的机理＝一个子类型加那两个方法。让它即插即用的规矩：</p>
+<ol>
+<li><strong>逐字镜像参数形状</strong>（<code>Y::AbstractMatrix{&lt;:Real}</code>、
+   <code>T</code>/<code>rho::AbstractVector{&lt;:Real}</code>、<code>dt::Real</code>）：capstone 传入的是包装好的
+   Fortran 内存及其 <code>view</code>，dispatch 落在你的具体类型上。</li>
+<li><strong>像内建求解器一样大声校验。</strong> <code>KineticsSolver</code> 方法里的守卫对，逐字摘录：</li>
+</ol>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="n">size</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ncell</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">size</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ks</span><span class="o">.</span><span class="n">nspec</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">length</span><span class="p">(</span><span class="n">rho</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ncell</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">error</span><span class="p">(</span><span class="s">"step_chemistry!: Y must be </span><span class="si">$</span><span class="p">(</span><span class="n">ncell</span><span class="p">)</span><span class="s">x</span><span class="si">$</span><span class="p">(</span><span class="n">ks</span><span class="o">.</span><span class="n">nspec</span><span class="p">)</span><span class="s">, rho </span><span class="si">$</span><span class="p">(</span><span class="n">ncell</span><span class="p">)</span><span class="s">"</span><span class="p">)</span>
+<span class="w">    </span><span class="n">dt</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">error</span><span class="p">(</span><span class="s">"step_chemistry!: dt must be positive, got </span><span class="si">$dt</span><span class="s">"</span><span class="p">)</span>
+</code></pre></div>
+<ol>
+<li><strong>原地推进；返回物理上可容许的状态。</strong> 返回质量分数就保持
+   <code>Y &gt;= 0</code> 且 <code>sum(Y) == 1</code>——<code>GriSolver</code> 在闭合求和前会把容差水平的负浓度
+   （痕量组分在 <code>abstol</code> 处的下冲）钳到零，因为喂给可压缩流求解器一个微观上
+   为负的质量分数是真实的危险。</li>
+<li><strong>这条路上允许 throw。</strong> 桥接住异常，原因经 <code>get_last_error_message()</code>
+   浮现在 Fortran 调用点。<a href="../two-sdks/">两套 SDK，两种速度</a>里的裸函数指针
+   路径是唯一的例外：被调函数体不许 throw。</li>
+<li><strong><code>rho</code> 是契约的一部分</strong>，哪怕你的机理用不到它；Fortran 总会打包它。</li>
+</ol>
+<p>Fortran 侧则完全不用改。capstone 把常驻的网格缓冲一次包装好，此后每个 Strang
+半步对活跃网格就是一次批量调用——摘自
+<code>examples/07_capstone/1_reacting_flow.f90</code>（其上的打包循环略去）：</p>
+<div class="highlight"><pre><span></span><code><span class="w">            </span><span class="k">write</span><span class="w"> </span><span class="p">(</span><span class="n">dts</span><span class="p">,</span><span class="w"> </span><span class="s1">'(es24.16)'</span><span class="p">)</span><span class="w"> </span><span class="n">dt_half</span>
+<span class="w">            </span><span class="k">write</span><span class="w"> </span><span class="p">(</span><span class="n">expr</span><span class="p">,</span><span class="w"> </span><span class="s1">'(a,i0,a,i0,a,i0,a)'</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="s1">'FjKinetics.step_chemistry!(FJ_KS, view(FJ_Y,1:'</span><span class="p">,</span><span class="w"> </span><span class="n">n_act</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="s1">',:), view(FJ_T,1:'</span><span class="p">,</span><span class="w"> </span><span class="n">n_act</span><span class="p">,</span><span class="w"> </span><span class="s1">'), view(FJ_RHO,1:'</span><span class="p">,</span><span class="w"> </span><span class="n">n_act</span><span class="p">,</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">                </span><span class="s1">'), '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="nb">trim</span><span class="p">(</span><span class="n">dts</span><span class="p">)</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="s1">')'</span>
+<span class="w">            </span><span class="n">v_res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_eval</span><span class="p">(</span><span class="nb">trim</span><span class="p">(</span><span class="n">expr</span><span class="p">))</span>
+</code></pre></div>
+<p>换掉 <code>FJ_KS</code> 绑定的求解器，同一行代码推进 2 个组分或 53 个：机理完全活在
+<code>view</code> 的 Julia 一侧。</p>
+<h2 id="_3">接下来去哪<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../deployment-modes/">交付形态</a>——同一套化学的四种交付形态；彼此之间变的
+  只有启动。</li>
+<li><a href="../../intro/validation/">验证</a>——t_ign = 1.1075 ms 从哪来、背后的验收门。</li>
+<li><a href="../known-limitations/">已知限制</a>——这套模式运行其中的边界：单线程、
+  <code>Float64</code> 数组，以及各自的应对。</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      FortranCallJulia - MIT License
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

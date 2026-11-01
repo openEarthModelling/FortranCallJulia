@@ -1,0 +1,1456 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../repository-tour/">
+      
+      
+        <link rel="next" href="../acceptance-gates/">
+      
+      
+        
+          <link rel="alternate" href="../../../developer/bridge-internals/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>桥内部 - FortranCallJulia</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#_1" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../" title="FortranCallJulia" class="md-header__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FortranCallJulia
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              桥内部
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../developer/bridge-internals/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="FortranCallJulia" class="md-nav__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FortranCallJulia
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    在 Fortran 中嵌入 Julia 运行时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FortranCallJulia 是什么？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/why-fortran-julia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    为什么是 Fortran 与 Julia？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/first-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一次调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/two-sdks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    两套 SDK，两种速度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/arrays-and-callbacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数组与回调
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/deployment-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    交付形态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/bring-your-own-kinetics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自带动力学
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    已知限制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发者指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发者指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../repository-tour/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    仓库导览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    桥内部
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    桥内部
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        八个文件
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        核心：生命周期与根集
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分发与装箱
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数组通道
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调访问
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        信号与错误传输
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        接下来去哪
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../acceptance-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验收门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教训
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零重建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    贡献指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../further-reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    延伸阅读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annex-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance annex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annex-figures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    图集讲解（学术版）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        八个文件
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        核心：生命周期与根集
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        分发与装箱
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        数组通道
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        回调访问
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        信号与错误传输
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        接下来去哪
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="_1">桥内部<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>8 个 C 文件、4 个职责组、1 份契约。用户侧页面从外面描述桥——<code>fcj_*</code>
+ABI、两层 Fortran SDK、那些数字。本页打开盒子：每个文件拥有什么、GC 的账
+怎么还、Julia 1.12 的 C API 在哪里逼出了绕行方案。它是写给改
+<code>src/bridge/</code> 的维护者的；要<em>使用</em>桥，不需要这里任何内容。</p>
+<p><a href="../../intro/architecture/">架构页</a>用一屏讲同一个系统；如果你是初来，先读
+它。</p>
+<h2 id="_2">八个文件<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>组</th>
+<th>文件</th>
+<th>拥有</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>核心</td>
+<td><code>core.c</code>、<code>memory.c</code></td>
+<td>生命周期（<code>fcj_init</code> / <code>fcj_init_ex</code> / <code>fcj_shutdown</code>）、线程钉死、GC 根集</td>
+</tr>
+<tr>
+<td>分发与装箱</td>
+<td><code>dispatch.c</code>、<code>types.c</code></td>
+<td><code>fcj_call*</code> / <code>fcj_call_kwargs</code>、函数名缓存、标量装箱（<code>fcj_box_*</code>）</td>
+</tr>
+<tr>
+<td>数组通道</td>
+<td><code>arrays.c</code>、<code>extract.c</code></td>
+<td>N 维零拷贝包装、深拷贝、批量取数回 Fortran</td>
+</tr>
+<tr>
+<td>回调访问</td>
+<td><code>callbacks.c</code>、<code>accessors.c</code></td>
+<td><code>@cfunction</code> 蹦床、<code>get_field</code> / <code>get_property</code>、原生 <code>Float64</code> 元素访问</td>
+</tr>
+</tbody>
+</table>
+<p>两个头文件给它们定框。<code>bridge.h</code> 是公共契约：53 个 <code>fcj_</code> 函数加
+<code>fcj_options_t</code>——Fortran <code>bind(c)</code> 层能碰到的一切。<code>bridge_internal.h</code>
+是私有的：原生元素访问器（<code>fcj_get_real</code> 及其同族）、共用助手、以及
+<code>fcj_shutdown</code> 逐一走过的各模块清缓存钩子。全站沿用的&rdquo;约 105 个导出
+<code>fcj_*</code> 符号&rdquo;这一口径数的是这些源码里整个 <code>fcj_</code> 命名空间；绑定层
+<code>src/julia_binding.f90</code> 声明其中 58 个（53 个公共函数中的 52 个——
+<code>fcj_ready</code> 从不被绑定——加 6 个内部元素访问器），其余是从不过 ABI 的内
+部助手。</p>
+<h2 id="_3">核心：生命周期与根集<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<p><code>core.c</code> 拥有状态机。<code>fcj_state</code> 是 <code>_Atomic</code>；每个入口先经 <code>fcj_ready()</code>
+检查它才碰 Julia。<a href="../../user/known-limitations/">已知限制</a>里的线程规则在
+<code>check_thread()</code> 里是被执行、不是被记录（逐字摘自 <code>src/bridge/core.c</code>）：</p>
+<div class="highlight"><pre><span></span><code><span class="kt">int</span><span class="w"> </span><span class="nf">check_thread</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pthread_self</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">main_thread_id</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">msg</span><span class="p">[</span><span class="mi">256</span><span class="p">];</span>
+<span class="w">        </span><span class="n">snprintf</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span><span class="w"> </span><span class="s">"Thread Error: Julia called from thread %p, runtime owned by thread %p"</span><span class="p">,</span>
+<span class="w">                 </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">pthread_self</span><span class="p">(),</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">main_thread_id</span><span class="p">);</span>
+<span class="w">        </span><span class="n">set_error</span><span class="p">(</span><span class="n">msg</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="c1">// Fail</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="c1">// OK</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>失败语义按入口分家：<code>fcj_init</code> 失败即终止进程（原始契约），而
+<code>fcj_init_ex</code> 返回错误码、原因留在 <code>fcj_get_last_error()</code>——Fortran 侧以
+<code>get_last_error_message()</code> 读到。<code>fcj_shutdown</code> 是单向的：状态机永不回到
+READY，shutdown 之后重新初始化会被响亮拒绝，而不是被尝试。</p>
+<p><code>memory.c</code> 是 GC 的故事，它的头注释比任何转述都说得清楚（摘自
+<code>src/bridge/memory.c</code>）：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// fcj_retain/fcj_release keep their bind(C) signatures but no longer round-trip</span>
+<span class="c1">// through Julia (retain_obj/release_obj in GCManager.jl) on the hot path.</span>
+<span class="c1">// Retained objects live in a Julia Vector{Any} reachable through the constant</span>
+<span class="c1">// binding `Main.FJ_ROOTS` ... bookkeeping is a pure-C ptr -&gt; slot hash map with</span>
+<span class="c1">// per-pointer refcounts, mirroring GCManager's REF_COUNTS/PTR_CACHE logic.</span>
+</code></pre></div>
+<p>维护者要记住的机制：</p>
+<ul>
+<li><strong>C static 不是 GC 根。</strong> 任何缓存进 <code>static</code> 的函数或值必须走
+  <code>fcj_retain</code>（模块绑定算数；裸 static 不算）。唯一被允许的例外是被
+  Base 绑定保活的不朽单例，例如 <code>types.c</code> 缓存的 <code>ComplexF64</code> 类型对象。</li>
+<li><strong><code>fcj_map</code> 是开放寻址加墓碑与引用计数</strong>——被删条目打墓碑使探测链保
+  持完整；同一指针 retain 两次占一个槽、计数为二。</li>
+<li><strong>这些 static 一处锁都没有。</strong> 单线程契约（<code>check_thread</code>）就是锁。
+  破坏契约你得到的是数据竞争，不是一个 bug 报告。</li>
+</ul>
+<h2 id="_4">分发与装箱<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<p><code>dispatch.c</code> 把名字变成调用。函数名缓存是 256 槽定长表、FNV-1a 哈希；
+缓存命中经 <code>fcj_retain</code> 路由，缓存住的 <code>jl_function_t*</code> 才有根。维护者
+永远不能撤销的两条失效规则：</p>
+<ol>
+<li>该缓存在 <code>fcj_shutdown</code> 中<strong>最先</strong>被清——趁还没有任何东西能再解引用
+   它。</li>
+<li><strong>每次 <code>julia_eval_string</code> 都使名字缓存失效。</strong> 一次 eval 可以把 <code>f</code>
+   从函数重定义成闭包，过期缓存项会永远调用捕获的旧对象。（Fast Path 注
+   册表刻意保留其捕获对象语义并写明了；见
+   <a href="../../user/two-sdks/">两套 SDK，两种速度</a>。）</li>
+</ol>
+<p><code>fcj_call1_float64</code> 一族到 N 参版本、再到关键字参数路径 <code>fcj_call_kwargs</code>，
+全部汇入同一条 <code>jl_call</code> 加异常检查的尾巴。<code>types.c</code> 把 Fortran 标量装
+箱成 Julia 对象——<code>fcj_box_float64</code>、<code>fcj_box_string</code> 等——外加上述缓存
+的 <code>ComplexF64</code> 数据类型。</p>
+<h2 id="_5">数组通道<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<p><code>arrays.c</code> 经 <code>jl_ptr_to_array</code> 把 Fortran 内存包装成 1 到 <code>FCJ_MAX_NDIM</code>
+任意秩的 Julia <code>Array</code>，零拷贝。包装路径逐字摘自 <code>src/bridge/arrays.c</code>
+（三个守卫助手同形，为篇幅略去）：</p>
+<div class="highlight"><pre><span></span><code><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="nf">fcj_wrap_array</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">long</span><span class="w"> </span><span class="n">ndim</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">long</span><span class="o">*</span><span class="w"> </span><span class="n">dims</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">fcj_ready</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">set_error</span><span class="p">(</span><span class="s">"Julia runtime not initialized or already shut down"</span><span class="p">);</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">check_thread</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">jl_value_t</span><span class="w"> </span><span class="o">*</span><span class="n">array_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">jl_value_t</span><span class="w"> </span><span class="o">*</span><span class="n">dims_tuple</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">JL_GC_PUSH2</span><span class="p">(</span><span class="o">&amp;</span><span class="n">array_type</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">dims_tuple</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">array_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">array_type_for_ndim</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span><span class="w"> </span><span class="s">"fcj_wrap_array"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="n">dims_tuple</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">make_dims_tuple</span><span class="p">(</span><span class="n">ndim</span><span class="p">,</span><span class="w"> </span><span class="n">dims</span><span class="p">,</span><span class="w"> </span><span class="s">"fcj_wrap_array"</span><span class="p">);</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="w">    </span><span class="n">jl_array_t</span><span class="w"> </span><span class="o">*</span><span class="n">arr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jl_ptr_to_array</span><span class="p">(</span><span class="n">array_type</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">dims_tuple</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">check_julia_exception</span><span class="p">())</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">JL_GC_POP</span><span class="p">();</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="n">JL_GC_POP</span><span class="p">();</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">)</span><span class="n">arr</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>这段代码里看得见两条纪律，全桥处处负载：局部值在调用期间用
+<code>JL_GC_PUSH2</code> 扎根；任何错误路径都先 <code>set_error</code> 原因再返回 NULL。深拷贝
+兄弟 <code>fcj_copy_array</code> 分配全新 Julia 数组并 memcpy 进去，分配前做溢出检
+查的规模乘积。</p>
+<p><code>extract.c</code> 是回程：<code>fcj_to_fortran</code>（一次批量拷进 Fortran 缓冲、长度校
+验）、<code>fcj_get_element</code>、<code>fcj_get_property</code>。批量路径是从
+<code>jl_array_data_</code> 出发、带 <code>n == len</code> 检查的单次 <code>memcpy</code>——正因如此取数
+通道是位级精确的，验收门才敢把 1e-8 的门摆在它面前
+（<a href="../acceptance-gates/">验收门</a>）。</p>
+<h2 id="_6">回调访问<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<p><code>callbacks.c</code> 跑另一个方向：Fortran <code>bind(c)</code> 子程序经 <code>@cfunction</code> 蹦床
+包装成 Julia 可调用对象，调用上下文不透明地携带。这是
+<code>examples/06_sciml/1_callback.f90</code> 那些 OrdinaryDiffEq 回调演示背后的机
+器。用户页的硬规则在这一层同样成立：蹦床帧容不下 Julia 异常，会抛错的被
+调方属未定义行为——在 Fortran 侧校验、返回哨兵值。</p>
+<p><code>accessors.c</code> 实现 <code>%element</code> 与 <code>%property</code>，而 Julia 1.12 的 C API 在
+这里逼出了全树最有教益的绕行。<code>extract.c</code> 的头注释记录在案（摘自
+<code>src/bridge/extract.c</code>）：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// 1.12.7 API notes (verified against include/julia/julia.h):</span>
+<span class="c1">//  - jl_get_property does not exist; jl_get_field exists but only reads</span>
+<span class="c1">//    plain struct fields (no getproperty overloads, no NamedTuples), so</span>
+<span class="c1">//    the contract's fallback applies: Base.getproperty is cached once and</span>
+<span class="c1">//    jl_call-ed, matching helper_getfield semantics in Accessors.jl;</span>
+<span class="c1">//    getproperty dispatches on Symbol, so the name is interned with</span>
+<span class="c1">//    jl_symbol (immortal, globally rooted) instead of boxed as a String;</span>
+<span class="c1">//  - jl_arrayref does not exist either (removed with the Memory-backed</span>
+<span class="c1">//    array rewrite), so element boxing goes through a cached</span>
+<span class="c1">//    Base.getindex binding -- the same numeric boxing jl_arrayref used to</span>
+<span class="c1">//    perform.</span>
+</code></pre></div>
+<p>把它读成通用教训：当某个 <code>jl_*</code> 便捷函数缺席时，把等价的 Base 函数缓存
+一次（经 <code>fcj_retain</code> 扎根）再 <code>jl_call</code> 它——不要手搓结构体偏移。
+<code>bridge_internal.h</code> 补上原生元素访问器（<code>fcj_get_real</code> / <code>fcj_set_real</code>
+及 2 维、3 维形态）：对包装内存的直接 <code>Float64</code> 读写，不装箱，供热路径
+逐格使用。</p>
+<h2 id="_7">信号与错误传输<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h2>
+<p>桥永不写 <code>jl_options.handle_signals</code>：嵌入式 Julia 的 GC safepoint 轮询依
+赖 Julia 自己的信号处理器，关掉它就会在 safepoint 崩溃——是必崩，不是偶
+发（<a href="../lessons/">教训</a>）。<code>fcj_options_t</code> 提供的 <code>handle_signals = 0</code> 含
+义是<em>不接管</em>：init 成功后桥把 <code>SIGINT</code> / <code>SIGTERM</code> 重置为 <code>SIG_DFL</code>，
+GC 关键的处理器原封不动。</p>
+<p>错误走一条通道：每个运行时一个 last-error 缓冲，经 <code>fcj_get_last_error()</code>
+读出、以 <code>get_last_error_message()</code> 露面。Julia 侧异常在调用边界被接住、
+格式化进该缓冲，调用返回无效句柄或 NULL——进程继续跑。</p>
+<h2 id="_8">接下来去哪<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../acceptance-gates/">验收门</a>——你怎么证明自己没把这些弄坏。</li>
+<li><a href="../rebuild/">从零重建</a>——把这个核心包成交付形态的 sysimage 与 AOT 构建。</li>
+<li><a href="../lessons/">教训</a>——把这些规则写下来的那几次事故。</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      FortranCallJulia - MIT License
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

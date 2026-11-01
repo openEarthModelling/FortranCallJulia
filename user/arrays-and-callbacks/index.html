@@ -1,0 +1,1460 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../two-sdks/">
+      
+      
+        <link rel="next" href="../deployment-modes/">
+      
+      
+        
+          <link rel="alternate" href="./" hreflang="en">
+        
+          <link rel="alternate" href="../../zh/user/arrays-and-callbacks/" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Arrays and callbacks - FortranCallJulia</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#arrays-and-callbacks" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="FortranCallJulia" class="md-header__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FortranCallJulia
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Arrays and callbacks
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="Select language">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="../../zh/user/arrays-and-callbacks/" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="FortranCallJulia" class="md-nav__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FortranCallJulia
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FortranCallJulia
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Introduction
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What is FortranCallJulia?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/why-fortran-julia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why Fortran and Julia?
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../first-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first call
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../two-sdks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Two SDKs, two speeds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays and callbacks
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Arrays and callbacks
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#arrays-in-zero-copy-wrap-or-deep-copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arrays in: zero-copy wrap or deep copy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arrays-out-navigate-then-copy-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arrays out: navigate, then copy once
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callbacks-fortran-as-a-right-hand-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Callbacks: Fortran as a right-hand side
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-rules-both-channels-share" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The rules both channels share
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to go next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment modes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bring-your-own-kinetics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bring your own kinetics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Known limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Developer Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Developer Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/repository-tour/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository tour
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/bridge-internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bridge internals
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/acceptance-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Acceptance gates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lessons
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rebuild from zero
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/further-reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Further reading
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../developer/annex-performance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance annex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#arrays-in-zero-copy-wrap-or-deep-copy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arrays in: zero-copy wrap or deep copy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arrays-out-navigate-then-copy-once" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arrays out: navigate, then copy once
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#callbacks-fortran-as-a-right-hand-side" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Callbacks: Fortran as a right-hand side
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-rules-both-channels-share" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The rules both channels share
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#where-to-go-next" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where to go next
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="arrays-and-callbacks">Arrays and callbacks<a class="headerlink" href="#arrays-and-callbacks" title="Permanent link">&para;</a></h1>
+<p>Scalars crossed the bridge on <a href="../first-call/">Your first call</a>; real
+computing moves arrays and needs control flow in both directions. This
+page is the remaining data plumbing: arrays into Julia without copying,
+arrays back out in one call, and a <code>bind(c)</code> Fortran subroutine driven
+from Julia as a right-hand side. All of it sits on the two SDKs of
+<a href="../two-sdks/">Two SDKs, two speeds</a>.</p>
+<h2 id="arrays-in-zero-copy-wrap-or-deep-copy">Arrays in: zero-copy wrap or deep copy<a class="headerlink" href="#arrays-in-zero-copy-wrap-or-deep-copy" title="Permanent link">&para;</a></h2>
+<p>Two rank-generic functions decide how an array crosses, and they differ
+only in memory ownership. Both are single assumed-rank entry points that
+read the extents from <code>size(arr, k)</code> &ndash; there is no caller-supplied length
+that could disagree with the array &ndash; and both take any rank from 1 to 16
+of contiguous <code>real(kind=8)</code> data.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>julia_wrap_array(arr)</code></th>
+<th><code>julia_copy_array(arr)</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>What Julia gets</td>
+<td>an <code>Array{Float64,N}</code> header pointing at <strong>your</strong> memory</td>
+<td>a fresh <code>Array{Float64,N}</code>, data memcpy&rsquo;d in</td>
+</tr>
+<tr>
+<td>Data motion</td>
+<td>none: the wrap builds a header, not a payload</td>
+<td>one full copy (and another if you copy results back)</td>
+</tr>
+<tr>
+<td>Julia-side writes</td>
+<td>land in your Fortran array, immediately</td>
+<td>land in Julia&rsquo;s copy</td>
+</tr>
+<tr>
+<td>Ownership</td>
+<td>yours; Julia never frees the memory</td>
+<td>Julia&rsquo;s, GC-managed</td>
+</tr>
+<tr>
+<td>Reach for it when</td>
+<td>in-place kernels, big grids, hot loops</td>
+<td>the Julia side keeps the array, or you want the aliasing gone</td>
+</tr>
+</tbody>
+</table>
+<p>Both reject loudly instead of guessing: a rank above 16, any zero extent
+(<code>c_loc</code> on a zero-sized array is illegal), or a non-contiguous actual
+argument each yields an invalid <code>JuliaValue</code> plus a diagnostic on
+<code>error_unit</code>.</p>
+<p>The wrap in action, from <code>examples/01_basics/2_zero_copy_arrays.f90</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! 2. Box the Fortran Array into a Julia Object</span>
+<span class="w">    </span><span class="c">!    This creates a Julia Array header pointing to the EXISTING Fortran memory.</span>
+<span class="w">    </span><span class="c">!    NO DATA COPY happens here. Extents are derived from size() by the SDK.</span>
+<span class="w">    </span><span class="n">dummy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_wrap_array</span><span class="p">(</span><span class="n">simulation_grid</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c">! 3. Call Julia Function with the Array</span>
+<span class="w">    </span><span class="c">!    Julia sees a standard Matrix{Float64}.</span>
+<span class="w">    </span><span class="c">!    Any changes Julia makes are written directly to 'simulation_grid'.</span>
+<span class="w">    </span><span class="c">!    ExamplesLib.update_simulation_state!(grid, dt)</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia</span><span class="p">%</span><span class="k">call</span><span class="p">(</span><span class="s2">"ExamplesLib.update_simulation_state!"</span><span class="p">,</span><span class="w"> </span><span class="n">dummy</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5d0</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c">! 4. Verify Changes in Fortran</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"After Julia Update:"</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"Grid(1,1) [Expected &gt; 0]: "</span><span class="p">,</span><span class="w"> </span><span class="n">simulation_grid</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"Grid(50,50):              "</span><span class="p">,</span><span class="w"> </span><span class="n">simulation_grid</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">)</span>
+</code></pre></div>
+<p><code>simulation_grid</code> started at zero; after the call its elements are not.
+That is the proof of zero-copy &ndash; had a copy happened, the Fortran array
+would still read <code>0.0</code>. One rule comes with the wrap: the header points
+at your memory and the ownership flag says Julia will not free it, so
+keeping that memory alive and in place, for as long as any handle can
+still reach it, is your side of the bargain.</p>
+<p>N-dimensional means it: the rank is not capped at 2 or 3. The same wrap
+through the raw C ABI, from <code>examples/01_basics/2_arrays.f90</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! --- 3. Hypermatrix (4D, zero-copy through the rank-generic API) ---</span>
+<span class="w">    </span><span class="c">! The high-level SDK form is simply  vec_obj = julia_wrap_array(hyper)</span>
+<span class="w">    </span><span class="c">! (extents derived from size()); here we exercise the raw C form and</span>
+<span class="w">    </span><span class="c">! verify the wrap via introspection.</span>
+<span class="w">    </span><span class="n">hyper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0d0</span>
+<span class="w">    </span><span class="n">raw_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">c_loc</span><span class="p">(</span><span class="n">hyper</span><span class="p">)</span>
+<span class="w">    </span><span class="n">dims</span><span class="p">(</span><span class="mi">1</span><span class="p">:</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="mi">2_c_long</span><span class="p">,</span><span class="w"> </span><span class="mi">3_c_long</span><span class="p">,</span><span class="w"> </span><span class="mi">4_c_long</span><span class="p">,</span><span class="w"> </span><span class="mi">5_c_long</span><span class="p">]</span>
+<span class="w">    </span><span class="n">wrapped_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fcj_wrap_array</span><span class="p">(</span><span class="n">raw_ptr</span><span class="p">,</span><span class="w"> </span><span class="mi">4_c_long</span><span class="p">,</span><span class="w"> </span><span class="n">dims</span><span class="p">)</span>
+<span class="w">    </span><span class="n">mat_obj</span><span class="p">%</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fcj_retain</span><span class="p">(</span><span class="n">wrapped_ptr</span><span class="p">)</span>
+<span class="w">    </span><span class="k">print</span><span class="w"> </span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="s2">"  3. Rank-4 wrap: ndims="</span><span class="p">,</span><span class="w"> </span><span class="n">mat_obj</span><span class="p">%</span><span class="n">ndims</span><span class="p">(),</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">             </span><span class="s2">" sizes="</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">mat_obj</span><span class="p">%</span><span class="n">size_dim</span><span class="p">(</span><span class="n">k</span><span class="p">),</span><span class="w"> </span><span class="n">k</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+</code></pre></div>
+<p>The deep copy is the same call shape with different economics. Both
+fragments below run on a 3000 x 3000 matrix (about 72 MB), from
+<code>examples/04_performance/3_memory_transfer.f90</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! Step 1: Explicit Deep Copy to Julia</span>
+<span class="w">    </span><span class="n">wrapped_array</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_copy_array</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+<span class="w">    </span><span class="c">! Step 2: Call function (returns new array)</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia</span><span class="p">%</span><span class="k">call</span><span class="p">(</span><span class="s2">"perf_scale_matrix"</span><span class="p">,</span><span class="w"> </span><span class="n">wrapped_array</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0d0</span><span class="p">)</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! Step 1: Wrap (O(1))</span>
+<span class="w">    </span><span class="c">! The rank-generic wrapper derives the extents from size()</span>
+<span class="w">    </span><span class="n">wrapped_array</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_wrap_array</span><span class="p">(</span><span class="n">matrix</span><span class="p">)</span>
+
+<span class="w">    </span><span class="c">! Step 2: Call In-Place Function</span>
+<span class="w">    </span><span class="c">! We pass the wrapped array. No data moves.</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia</span><span class="p">%</span><span class="k">call</span><span class="p">(</span><span class="s2">"perf_scale_matrix_bang"</span><span class="p">,</span><span class="w"> </span><span class="n">wrapped_array</span><span class="p">,</span><span class="w"> </span><span class="mf">2.0d0</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="arrays-out-navigate-then-copy-once">Arrays out: navigate, then copy once<a class="headerlink" href="#arrays-out-navigate-then-copy-once" title="Permanent link">&para;</a></h2>
+<p>Results come back as handles. Two accessors navigate a result object, and
+one call moves the data:</p>
+<ul>
+<li><code>%element(i)</code> &ndash; 1-based linear indexing, returns a retained handle.</li>
+<li><code>%property(name)</code> (and its sibling <code>%get_field(name)</code>) &ndash; named access
+  through <code>Base.getproperty</code>: struct fields, <code>NamedTuple</code> keys, solver
+  solution objects.</li>
+<li><code>%to_fortran(buf, n)</code> &ndash; copies a dense array into your Fortran buffer
+  in <strong>one</strong> call; the <code>real</code> and <code>complex</code> overloads resolve by the
+  buffer type.</li>
+</ul>
+<p>From <code>examples/06_sciml/2_batch_data.f90</code> (<code>fail</code> is that example&rsquo;s local
+abort helper):</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_eval</span><span class="p">(</span><span class="s1">' (a = [7.0,8.0,9.0],) '</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">d</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'julia_eval NamedTuple failed'</span><span class="p">)</span>
+<span class="w">    </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="p">%</span><span class="n">property</span><span class="p">(</span><span class="s2">"a"</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'property("a") failed: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">a</span><span class="p">%</span><span class="n">to_fortran</span><span class="p">(</span><span class="n">rbuf</span><span class="p">,</span><span class="w"> </span><span class="mi">3_c_int64_t</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">&amp;</span>
+<span class="w">        </span><span class="k">call </span><span class="n">fail</span><span class="p">(</span><span class="s1">'to_fortran on NamedTuple property failed: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">())</span>
+</code></pre></div>
+<p>The error idiom is the house style from <a href="../first-call/">Your first call</a>:
+check the handle or the return code, and <code>get_last_error_message()</code>
+carries the Julia-side text. An out-of-bounds <code>%element(5)</code> on a
+two-element vector, for instance, returns an invalid handle and populates
+the message.</p>
+<p>Batch extraction is also the cheap way across. Every per-element access
+is a bridge hop; <code>%to_fortran</code> is one hop for the whole array. The same
+arithmetic says: when a loop could run on either side, run it in Julia
+and cross once with an array &ndash;
+<code>examples/04_performance/4_access_patterns.f90</code> measures exactly that
+trade at a million elements.</p>
+<h2 id="callbacks-fortran-as-a-right-hand-side">Callbacks: Fortran as a right-hand side<a class="headerlink" href="#callbacks-fortran-as-a-right-hand-side" title="Permanent link">&para;</a></h2>
+<p>Arrays move data; callbacks hand control to Fortran. <code>julia_callback</code>
+wraps a <code>bind(c)</code> subroutine pointer into a Julia callable
+<code>f(du, u, p, t)</code> &ndash; the signature DifferentialEquations-style solvers
+expect &ndash; so the solver calls into your Fortran on every step. The
+callable <code>ccall</code>s your subroutine, and a context pointer you supply at
+creation reaches it untouched on every invocation.</p>
+<p>The subroutine signs a six-argument contract. This one, from
+<code>examples/06_sciml/1_callback.f90</code>, is a stateless exponential decay
+<code>du = -k*u</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="k">subroutine </span><span class="n">rhs</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">du</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="p">)</span><span class="w"> </span><span class="k">bind</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">ctx</span><span class="w">        </span><span class="c">! unused (stateless RHS)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int64_t</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">n</span>
+<span class="w">        </span><span class="k">type</span><span class="p">(</span><span class="kt">c_ptr</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">du</span>
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_double</span><span class="p">),</span><span class="w"> </span><span class="k">value</span><span class="p">,</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">in</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">t</span><span class="w">  </span><span class="c">! unused (autonomous RHS)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_int</span><span class="p">),</span><span class="w"> </span><span class="k">intent</span><span class="p">(</span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">err</span>
+
+<span class="w">        </span><span class="kt">real</span><span class="p">(</span><span class="nb">kind</span><span class="o">=</span><span class="kt">c_double</span><span class="p">),</span><span class="w"> </span><span class="k">pointer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">u_arr</span><span class="p">(:),</span><span class="w"> </span><span class="n">du_arr</span><span class="p">(:)</span>
+<span class="w">        </span><span class="kt">integer</span><span class="w"> </span><span class="kd">::</span><span class="w"> </span><span class="n">i</span>
+
+<span class="w">        </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0_c_int</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">n</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0_c_int64_t</span><span class="p">)</span><span class="w"> </span><span class="k">return</span>
+<span class="k">        call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">u</span><span class="p">,</span><span class="w"> </span><span class="n">u_arr</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
+<span class="w">        </span><span class="k">call </span><span class="nb">c_f_pointer</span><span class="p">(</span><span class="n">du</span><span class="p">,</span><span class="w"> </span><span class="n">du_arr</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)])</span>
+<span class="w">        </span><span class="k">do </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+<span class="w">            </span><span class="n">du_arr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">K_DECAY</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">u_arr</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="k">end do</span>
+<span class="k">    end subroutine </span><span class="n">rhs</span>
+</code></pre></div>
+<p>Three properties of that contract:</p>
+<ul>
+<li><strong><code>u</code> and <code>du</code> are raw pointers into Julia&rsquo;s arrays</strong> &ndash; the zero-copy
+  channel above, in reverse. You read <code>u</code> and write <code>du</code> in place, <code>n</code>
+  elements each; nothing is marshalled per step.</li>
+<li><strong><code>err</code> is the error path.</strong> Return nonzero and the Julia side throws;
+  the bridge catches the exception and it surfaces at the Fortran call
+  site through <code>get_last_error_message()</code>. No Fortran failure crosses
+  silently.</li>
+<li><strong><code>ctx</code> is yours</strong> &ndash; any <code>type(c_ptr)</code> you passed at creation, handed
+  back on every call (ignored by this stateless RHS).</li>
+</ul>
+<p>Wiring it up, same example:</p>
+<div class="highlight"><pre><span></span><code><span class="w">    </span><span class="c">! 2. Wrap the bind(c) RHS into a Julia callable (already retained)</span>
+<span class="w">    </span><span class="n">fn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">c_funloc</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+<span class="w">    </span><span class="n">cb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_callback</span><span class="p">(</span><span class="n">fn</span><span class="p">,</span><span class="w"> </span><span class="nb">c_null_ptr</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">cb</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        write</span><span class="w"> </span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="s1">'FATAL: julia_callback failed: '</span><span class="w"> </span><span class="o">//</span><span class="w"> </span><span class="n">get_last_error_message</span><span class="p">()</span>
+<span class="w">        </span><span class="k">stop </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="w">    </span><span class="c">! 3. Box f's arguments: du (Float64 vector workspace, zero-copy),</span>
+<span class="w">    </span><span class="c">!    u = [1.0], p = 0.0, t = 0.0 (p is ignored by the bridge closure)</span>
+<span class="w">    </span><span class="n">du_f</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0_c_double</span>
+<span class="w">    </span><span class="n">u_f</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0_c_double</span>
+<span class="w">    </span><span class="n">du_boxed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_wrap_array</span><span class="p">(</span><span class="n">du_f</span><span class="p">)</span>
+<span class="w">    </span><span class="n">u_boxed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_wrap_array</span><span class="p">(</span><span class="n">u_f</span><span class="p">)</span>
+<span class="w">    </span><span class="n">p_boxed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_box_real</span><span class="p">(</span><span class="mf">0.0_c_double</span><span class="p">)</span>
+<span class="w">    </span><span class="n">t_boxed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">julia_box_real</span><span class="p">(</span><span class="mf">0.0_c_double</span><span class="p">)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">du_boxed</span><span class="p">%</span><span class="n">is_valid</span><span class="p">()</span><span class="w"> </span><span class="p">.</span><span class="nb">or</span><span class="p">.</span><span class="w"> </span><span class="p">.</span><span class="nb">not</span><span class="p">.</span><span class="w"> </span><span class="n">u_boxed</span><span class="p">%</span><span class="n">is_valid</span><span class="p">())</span><span class="w"> </span><span class="k">then</span>
+<span class="k">        write</span><span class="w"> </span><span class="p">(</span><span class="n">error_unit</span><span class="p">,</span><span class="w"> </span><span class="s1">'(A)'</span><span class="p">)</span><span class="w"> </span><span class="s1">'FATAL: boxing du/u failed'</span>
+<span class="w">        </span><span class="k">stop </span><span class="mi">1</span>
+<span class="w">    </span><span class="k">end if</span>
+
+<span class="w">    </span><span class="c">! 4. Invoke the Julia callable f(du, u, p, t); it ccalls back into</span>
+<span class="w">    </span><span class="c">!    rhs, which writes du in place.</span>
+<span class="w">    </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cb</span><span class="p">%</span><span class="n">call_value</span><span class="p">(</span><span class="n">du_boxed</span><span class="p">,</span><span class="w"> </span><span class="n">u_boxed</span><span class="p">,</span><span class="w"> </span><span class="n">p_boxed</span><span class="p">,</span><span class="w"> </span><span class="n">t_boxed</span><span class="p">)</span>
+</code></pre></div>
+<p>After <code>call_value</code>, <code>du_f(1)</code> already holds <code>-K_DECAY * 1.0</code>: the RHS
+wrote straight into the Fortran array that was wrapped as <code>du</code>. The
+bridge also binds the callable to <code>Main.FJ_CALLBACK</code>, so solver code
+assembled with <code>julia_eval_string</code> can reach it by name. The end-to-end
+version &ndash; a harmonic oscillator integrated with Tsit5, checked to about
+1e-9 against the analytic solution &ndash; is
+<code>examples/06_sciml/3_sciml_demo.f90</code>.</p>
+<p>Both directions ride trampolines. This one boxes your <code>bind(c)</code> address
+as an opaque pointer and closes over it in Julia. In the other direction,
+<code>get_function_pointer</code> has the bridge generate an <code>@cfunction</code> trampoline
+rooted in <code>Main</code>, handing Fortran a raw C pointer to a Julia function at
+~3.8 ns per call; that path and its hard edges belong to
+<a href="../two-sdks/">Two SDKs, two speeds</a>.</p>
+<h2 id="the-rules-both-channels-share">The rules both channels share<a class="headerlink" href="#the-rules-both-channels-share" title="Permanent link">&para;</a></h2>
+<ol>
+<li><strong>One thread.</strong> Every bridge call &ndash; a wrap, an extraction, a callback
+   invocation &ndash; runs on the thread that initialized the runtime. A
+   callback is no exception: the solver executes on the thread that
+   called it, which in this bridge is always the init thread.</li>
+<li><strong>Array element types are <code>Float64</code> and <code>ComplexF64</code>, only.</strong> Wraps
+   take contiguous <code>real(c_double)</code>; <code>%to_fortran</code> fills a <code>real</code> or
+   <code>complex</code> buffer. Scalars are not so bounded &ndash; every scalar type
+   boxes. This is a known limit, tracked in
+   <a href="../known-limitations/">Known limitations</a>.</li>
+<li><strong>Crossings are the budget, not calls.</strong> A generic call costs ~815 ns
+   and a Fast Path call ~3.8 ns (100k-iteration averages); either is
+   noise next to real solver work. But a per-element loop that crosses
+   the bridge a million times pays the hop a million times. Move the
+   loop into one side; do not move the elements across.</li>
+</ol>
+<h2 id="where-to-go-next">Where to go next<a class="headerlink" href="#where-to-go-next" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../deployment-modes/">Deployment modes</a> &ndash; the same program delivered
+  as JIT, sysimage, or AOT library: what changes is startup, not the
+  per-call cost you just learned to reason about.</li>
+<li><a href="../bring-your-own-kinetics/">Bring your own kinetics</a> &ndash; these channels
+  at capstone scale, with a real chemistry package behind them.</li>
+<li><a href="../known-limitations/">Known limitations</a> &ndash; thread pinning, array
+  types, platform support, in one honest list.</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      FortranCallJulia - MIT License
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

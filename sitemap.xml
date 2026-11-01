@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
+    <url>
+        <loc>None./</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="None"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/"/>
+    </url>
+    <url>
+        <loc>Nonedeveloper/acceptance-gates/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/acceptance-gates/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/acceptance-gates/"/>
+    </url>
+    <url>
+        <loc>Nonedeveloper/annex-performance/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/annex-performance/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/annex-performance/"/>
+    </url>
+    <url>
+        <loc>Nonedeveloper/bridge-internals/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/bridge-internals/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/bridge-internals/"/>
+    </url>
+    <url>
+        <loc>Nonedeveloper/contributing/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/contributing/"/>
+    </url>
+    <url>
+        <loc>Nonedeveloper/further-reading/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/further-reading/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/further-reading/"/>
+    </url>
+    <url>
+        <loc>Nonedeveloper/lessons/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/lessons/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/lessons/"/>
+    </url>
+    <url>
+        <loc>Nonedeveloper/rebuild/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/rebuild/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/rebuild/"/>
+    </url>
+    <url>
+        <loc>Nonedeveloper/repository-tour/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/repository-tour/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/repository-tour/"/>
+    </url>
+    <url>
+        <loc>Noneintro/architecture/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/architecture/"/>
+    </url>
+    <url>
+        <loc>Noneintro/validation/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/validation/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/validation/"/>
+    </url>
+    <url>
+        <loc>Noneintro/what-is-this/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/what-is-this/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/what-is-this/"/>
+    </url>
+    <url>
+        <loc>Noneintro/why-fortran-julia/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/why-fortran-julia/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/why-fortran-julia/"/>
+    </url>
+    <url>
+        <loc>Noneuser/arrays-and-callbacks/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/arrays-and-callbacks/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/arrays-and-callbacks/"/>
+    </url>
+    <url>
+        <loc>Noneuser/bring-your-own-kinetics/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/bring-your-own-kinetics/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/bring-your-own-kinetics/"/>
+    </url>
+    <url>
+        <loc>Noneuser/deployment-modes/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/deployment-modes/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/deployment-modes/"/>
+    </url>
+    <url>
+        <loc>Noneuser/first-call/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/first-call/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/first-call/"/>
+    </url>
+    <url>
+        <loc>Noneuser/installation/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/installation/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/installation/"/>
+    </url>
+    <url>
+        <loc>Noneuser/known-limitations/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/known-limitations/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/known-limitations/"/>
+    </url>
+    <url>
+        <loc>Noneuser/two-sdks/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/two-sdks/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/two-sdks/"/>
+    </url>
+    <url>
+        <loc>Nonezh/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="None"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/acceptance-gates/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/acceptance-gates/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/acceptance-gates/"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/annex-performance/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/annex-performance/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/annex-performance/"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/bridge-internals/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/bridge-internals/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/bridge-internals/"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/contributing/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/contributing/"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/further-reading/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/further-reading/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/further-reading/"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/lessons/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/lessons/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/lessons/"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/rebuild/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/rebuild/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/rebuild/"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/repository-tour/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/repository-tour/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/repository-tour/"/>
+    </url>
+    <url>
+        <loc>Nonezh/intro/architecture/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/architecture/"/>
+    </url>
+    <url>
+        <loc>Nonezh/intro/validation/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/validation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/validation/"/>
+    </url>
+    <url>
+        <loc>Nonezh/intro/what-is-this/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/what-is-this/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/what-is-this/"/>
+    </url>
+    <url>
+        <loc>Nonezh/intro/why-fortran-julia/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/why-fortran-julia/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/why-fortran-julia/"/>
+    </url>
+    <url>
+        <loc>Nonezh/user/arrays-and-callbacks/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/arrays-and-callbacks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/arrays-and-callbacks/"/>
+    </url>
+    <url>
+        <loc>Nonezh/user/bring-your-own-kinetics/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/bring-your-own-kinetics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/bring-your-own-kinetics/"/>
+    </url>
+    <url>
+        <loc>Nonezh/user/deployment-modes/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/deployment-modes/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/deployment-modes/"/>
+    </url>
+    <url>
+        <loc>Nonezh/user/first-call/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/first-call/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/first-call/"/>
+    </url>
+    <url>
+        <loc>Nonezh/user/installation/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/installation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/installation/"/>
+    </url>
+    <url>
+        <loc>Nonezh/user/known-limitations/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/known-limitations/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/known-limitations/"/>
+    </url>
+    <url>
+        <loc>Nonezh/user/two-sdks/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/two-sdks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/two-sdks/"/>
+    </url>
+    <url>
+        <loc>Nonezh/developer/annex-figures/</loc>
+        <lastmod>2026-11-01</lastmod>
+        <changefreq>daily</changefreq>
+        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/annex-figures/"/>
+    </url>
+</urlset>

@@ -1,0 +1,1426 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../further-reading/">
+      
+      
+        <link rel="next" href="../annex-figures/">
+      
+      
+        
+          <link rel="alternate" href="../../../developer/annex-performance/" hreflang="en">
+        
+          <link rel="alternate" href="./" hreflang="zh">
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Performance annex - FortranCallJulia</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#capstone-performance-report-fortran-julia-reacting-flow-example" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../../" title="FortranCallJulia" class="md-header__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            FortranCallJulia
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Performance annex
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+      <div class="md-header__option">
+  <div class="md-select">
+    
+    <button class="md-header__button md-icon" aria-label="选择当前语言">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m12.87 15.07-2.54-2.51.03-.03A17.5 17.5 0 0 0 14.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2zm-2.62 7 1.62-4.33L19.12 17z"/></svg>
+    </button>
+    <div class="md-select__inner">
+      <ul class="md-select__list">
+        
+          <li class="md-select__item">
+            <a href="../../../developer/annex-performance/" hreflang="en" class="md-select__link">
+              English
+            </a>
+          </li>
+        
+          <li class="md-select__item">
+            <a href="./" hreflang="zh" class="md-select__link">
+              简体中文
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../" title="FortranCallJulia" class="md-nav__button md-logo" aria-label="FortranCallJulia" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    FortranCallJulia
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    在 Fortran 中嵌入 Julia 运行时
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    入门
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    入门
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/what-is-this/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FortranCallJulia 是什么？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/why-fortran-julia/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    为什么是 Fortran 与 Julia？
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/architecture/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    架构
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../intro/validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验证
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    用户指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    用户指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    安装
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/first-call/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    第一次调用
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/two-sdks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    两套 SDK，两种速度
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/arrays-and-callbacks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    数组与回调
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/deployment-modes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    交付形态
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/bring-your-own-kinetics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    自带动力学
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user/known-limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    已知限制
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    开发者指南
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    开发者指南
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../repository-tour/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    仓库导览
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bridge-internals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    桥内部
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../acceptance-gates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    验收门
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../lessons/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    教训
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rebuild/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    从零重建
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    贡献指南
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../further-reading/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    延伸阅读
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance annex
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Performance annex
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#end-to-end-detonation-validation-hlw-2000-ex2-nx-2700-t-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        End-to-end detonation validation (HLW 2000 Ex.2, nx = 2700, t = 0.3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chemistry-kernel-micro-benchmark-identical-64-cell-hotfrozen-mix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chemistry kernel micro-benchmark (identical 64-cell hot/frozen mix)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-each-mode-buys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What each mode buys
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-pinning-incident-why-the-pinned-stack-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version-pinning incident (why the pinned stack matters)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-init-artifact-downloads-self-containedness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First-init artifact downloads (self-containedness)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../annex-figures/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    图集讲解（学术版）
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#end-to-end-detonation-validation-hlw-2000-ex2-nx-2700-t-03" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        End-to-end detonation validation (HLW 2000 Ex.2, nx = 2700, t = 0.3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chemistry-kernel-micro-benchmark-identical-64-cell-hotfrozen-mix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chemistry kernel micro-benchmark (identical 64-cell hot/frozen mix)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-each-mode-buys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What each mode buys
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#version-pinning-incident-why-the-pinned-stack-matters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Version-pinning incident (why the pinned stack matters)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-init-artifact-downloads-self-containedness" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        First-init artifact downloads (self-containedness)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<p>This annex is published in English only.</p>
+<p>Migrated from <code>examples/07_capstone/PERFORMANCE.md</code> (the 2026-10-26
+capstone report). Every number, table, and conclusion below is
+reproduced verbatim; only the prose identifying the measurement
+machines has been genericized for the public site (machine references
+read &ldquo;a shared build host&rdquo; / &ldquo;the loaded host&rdquo; here &ndash; load figures
+and core counts are part of the measurement record and are unchanged).</p>
+<h1 id="capstone-performance-report-fortran-julia-reacting-flow-example">Capstone performance report: Fortran ⇄ Julia reacting-flow example<a class="headerlink" href="#capstone-performance-report-fortran-julia-reacting-flow-example" title="Permanent link">&para;</a></h1>
+<p>All numbers from the 2026-10-26 runs on a shared build host (192-core,
+load ~119 during measurement; single core per run). Julia
+1.12.7, FjKinetics on the compat-pinned stack: the load-bearing pins
+(OrdinaryDiffEq 6.111.0, Catalyst 16.2.1, PrecompileTools 1.3.4) are
+identical in every validation environment; patch-level deps
+differ slightly by artifact &ndash; the JIT runs resolved through FjKinetics&rsquo;
+Manifest at measurement time (SciMLBase 2.155.1, StaticArrays 1.9.18),
+while the
+sysimage and AOT environments resolved SciMLBase 2.155.2 /
+StaticArrays 1.9.24 (within [compat], which floors the minor lines, so
+the 700x drift class cannot recur through resolution). Identical compiled kernel
+(<code>FjKinetics.step_chemistry!</code>, Rodas5P, abstol 1e-10 / reltol 1e-8) in
+every mode.</p>
+<h2 id="end-to-end-detonation-validation-hlw-2000-ex2-nx-2700-t-03">End-to-end detonation validation (HLW 2000 Ex.2, nx = 2700, t = 0.3)<a class="headerlink" href="#end-to-end-detonation-validation-hlw-2000-ex2-nx-2700-t-03" title="Permanent link">&para;</a></h2>
+<p>The Fortran driver owns the time loop (2608 transport steps, 5216 Strang
+chemistry half-steps, 25245 active cell-solves). Physics identical in
+both modes: detonation speed 7.12391 vs s_CJ = 7.12470 (0.011%), burnt
+state within 0.025% of CJ (worst: u 0.025%, p 0.023%, rho 0.018%).</p>
+<table>
+<thead>
+<tr>
+<th>mode</th>
+<th style="text-align: right;">julia init</th>
+<th style="text-align: right;">first non-empty chem call</th>
+<th style="text-align: right;">chemistry total</th>
+<th style="text-align: right;">run total</th>
+<th style="text-align: right;">peak RSS</th>
+<th style="text-align: right;">bridge calls</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>jit (project env)</td>
+<td style="text-align: right;">17.3 s</td>
+<td style="text-align: right;">7.58 ms</td>
+<td style="text-align: right;">4.79 s</td>
+<td style="text-align: right;">7.72 s</td>
+<td style="text-align: right;">1.15 GB</td>
+<td style="text-align: right;">5231</td>
+</tr>
+<tr>
+<td>sysimage</td>
+<td style="text-align: right;">1.90 s</td>
+<td style="text-align: right;">8.04 ms</td>
+<td style="text-align: right;">4.02 s</td>
+<td style="text-align: right;">7.04 s</td>
+<td style="text-align: right;">1.18 GB</td>
+<td style="text-align: right;">5229</td>
+</tr>
+</tbody>
+</table>
+<p>Final driver (post round-2 review fixes), 2026-10-26, back-to-back runs
+from the repo root; the build/examples-cwd repeats gave jit 15.7 s /
+7.11 ms / 4.43 s / 7.22 s and sysimage 0.96 s / 7.83 ms / 4.99 s /
+7.95 s. Bridge calls = init/setup + 5215 chemistry (one <code>julia_eval</code>
+per half-step with a nonempty active set) + 1 shutdown; init/setup is
+15 in jit mode (binding probe + <code>import FjKinetics</code> + re-probe) vs 13
+in sysimage mode (probe only — the image binds <code>Main.FjKinetics</code>
+already, so no import runs). Peak RSS from the earlier same-day batch
+(VmHWM poller); the fixes touch only setup and validation, not the
+measured paths. Init ranges across all same-day runs: jit 15.1-20.2 s
+(loading ~92 package caches; the high end under load), sysimage
+0.93-2.37 s (the low end with a warm page cache).</p>
+<p><strong>Zero-JIT verification (corrected after adversarial review).</strong> An
+earlier revision of this report timed &ldquo;the first chemistry half-step&rdquo;
+at 21.6/21.8 µs and called that the zero-JIT proof. That was an empty
+measurement: half-step 1 has an empty active set (unburnt cells sit
+below t_cut, burnt driver cells below z_floor), so it makes no Julia
+call at all and the timer covered only the 2700-cell packing loop. The
+probe now clocks the first NON-EMPTY half-step — the post-transport
+one, the first call that actually crosses the bridge. Result on the
+final driver: 7.1-8.0 ms across all four runs (jit 7.58/7.11 ms,
+sysimage 8.04/7.83 ms) — statistically indistinguishable, all ms-scale,
+i.e. pure solver work over the handful of newly-shocked cells. A
+runtime compile event would cost 100 ms-seconds; no run shows one. The
+jit mode&rsquo;s ms-scale first call is a package-cache hit (FjKinetics&rsquo;
+PrecompileTools workload precompiled the exact view-based call
+signature), the sysimage&rsquo;s is the same code baked in the image.
+Per-active-cell-solve: jit 4.79/4.43 s per 25245 = 175-190 µs, sysimage
+4.02/4.99 s per 25245 = 159-198 µs — the ranges overlap, and the
+direction of the difference flips WITHIN this batch (repo-root runs:
+sysimage 4.02 &lt; jit 4.79; build-cwd runs: sysimage 4.99 &gt; jit 4.43) and
+again across earlier same-day batches (4.10 vs 4.87, then 4.60 vs 3.89)
+— the jit-vs-sysimage chemistry-total gap is host-load noise (~±20%),
+not a mode effect.</p>
+<h2 id="chemistry-kernel-micro-benchmark-identical-64-cell-hotfrozen-mix">Chemistry kernel micro-benchmark (identical 64-cell hot/frozen mix)<a class="headerlink" href="#chemistry-kernel-micro-benchmark-identical-64-cell-hotfrozen-mix" title="Permanent link">&para;</a></h2>
+<p><code>chem_bench_reference.jl</code> (pure Julia) and <code>3_aot_kinetics/</code> (standalone
+compiled library) drive the same interleaved workload: odd cells at
+T = 17 (full 10-decade burn, ~100 internal steps each), even cells at
+T = 1.6 (frozen, one internal step), dt = 4e-4, state reset every call.</p>
+<table>
+<thead>
+<tr>
+<th>mode</th>
+<th style="text-align: right;">startup</th>
+<th style="text-align: right;">steady per cell-step</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>pure Julia (package caches, JIT)</td>
+<td style="text-align: right;">17.5 s load</td>
+<td style="text-align: right;">309 µs</td>
+</tr>
+<tr>
+<td>embedded jit / sysimage (from the detonation run above)</td>
+<td style="text-align: right;">(see above)</td>
+<td style="text-align: right;">190 / 159 µs (batch ranges 175-190 / 159-198 µs)</td>
+</tr>
+<tr>
+<td>AOT standalone library</td>
+<td style="text-align: right;">0.58-1.97 s init**</td>
+<td style="text-align: right;">236 / 347 / 319 / 240 / 240 / 191 / 353 / 361 µs (eight runs, three builds)</td>
+</tr>
+</tbody>
+</table>
+<p>Per-cell-step costs are accuracy-driven (Rodas5P resolving F through 10
+decades at reltol 1e-8): ~6 µs frozen, ~65 µs induction, ~430 µs burn
+on an idle core (measured 2026-10-26, bench2); the mixed-workload
+figures above are on the loaded host (~±20% run-to-run). The
+per-half-step bridge eval adds only parse cost (µs), dwarfed by the
+~180 µs/cell of solver work in the real run.</p>
+<p>** AOT init spans 0.58-1.97 s across runs: cold page cache on the
+1.5 GB library vs warm; the cold-machine bound is the high end. The
+eight steady numbers span three library builds (original; round-1
+guarded @ccallables; round-2 clearable-solver + <strong>init</strong>) and two
+allocation shapes: 191 µs was measured inside a 32-core allocation
+(dedicated physical cores); 353/361 µs come from 1-core allocations on
+the loaded host, where a hyperthread sibling of the lone core is busy
+(the 2x gap tracks the sibling, not the build). The per-build triplets
+agree within the host-load band — the guards never touch the hot path.</p>
+<h2 id="what-each-mode-buys">What each mode buys<a class="headerlink" href="#what-each-mode-buys" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>JIT (embedded, project env)</strong>: zero build steps, slowest startup
+  (~15-20 s), needs the full depot on the target machine.</li>
+<li><strong>sysimage</strong>: one 1.20 GB image; startup 2.4 s (6-8×); same heap
+  footprint (peak RSS within 30 MB of JIT); no compilation risk at
+  runtime by construction.</li>
+<li><strong>AOT library</strong>: fastest startup (0.58-1.97 s library init, cold- to
+  warm-cache — plain image load, no package caches, no env); no Julia
+  installation, depot, or project on the target, kernel reached by C
+  symbols (<code>kinetics_build</code>, <code>kinetics_step</code>, zero-copy <code>unsafe_wrap</code> of
+  the Fortran buffers; error-code contract — no Julia exception can
+  cross the C ABI, and a fresh library load starts WITHOUT a solver: a
+  module <strong>init</strong> clears the build-time solver at image load, so
+  <code>kinetics_step</code> before <code>kinetics_build</code> returns -2 instead of
+  silently computing with baked-in parameters). One-time build cost:
+  50 min wall and ~33 GB peak compiler RSS for the non-incremental
+  codegen of the whole dependency closure (this is build-machine
+  memory, not deployment footprint); dist/ 2.5 GB with the lazy MKL
+  artifacts bundled (1.8 GB before, see incident below). Build +
+  guards + first batched 64-cell step after init is 14-25 ms, and the
+  first timed step (post-warm-up) 14-19 ms ≈ steady — no compilation
+  at runtime; the error codes (-2 before build, -1 bad n, 0 success)
+  are exercised by built-in guards on every bench run, including in
+  the empty-depot proof environment.</li>
+</ul>
+<h2 id="version-pinning-incident-why-the-pinned-stack-matters">Version-pinning incident (why the pinned stack matters)<a class="headerlink" href="#version-pinning-incident-why-the-pinned-stack-matters" title="Permanent link">&para;</a></h2>
+<p>Measured 2026-10-26: with the same example resolved against
+OrdinaryDiffEq 7.8.1 (the unpinned float), the per-cell
+<code>reinit!</code>/<code>step!</code> pattern degrades ~700× — a frozen cell costs 982
+internal steps instead of 1, a burning cell ~50 000 instead of ~100,
+~3.5 MB allocated per cell — turning the nx=2700 chemistry budget into
+hours. FjKinetics pins its tested line in <code>[compat]</code>; the sysimage and
+AOT environments resolve through it.</p>
+<h2 id="first-init-artifact-downloads-self-containedness">First-init artifact downloads (self-containedness)<a class="headerlink" href="#first-init-artifact-downloads-self-containedness" title="Permanent link">&para;</a></h2>
+<p>The very first AOT run downloaded ~570 MB from the network at
+<code>init_julia</code> (IntelOpenMP, oneTBB, MKL) before touching any chemistry:
+LinearSolve, deep in the SciML closure, probes the <code>MKL_jll</code> lazy
+artifact when the image loads, and PackageCompiler bundles only
+non-lazy artifacts by default — so the &ldquo;standalone&rdquo; library silently
+reached for the internet on any machine without a Julia depot. Fix:
+<code>create_library(...; include_lazy_artifacts = true)</code> bakes the lazy
+artifacts into dist/ (verified with an empty <code>JULIA_DEPOT_PATH</code> and
+fresh <code>HOME</code>: no downloads, bench green — re-proven on every guarded
+rebuild, most recently the final round-2 artifact). The 283 s first-init
+measurement is that download run; 0.58-1.97 s is init with the artifacts
+resolved locally.</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      FortranCallJulia - MIT License
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
