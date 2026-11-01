@@ -153,8 +153,8 @@ if(FJ_BUILD_SYSIMAGE)
             "FJ_BUILD_SYSIMAGE requires Julia 1.12.x, but \"${JULIA_SYSIMAGE_EXE} --version\" "
             "reported: ${FJ_JULIA_VERSION}\n"
             "The sysimage must be built by the same minor version that embeds it. "
-            "Reconfigure with -DJULIA_EXECUTABLE pointing at a 1.12.x Julia, e.g. "
-            "/home/redacted/julia-1.12.7/bin/julia (do not use the juliaup shim).")
+            "Reconfigure with -DJULIA_EXECUTABLE pointing at a self-contained "
+            "1.12.x Julia (not the juliaup shim).")
     endif()
 
     # Scratch environment the image is built from (FortranBridge as a path dep

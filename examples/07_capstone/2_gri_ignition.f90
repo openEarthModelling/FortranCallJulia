@@ -30,7 +30,7 @@
 ! refuses to run under one):
 !
 !   cd build/examples
-!   /home/redacted/julia-1.12.7/bin/julia --project=../../scripts/sysimage_env \
+!   julia --project=../../scripts/sysimage_env \
 !       ../../examples/07_capstone/run_gri_native.jl
 !   ./ex_capstone_gri_ignition
 !
@@ -165,7 +165,7 @@ program ex_capstone_gri_ignition
     if (iostat /= 0) then
         write (error_unit, '(A)') 'FATAL: native baseline not found at ' // &
             trim(native_path) // ' -- generate it first:' // new_line('a') // &
-            '  /home/redacted/julia-1.12.7/bin/julia ' // &
+            '  julia ' // &
             '--project=../../scripts/sysimage_env ' // &
             '../../examples/07_capstone/run_gri_native.jl' // new_line('a') // &
             '  (run from build/examples with the pinned 1.12.7 binary; or ' // &

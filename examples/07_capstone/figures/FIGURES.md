@@ -16,7 +16,7 @@ cmake --build build --target ex_capstone_gri_ignition
 ./build/examples/ex_capstone_reacting_flow detonation 2700 0.3 sysimage   # det 两件数据
 ./build/examples/ex_capstone_reacting_flow                                 # sod 数据
 cd build/examples
-/home/redacted/julia-1.12.7/bin/julia --project=../../scripts/sysimage_env \
+julia --project=../../scripts/sysimage_env \
     ../../examples/07_capstone/run_gri_native.jl                           # 必须用钉死的 1.12.7
 ./ex_capstone_gri_ignition                                                 # GRI 两件数据
 cd ../../examples/07_capstone/figures && python3 plot_capstone.py

@@ -10,7 +10,7 @@
 # (that is also where the .dat is read by default):
 #
 #   cd build/examples
-#   /home/redacted/julia-1.12.7/bin/julia --project=../../scripts/sysimage_env \
+#   julia --project=../../scripts/sysimage_env \
 #       ../../examples/07_capstone/run_gri_native.jl
 #   ./ex_capstone_gri_ignition
 #
@@ -42,7 +42,7 @@ const BRIDGE_JULIA = v"1.12.7"   # the libjulia the bridge executable links
 VERSION == BRIDGE_JULIA || error(
     "native baseline must be generated with the bridge-pinned Julia " *
     "$BRIDGE_JULIA (this is $(VERSION)) -- use " *
-    "/home/redacted/julia-1.12.7/bin/julia, not the juliaup shim. A " *
+    "a self-contained 1.12.7 install, not the juliaup shim. A " *
     "different runtime drifts at the ignition transition and fails the " *
     "1e-8 gates while wrongly indicting the bridge extraction.")
 

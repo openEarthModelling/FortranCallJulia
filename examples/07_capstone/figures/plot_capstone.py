@@ -86,12 +86,19 @@ from matplotlib.transforms import ScaledTranslation
 
 FIGS = Path(__file__).resolve().parent
 OUT = FIGS.parent / "output"
-SKILL_SCRIPTS = Path(
-    "/home/redacted/.claude/local-marketplaces/nature-skills/"
-    "skills/nature-figure/scripts"
+# Panel-alignment QA comes from an author-local nature-figure helper that is
+# not shipped with this repository: figures regenerate with the check where
+# the helper exists and without it (noted per-figure) everywhere else.
+ALIGNMENT_HELPER = (
+    Path.home() / ".claude/local-marketplaces/nature-skills"
+    / "skills/nature-figure/scripts"
 )
-sys.path.insert(0, str(SKILL_SCRIPTS))
-from audit_panel_alignment import require_matplotlib_panel_alignment  # noqa: E402
+if ALIGNMENT_HELPER.is_dir():
+    sys.path.insert(0, str(ALIGNMENT_HELPER))
+try:
+    from audit_panel_alignment import require_matplotlib_panel_alignment  # noqa: E402
+except ImportError:
+    require_matplotlib_panel_alignment = None
 
 # -- mandatory editable-text rules (nature-figure) + publication stance ----
 # export contract per user decision: PNG (600 dpi) + PDF; SVG/TIFF are
@@ -210,7 +217,11 @@ def finalize(fig, name, alignment_kwargs=None, pad=1.2):
         strict=True,
     )
     kwargs.update(alignment_kwargs or {})
-    report = require_matplotlib_panel_alignment(fig, **kwargs)
+    report = (
+        require_matplotlib_panel_alignment(fig, **kwargs)
+        if require_matplotlib_panel_alignment
+        else {"verdict": "skipped (author-local alignment helper absent)"}
+    )
     fig.savefig(FIGS / f"{name}.png", dpi=600)
     fig.savefig(FIGS / f"{name}.pdf")
     plt.close(fig)
@@ -490,10 +501,14 @@ def fig4():
         "AOT steady range excludes one 32-core run (191 µs; dedicated cores).",
         fontsize=5.5, ha="left", va="bottom", linespacing=1.3,
     )
-    report = require_matplotlib_panel_alignment(
-        fig, json_out=str(FIGS / "fig4_performance.alignment.json"),
-        overlay_svg=None, tolerance_pt=1.5, gutter_tolerance_pt=1.5,
-        require_panel_labels=True, strict=True,
+    report = (
+        require_matplotlib_panel_alignment(
+            fig, json_out=str(FIGS / "fig4_performance.alignment.json"),
+            overlay_svg=None, tolerance_pt=1.5, gutter_tolerance_pt=1.5,
+            require_panel_labels=True, strict=True,
+        )
+        if require_matplotlib_panel_alignment
+        else {"verdict": "skipped (author-local alignment helper absent)"}
     )
     fig.savefig(FIGS / "fig4_performance.png", dpi=600)
     fig.savefig(FIGS / "fig4_performance.pdf")
