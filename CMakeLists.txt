@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.13)
-project(FortranCallJulia LANGUAGES C Fortran)
+project(FortranCallJulia VERSION 0.1.0 LANGUAGES C Fortran)
 
 # ==============================================================================
 # Options
@@ -10,45 +10,16 @@ option(FJ_BUILD_SYSIMAGE "Build libfj_sysimage via PackageCompiler" OFF)
 # ==============================================================================
 # Find Julia and Configuration
 # ==============================================================================
-find_program(JULIA_EXECUTABLE julia DOC "Path to Julia executable")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(FcjJuliaDiscovery)
 
-if(NOT JULIA_EXECUTABLE)
-    message(FATAL_ERROR "Julia executable not found. Please ensure 'julia' is in your PATH.")
-endif()
+# Discovery and the 1.12.x pin are load-bearing for the whole build, not
+# just the sysimage: the bridge embeds libjulia 1.12.7 and the acceptance
+# baselines are only meaningful against that runtime.
+fcj_find_julia()
+fcj_require_julia_1_12()
 
-message(STATUS "Found Julia: ${JULIA_EXECUTABLE}")
-
-# Helper function to get Julia config
-function(get_julia_config code output_var)
-    execute_process(
-        COMMAND ${JULIA_EXECUTABLE} -e "${code}"
-        OUTPUT_VARIABLE _out
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        RESULT_VARIABLE _res
-    )
-    if(NOT _res EQUAL 0)
-        message(FATAL_ERROR "Failed to run Julia command for configuration.")
-    endif()
-    set(${output_var} "${_out}" PARENT_SCOPE)
-endfunction()
-
-# Get Flags from Julia
-get_julia_config("import Libdl; print(joinpath(Sys.BINDIR, Base.DATAROOTDIR, \"julia\", \"julia-config.jl\"))" JULIA_CONFIG_SCRIPT)
-
-execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --cflags OUTPUT_VARIABLE JULIA_CFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --ldflags OUTPUT_VARIABLE JULIA_LDFLAGS OUTPUT_STRIP_TRAILING_WHITESPACE)
-execute_process(COMMAND ${JULIA_EXECUTABLE} ${JULIA_CONFIG_SCRIPT} --ldlibs OUTPUT_VARIABLE JULIA_LDLIBS OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-# Clean up flags
-string(REPLACE "\n" " " JULIA_CFLAGS "${JULIA_CFLAGS}")
-string(REPLACE " " ";" JULIA_CFLAGS "${JULIA_CFLAGS}")
-string(REPLACE "'" "" JULIA_CFLAGS "${JULIA_CFLAGS}")
-string(REPLACE "\n" " " JULIA_LDFLAGS "${JULIA_LDFLAGS}")
-string(REPLACE " " ";" JULIA_LDFLAGS "${JULIA_LDFLAGS}")
-string(REPLACE "'" "" JULIA_LDFLAGS "${JULIA_LDFLAGS}")
-string(REPLACE "\n" " " JULIA_LDLIBS "${JULIA_LDLIBS}")
-string(REPLACE " " ";" JULIA_LDLIBS "${JULIA_LDLIBS}")
-string(REPLACE "'" "" JULIA_LDLIBS "${JULIA_LDLIBS}")
+message(STATUS "Found Julia: ${JULIA_EXECUTABLE} -> ${FCJ_JULIA_REAL}")
 
 # ==============================================================================
 # Core Library (Fortran-Julia Middleware)
@@ -66,21 +37,25 @@ add_library(fcj_middleware STATIC
     src/julia_sdk.f90
 )
 
+# Namespaced alias: add_subdirectory/FetchContent consumers and the
+# installed Config package all expose fcj::fcj_middleware (the alias is
+# linkable from a consumer's toplevel; verified, that is how fmt/Catch2
+# style projects are consumed via FetchContent).
+add_library(fcj::fcj_middleware ALIAS fcj_middleware)
+
 # Set Include Directories (Public so consumers inherit it)
 target_include_directories(fcj_middleware PUBLIC 
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
     $<INSTALL_INTERFACE:include>
 )
 
-# Apply Julia C Flags to bridge.c
-# Resolve symlinks first so a juliaup shim path resolves to the real
-# versioned bin dir, then take its DIRECTORY.
-get_filename_component(JULIA_BINDIR "${JULIA_EXECUTABLE}" REALPATH)
-get_filename_component(JULIA_BINDIR "${JULIA_BINDIR}" DIRECTORY)
+# Apply Julia C Flags to bridge.c. FCJ_JULIA_REAL already resolved any
+# juliaup shim; the compile-time JULIA_BINDIR must be the real bin dir.
+get_filename_component(JULIA_BINDIR "${FCJ_JULIA_REAL}" DIRECTORY)
 target_compile_definitions(fcj_middleware PRIVATE JULIA_BINDIR="${JULIA_BINDIR}")
 
-target_compile_options(fcj_middleware PRIVATE 
-    $<$<COMPILE_LANGUAGE:C>:${JULIA_CFLAGS}>
+target_compile_options(fcj_middleware PRIVATE
+    $<$<COMPILE_LANGUAGE:C>:${FCJ_JULIA_CFLAGS}>
 )
 
 # -fno-underscoring is GNU-only (gfortran): it disables gfortran's default
@@ -92,8 +67,8 @@ if(CMAKE_Fortran_COMPILER_ID STREQUAL "GNU")
 endif()
 
 # Link Options
-target_link_options(fcj_middleware INTERFACE ${JULIA_LDFLAGS})
-target_link_libraries(fcj_middleware INTERFACE ${JULIA_LDLIBS})
+target_link_options(fcj_middleware INTERFACE ${FCJ_JULIA_LDFLAGS})
+target_link_libraries(fcj_middleware INTERFACE ${FCJ_JULIA_LDLIBS})
 
 # Fortran Module Output Directory
 set_target_properties(fcj_middleware PROPERTIES 
@@ -107,6 +82,7 @@ include(GNUInstallDirs)
 
 # Install Library
 install(TARGETS fcj_middleware
+    EXPORT FortranCallJuliaTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -126,36 +102,42 @@ install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/modules/
 # examples build probes via find_path(Project.toml).
 install(DIRECTORY src/FortranBridge DESTINATION ${CMAKE_INSTALL_DATADIR}/FortranCallJulia)
 
+# find_package(FortranCallJulia) support: exported targets plus Config
+# files. The Config re-runs Julia discovery on the consumer's machine, so
+# the installed package is not tied to this build's libjulia paths.
+set(FJ_CMAKE_INSTALL_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/FortranCallJulia)
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    cmake/FortranCallJuliaConfig.cmake.in
+    "${CMAKE_CURRENT_BINARY_DIR}/FortranCallJuliaConfig.cmake"
+    INSTALL_DESTINATION ${FJ_CMAKE_INSTALL_DIR}
+)
+write_basic_package_version_file(
+    "${CMAKE_CURRENT_BINARY_DIR}/FortranCallJuliaConfigVersion.cmake"
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+install(EXPORT FortranCallJuliaTargets
+    NAMESPACE fcj::
+    FILE FortranCallJuliaTargets.cmake
+    DESTINATION ${FJ_CMAKE_INSTALL_DIR}
+)
+install(FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/FortranCallJuliaConfig.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/FortranCallJuliaConfigVersion.cmake"
+    cmake/FcjJuliaDiscovery.cmake
+    DESTINATION ${FJ_CMAKE_INSTALL_DIR}
+)
+
 # ==============================================================================
 # AOT Sysimage via PackageCompiler (Optional)
 # ==============================================================================
 if(FJ_BUILD_SYSIMAGE)
-    # The sysimage must be built by the same Julia minor version that embeds
-    # it. Resolve shims/symlinks first: a juliaup shim defaulting to another
-    # version (e.g. 1.13) reports that version and produces a load-crashing
-    # artifact for the embedded 1.12.7 runtime.
-    get_filename_component(JULIA_SYSIMAGE_EXE "${JULIA_EXECUTABLE}" REALPATH)
-    execute_process(
-        COMMAND ${JULIA_SYSIMAGE_EXE} --version
-        RESULT_VARIABLE FJ_JULIA_VERSION_RES
-        OUTPUT_VARIABLE FJ_JULIA_VERSION
-        ERROR_VARIABLE FJ_JULIA_VERSION_ERR
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-        ERROR_STRIP_TRAILING_WHITESPACE
-    )
-    if(NOT FJ_JULIA_VERSION_RES EQUAL 0)
-        message(FATAL_ERROR
-            "FJ_BUILD_SYSIMAGE: failed to run \"${JULIA_SYSIMAGE_EXE} --version\": "
-            "${FJ_JULIA_VERSION_ERR}")
-    endif()
-    if(NOT FJ_JULIA_VERSION MATCHES "^julia version 1\\.12\\.")
-        message(FATAL_ERROR
-            "FJ_BUILD_SYSIMAGE requires Julia 1.12.x, but \"${JULIA_SYSIMAGE_EXE} --version\" "
-            "reported: ${FJ_JULIA_VERSION}\n"
-            "The sysimage must be built by the same minor version that embeds it. "
-            "Reconfigure with -DJULIA_EXECUTABLE pointing at a self-contained "
-            "1.12.x Julia (not the juliaup shim).")
-    endif()
+    # The 1.12.x pin was already hard-enforced at configure time
+    # (fcj_require_julia_1_12 above): the sysimage must be built by the
+    # same minor version that embeds it, and a juliaup shim defaulting to
+    # another version would produce a load-crashing artifact.
+    set(JULIA_SYSIMAGE_EXE "${FCJ_JULIA_REAL}")
 
     # Scratch environment the image is built from (FortranBridge as a path dep
     # plus SciMLBase, OrdinaryDiffEq, PrecompileTools, PackageCompiler).

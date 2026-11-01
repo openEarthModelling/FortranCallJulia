@@ -1,0 +1,25 @@
+@PACKAGE_INIT@
+
+# Installed Config package for FortranCallJulia (find_package consumption).
+# Runs the same Julia discovery as the in-tree build, hard-checks the
+# 1.12.x pin, imports the exported target, and re-points the link interface
+# at THIS consumer's Julia (the exported file records the build machine's
+# libjulia flags, which do not transfer).
+
+include("${CMAKE_CURRENT_LIST_DIR}/FcjJuliaDiscovery.cmake")
+fcj_find_julia()
+fcj_require_julia_1_12()
+
+include("${CMAKE_CURRENT_LIST_DIR}/FortranCallJuliaTargets.cmake")
+
+set_target_properties(fcj::fcj_middleware PROPERTIES
+    INTERFACE_LINK_OPTIONS "${FCJ_JULIA_LDFLAGS}"
+    INTERFACE_LINK_LIBRARIES "${FCJ_JULIA_LDLIBS}")
+
+# Runtime location of the embedded FortranBridge Julia package in this
+# installation: point JULIA_FJ_PROJECT here (or copy the directory next to
+# your executable) so the bridge can activate it at startup.
+set(FortranCallJulia_FortranBridge_DIR
+    "${PACKAGE_PREFIX_DIR}/share/FortranCallJulia/FortranBridge")
+
+check_required_components(FortranCallJulia)
