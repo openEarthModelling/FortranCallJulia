@@ -1,289 +1,289 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
     <url>
-        <loc>None./</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="None"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/"/>
     </url>
     <url>
-        <loc>Nonedeveloper/acceptance-gates/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/developer/acceptance-gates/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/acceptance-gates/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/acceptance-gates/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/acceptance-gates/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/acceptance-gates/"/>
     </url>
     <url>
-        <loc>Nonedeveloper/annex-performance/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/developer/annex-performance/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/annex-performance/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/annex-performance/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/annex-performance/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/annex-performance/"/>
     </url>
     <url>
-        <loc>Nonedeveloper/bridge-internals/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/developer/bridge-internals/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/bridge-internals/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/bridge-internals/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/bridge-internals/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/bridge-internals/"/>
     </url>
     <url>
-        <loc>Nonedeveloper/contributing/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/developer/contributing/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/contributing/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/contributing/"/>
     </url>
     <url>
-        <loc>Nonedeveloper/further-reading/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/developer/further-reading/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/further-reading/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/further-reading/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/further-reading/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/further-reading/"/>
     </url>
     <url>
-        <loc>Nonedeveloper/lessons/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/developer/lessons/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/lessons/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/lessons/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/lessons/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/lessons/"/>
     </url>
     <url>
-        <loc>Nonedeveloper/rebuild/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/developer/rebuild/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/rebuild/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/rebuild/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/rebuild/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/rebuild/"/>
     </url>
     <url>
-        <loc>Nonedeveloper/repository-tour/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/developer/repository-tour/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/repository-tour/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/repository-tour/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/repository-tour/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/repository-tour/"/>
     </url>
     <url>
-        <loc>Noneintro/architecture/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/intro/architecture/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/architecture/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/intro/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/intro/architecture/"/>
     </url>
     <url>
-        <loc>Noneintro/validation/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/intro/validation/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/validation/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/validation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/intro/validation/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/intro/validation/"/>
     </url>
     <url>
-        <loc>Noneintro/what-is-this/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/intro/what-is-this/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/what-is-this/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/what-is-this/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/intro/what-is-this/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/intro/what-is-this/"/>
     </url>
     <url>
-        <loc>Noneintro/why-fortran-julia/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/intro/why-fortran-julia/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/why-fortran-julia/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/why-fortran-julia/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/intro/why-fortran-julia/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/intro/why-fortran-julia/"/>
     </url>
     <url>
-        <loc>Noneuser/arrays-and-callbacks/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/user/arrays-and-callbacks/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/arrays-and-callbacks/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/arrays-and-callbacks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/arrays-and-callbacks/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/arrays-and-callbacks/"/>
     </url>
     <url>
-        <loc>Noneuser/bring-your-own-kinetics/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/user/bring-your-own-kinetics/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/bring-your-own-kinetics/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/bring-your-own-kinetics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/bring-your-own-kinetics/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/bring-your-own-kinetics/"/>
     </url>
     <url>
-        <loc>Noneuser/deployment-modes/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/user/deployment-modes/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/deployment-modes/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/deployment-modes/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/deployment-modes/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/deployment-modes/"/>
     </url>
     <url>
-        <loc>Noneuser/first-call/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/user/first-call/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/first-call/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/first-call/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/first-call/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/first-call/"/>
     </url>
     <url>
-        <loc>Noneuser/installation/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/user/installation/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/installation/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/installation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/installation/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/installation/"/>
     </url>
     <url>
-        <loc>Noneuser/known-limitations/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/user/known-limitations/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/known-limitations/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/known-limitations/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/known-limitations/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/known-limitations/"/>
     </url>
     <url>
-        <loc>Noneuser/two-sdks/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/user/two-sdks/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/two-sdks/"/>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/two-sdks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/two-sdks/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/two-sdks/"/>
     </url>
     <url>
-        <loc>Nonezh/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="None"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/acceptance-gates/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/acceptance-gates/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/acceptance-gates/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/acceptance-gates/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/acceptance-gates/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/acceptance-gates/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/annex-performance/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/annex-performance/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/annex-performance/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/annex-performance/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/annex-performance/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/annex-performance/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/bridge-internals/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/bridge-internals/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/bridge-internals/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/bridge-internals/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/bridge-internals/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/bridge-internals/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/contributing/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/contributing/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/contributing/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/contributing/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/contributing/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/further-reading/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/further-reading/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/further-reading/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/further-reading/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/further-reading/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/further-reading/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/lessons/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/lessons/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/lessons/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/lessons/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/lessons/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/lessons/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/rebuild/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/rebuild/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/rebuild/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/rebuild/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/rebuild/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/rebuild/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/repository-tour/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/repository-tour/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/repository-tour/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Nonedeveloper/repository-tour/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/repository-tour/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/developer/repository-tour/"/>
     </url>
     <url>
-        <loc>Nonezh/intro/architecture/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/intro/architecture/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/architecture/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/intro/architecture/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/intro/architecture/"/>
     </url>
     <url>
-        <loc>Nonezh/intro/validation/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/intro/validation/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/validation/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/validation/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/intro/validation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/intro/validation/"/>
     </url>
     <url>
-        <loc>Nonezh/intro/what-is-this/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/intro/what-is-this/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/what-is-this/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/what-is-this/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/intro/what-is-this/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/intro/what-is-this/"/>
     </url>
     <url>
-        <loc>Nonezh/intro/why-fortran-julia/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/intro/why-fortran-julia/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/intro/why-fortran-julia/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneintro/why-fortran-julia/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/intro/why-fortran-julia/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/intro/why-fortran-julia/"/>
     </url>
     <url>
-        <loc>Nonezh/user/arrays-and-callbacks/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/user/arrays-and-callbacks/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/arrays-and-callbacks/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/arrays-and-callbacks/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/arrays-and-callbacks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/arrays-and-callbacks/"/>
     </url>
     <url>
-        <loc>Nonezh/user/bring-your-own-kinetics/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/user/bring-your-own-kinetics/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/bring-your-own-kinetics/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/bring-your-own-kinetics/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/bring-your-own-kinetics/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/bring-your-own-kinetics/"/>
     </url>
     <url>
-        <loc>Nonezh/user/deployment-modes/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/user/deployment-modes/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/deployment-modes/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/deployment-modes/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/deployment-modes/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/deployment-modes/"/>
     </url>
     <url>
-        <loc>Nonezh/user/first-call/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/user/first-call/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/first-call/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/first-call/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/first-call/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/first-call/"/>
     </url>
     <url>
-        <loc>Nonezh/user/installation/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/user/installation/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/installation/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/installation/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/installation/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/installation/"/>
     </url>
     <url>
-        <loc>Nonezh/user/known-limitations/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/user/known-limitations/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/known-limitations/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/known-limitations/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/known-limitations/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/known-limitations/"/>
     </url>
     <url>
-        <loc>Nonezh/user/two-sdks/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/user/two-sdks/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/user/two-sdks/"/>
-        <xhtml:link rel="alternate" hreflang="en" href="Noneuser/two-sdks/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/user/two-sdks/"/>
+        <xhtml:link rel="alternate" hreflang="en" href="https://openearthmodelling.github.io/FortranCallJulia/user/two-sdks/"/>
     </url>
     <url>
-        <loc>Nonezh/developer/annex-figures/</loc>
+        <loc>https://openearthmodelling.github.io/FortranCallJulia/zh/developer/annex-figures/</loc>
         <lastmod>2026-11-01</lastmod>
         <changefreq>daily</changefreq>
-        <xhtml:link rel="alternate" hreflang="zh" href="Nonezh/developer/annex-figures/"/>
+        <xhtml:link rel="alternate" hreflang="zh" href="https://openearthmodelling.github.io/FortranCallJulia/zh/developer/annex-figures/"/>
     </url>
 </urlset>
