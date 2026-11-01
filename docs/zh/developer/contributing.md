@@ -5,7 +5,7 @@ sync: 2026-11-01
 
 # 贡献指南
 
-项目采用 MIT 许可证（[LICENSE](https://github.com/openEarthModelling/FortranCallJulia/blob/master/LICENSE)）——这份许可证就是全部法律安排；没有 CLA，也没有它之外的任何贡献者协议。本页讲实用的一半：怎么得到一个能工作的构建、"完成"意味着什么、一个好的改动长什么样。
+项目采用 MIT 许可证（[LICENSE](https://github.com/openEarthModelling/FortranCallJulia/blob/main/LICENSE)）——这份许可证就是全部法律安排；没有 CLA，也没有它之外的任何贡献者协议。本页讲实用的一半：怎么得到一个能工作的构建、"完成"意味着什么、一个好的改动长什么样。
 
 ## 得到能工作的构建
 
@@ -61,7 +61,7 @@ bug，再谈写代码。
 
 ## Pull request
 
-向主分支（`master`）开 PR，附上：
+向主分支（`main`）开 PR，附上：
 
 - 改动做什么、为什么（有 issue 就带上链接）；
 - 你跑了哪些门、哨兵输出是什么；

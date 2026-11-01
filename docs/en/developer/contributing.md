@@ -5,7 +5,7 @@ sync: 2026-11-01
 
 # Contributing
 
-The project is MIT-licensed ([LICENSE](https://github.com/openEarthModelling/FortranCallJulia/blob/master/LICENSE)) --
+The project is MIT-licensed ([LICENSE](https://github.com/openEarthModelling/FortranCallJulia/blob/main/LICENSE)) --
 the license is the whole of the legal arrangement; there is no CLA and no
 contributor agreement beyond it. This page covers the practical half: how
 to get a working build, what "done" means, and what a good change looks
@@ -80,7 +80,7 @@ measurement is a future person's wrong assumption.
 
 ## Pull requests
 
-Open the PR against the primary branch (`master`) with:
+Open the PR against the primary branch (`main`) with:
 
 - what the change does and why (a linked issue when there is one),
 - which gates you ran and their sentinel output,
