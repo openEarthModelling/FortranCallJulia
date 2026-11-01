@@ -36,6 +36,10 @@ scripts/sysimage_env/
 # ChemMechSim dev-path entry points outside the repo, so a tracked copy
 # breaks instantiate on any other machine)
 examples/07_capstone/FjKinetics/Manifest.toml
+# KineticsAOT package Manifest: same story -- its dev-path entries
+# (ChemMechSim, FjKinetics) point outside the repo, so a tracked copy
+# breaks instantiate on any other machine
+examples/07_capstone/3_aot_kinetics/KineticsAOT/Manifest.toml
 examples/07_capstone/3_aot_kinetics/dist/
 examples/07_capstone/3_aot_kinetics/build/
 examples/07_capstone/3_aot_kinetics/aot_bench

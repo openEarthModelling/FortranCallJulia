@@ -18,9 +18,10 @@ All numbers from the 2026-10-26 runs on a shared build host (192-core,
 load ~119 during measurement; single core per run). Julia
 1.12.7, FjKinetics on the compat-pinned stack: the load-bearing pins
 (OrdinaryDiffEq 6.111.0, Catalyst 16.2.1, PrecompileTools 1.3.4) are
-identical in every committed/resolved environment; patch-level deps
+identical in every validation environment; patch-level deps
 differ slightly by artifact -- the JIT runs resolved through FjKinetics'
-committed Manifest (SciMLBase 2.155.1, StaticArrays 1.9.18), while the
+Manifest at measurement time (SciMLBase 2.155.1, StaticArrays 1.9.18),
+while the
 sysimage and AOT environments resolved SciMLBase 2.155.2 /
 StaticArrays 1.9.24 (within [compat], which floors the minor lines, so
 the 700x drift class cannot recur through resolution). Identical compiled kernel
