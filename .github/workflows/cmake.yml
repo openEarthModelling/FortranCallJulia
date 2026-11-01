@@ -1,0 +1,40 @@
+# CI for the C bridge / Fortran SDK build and its two consumption tiers.
+#
+# The consumer smoke is the load-bearing job: it proves the library is not
+# merely buildable inside its own tree but consumable the way a third party
+# consumes it -- find_package against an installed prefix, and FetchContent
+# from a git source -- running a real bridge roundtrip through both.
+
+name: cmake
+
+on:
+  push:
+    paths: &cmake_paths
+      - src/**
+      - cmake/**
+      - CMakeLists.txt
+      - examples/**
+      - tests/cmake_consumer/**
+      - .github/workflows/cmake.yml
+  pull_request:
+    paths: *cmake_paths
+
+jobs:
+  build-and-consume:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0  # the smoke's FetchContent tier bare-clones this repo
+
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.12.7'  # pinned runtime; configure-time check enforces the 1.12.x line
+
+      - name: Library + examples build
+        run: |
+          cmake -S . -B build -DBUILD_EXAMPLES=ON
+          cmake --build build -j"$(nproc)"
+
+      - name: Consumer smoke (find_package + FetchContent)
+        run: bash tests/cmake_consumer/run_smoke.sh
