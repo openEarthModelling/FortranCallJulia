@@ -51,10 +51,10 @@ Fortran bind(c) 调用方
 
 ## 交互式全景图
 
-<a href="/assets/fcj-architecture.html" target="_blank">在新标签页打开完整版</a>——支持搜索、两点间路径追踪和引导式浏览。
+<a href="../../../assets/fcj-architecture.html" target="_blank">在新标签页打开完整版</a>——支持搜索、两点间路径追踪和引导式浏览。
 
 <figure>
-  <iframe src="/assets/fcj-architecture.html"
+  <iframe src="../../../assets/fcj-architecture.html"
           title="FortranCallJulia 架构图（交互式）"
           loading="lazy"
           style="width:100%;height:900px;border:1px solid #ccc;">
@@ -63,6 +63,6 @@ Fortran bind(c) 调用方
 
 若内嵌框架不可用（禁用 JavaScript、受限网络），下面的静态预览承载同样的分层结构：
 
-![FortranCallJulia 架构图静态预览](/assets/architecture-preview.png)
+![FortranCallJulia 架构图静态预览](../../assets/architecture-preview.png)
 
 读图要领：三列即上述三个世界；跨列的边就是 `fcj_*` ABI 与 `@cfunction` 回调路径。下一页把整套构造钉在数字上：[验证](validation.md)。

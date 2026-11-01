@@ -78,12 +78,12 @@ call ~12 μs) -- see [Deployment modes](../user/deployment-modes.md).
 
 ## The full system, interactively
 
-<a href="/assets/fcj-architecture.html" target="_blank">Open the full version
+<a href="../../assets/fcj-architecture.html" target="_blank">Open the full version
 in a new tab</a> -- it supports search, path tracing between two nodes, and
 a guided tour.
 
 <figure>
-  <iframe src="/assets/fcj-architecture.html"
+  <iframe src="../../assets/fcj-architecture.html"
           title="FortranCallJulia architecture diagram (interactive)"
           loading="lazy"
           style="width:100%;height:900px;border:1px solid #ccc;">
@@ -93,7 +93,7 @@ a guided tour.
 If the embedded frame is unavailable (no JavaScript, restricted network),
 the static preview below carries the same layer structure:
 
-![Static preview of the FortranCallJulia architecture diagram](/assets/architecture-preview.png)
+![Static preview of the FortranCallJulia architecture diagram](../../assets/architecture-preview.png)
 
 Reading the diagram: the three columns are the three worlds above; edges
 crossing columns are the `fcj_*` ABI and the `@cfunction` callback path.

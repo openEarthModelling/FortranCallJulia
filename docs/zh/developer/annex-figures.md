@@ -48,7 +48,7 @@ cd ../../examples/07_capstone/figures && python3 plot_capstone.py
 
 ## fig1_sod_transport — Sod 激波管三联图（ρ / u / p，183 mm 双栏）
 
-![fig1：Sod 激波管三联图（ρ / u / p）](/assets/figs/fig1_sod_transport.png)
+![fig1：Sod 激波管三联图（ρ / u / p）](../../assets/figs/fig1_sod_transport.png)
 
 ### 数学模型与精确解
 
@@ -101,7 +101,7 @@ $p\ 1.09\times10^{-3}$，与一阶精度 $O(\Delta x)$ 一致。守恒格式的
 
 ## fig2_detonation_structure — CJ 爆震结构四联（183 mm 双栏）
 
-![fig2：CJ 爆震结构四联](/assets/figs/fig2_detonation_structure.png)
+![fig2：CJ 爆震结构四联](../../assets/figs/fig2_detonation_structure.png)
 
 ### 数学模型
 
@@ -159,7 +159,7 @@ $\Delta x = 1.11\times10^{-3}$）。d 联的 Z 悬崖即反应层，inset 放大
 
 ## fig3_front_speed — 前沿轨迹与爆速（89 mm 单栏）
 
-![fig3：前沿轨迹与爆速](/assets/figs/fig3_front_speed.png)
+![fig3：前沿轨迹与爆速](../../assets/figs/fig3_front_speed.png)
 
 ### 数学与测量协议
 
@@ -191,7 +191,7 @@ CJ 参考线。红虚骑在蓝割线上方且缝隙对齐——两条线在图�
 
 ## fig4_performance — 四模式成本对比（89 mm 单栏）
 
-![fig4：四模式成本对比](/assets/figs/fig4_performance.png)
+![fig4：四模式成本对比](../../assets/figs/fig4_performance.png)
 
 ### 数学/统计口径
 
@@ -225,7 +225,7 @@ b 联唯一的数据排除已在图内脚注与 PERFORMANCE.md 记录：AOT 的�
 
 ## fig5_gri_ignition — GRI-Mech 3.0 均质点火（89 mm 双联）
 
-![fig5：GRI-Mech 3.0 均质点火](/assets/figs/fig5_gri_ignition.png)
+![fig5：GRI-Mech 3.0 均质点火](../../assets/figs/fig5_gri_ignition.png)
 
 ### 数学模型
 
@@ -268,7 +268,7 @@ dataviz 六项校验器全对通过；紫–蓝对 protan ΔE 7.5 落在 6–8 �
 
 ## fig6_bridge_vs_native — 桥接 vs 原生逐点对照（89 mm 双联）
 
-![fig6：桥接 vs 原生逐点对照](/assets/figs/fig6_bridge_vs_native.png)
+![fig6：桥接 vs 原生逐点对照](../../assets/figs/fig6_bridge_vs_native.png)
 
 ### 对照协议
 
@@ -307,7 +307,7 @@ $|\Delta q| / \max(|q_\mathrm{native}|, 10^{-10})$：分母条件化下限
 
 ## fig7_heat_release — 放热率判据 |dT/dt|（89 mm 单栏）
 
-![fig7：放热率判据 |dT/dt|](/assets/figs/fig7_heat_release.png)
+![fig7：放热率判据 |dT/dt|](../../assets/figs/fig7_heat_release.png)
 
 ### 量的定义
 
@@ -324,7 +324,7 @@ K/µs，此后随链支反应加速单调爬升（0.8 ms 处 0.10、1.0 ms 处
 
 ## fig8_capstone_overview — 收官总览（183 mm 2×3）
 
-![fig8：收官总览](/assets/figs/fig8_capstone_overview.png)
+![fig8：收官总览](../../assets/figs/fig8_capstone_overview.png)
 
 一页看全整个 capstone，六联全部是已审计数据的重绘（无新数据通道）：
 **a** Sod ρ vs 精确 Riemann 解（输运内核，fig1）；**b** 爆震 p + CJ
