@@ -1,6 +1,6 @@
 # FortranCallJulia
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
 
 FortranCallJulia embeds the Julia runtime inside a Fortran application:
 Fortran calls Julia through a C bridge, and Julia solvers call back into
