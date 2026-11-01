@@ -1,4 +1,5 @@
 site_name: FortranCallJulia
+site_url: https://openearthmodelling.github.io/FortranCallJulia/
 copyright: FortranCallJulia - MIT License
 
 theme:

@@ -1,5 +1,7 @@
 # FortranCallJulia
 
+[![docs](https://github.com/openEarthModelling/FortranCallJulia/actions/workflows/docs.yml/badge.svg)](https://github.com/openEarthModelling/FortranCallJulia/actions/workflows/docs.yml)
+[![cmake](https://github.com/openEarthModelling/FortranCallJulia/actions/workflows/cmake.yml/badge.svg)](https://github.com/openEarthModelling/FortranCallJulia/actions/workflows/cmake.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)
 
 FortranCallJulia embeds the Julia runtime inside a Fortran application:
@@ -8,14 +10,14 @@ Fortran -- one process, zero-copy arrays, every call exception-checked.
 
 ## Documentation
 
-The documentation ships in two languages, both built from this repository:
+The documentation site ships in two languages and is published from this
+repository:
 
-- **[Documentation (English)](docs/en/index.md)** -- introduction, user
-  guide, and developer guide
-- **[中文文档](docs/zh/index.md)** -- the complete Simplified Chinese mirror
+- **[Documentation (English)](https://openearthmodelling.github.io/FortranCallJulia/)**
+- **[中文文档](https://openearthmodelling.github.io/FortranCallJulia/zh/)**
 
-The full site -- language selector, interactive architecture diagram,
-bilingual annexes -- builds locally with MkDocs:
+The same pages build locally with MkDocs, and the bilingual sources live
+under `docs/en/` and `docs/zh/`:
 
 ```bash
 pip install -r requirements-docs.txt && mkdocs serve

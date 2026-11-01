@@ -8,6 +8,7 @@
 name: docs
 
 on:
+  workflow_dispatch:
   push:
     paths: &docs_paths
       - docs/**

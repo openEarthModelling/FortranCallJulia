@@ -8,6 +8,7 @@
 name: cmake
 
 on:
+  workflow_dispatch:
   push:
     paths: &cmake_paths
       - src/**
