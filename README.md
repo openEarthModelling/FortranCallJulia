@@ -1,5 +1,9 @@
 # FortranCallJulia
 
+<p align="center">
+  <img src="docs/assets/logo.png" alt="FortranCallJulia logo" width="251">
+</p>
+
 [![docs](https://github.com/openEarthModelling/FortranCallJulia/actions/workflows/docs.yml/badge.svg)](https://github.com/openEarthModelling/FortranCallJulia/actions/workflows/docs.yml)
 [![cmake](https://github.com/openEarthModelling/FortranCallJulia/actions/workflows/cmake.yml/badge.svg)](https://github.com/openEarthModelling/FortranCallJulia/actions/workflows/cmake.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-informational.svg)](LICENSE)

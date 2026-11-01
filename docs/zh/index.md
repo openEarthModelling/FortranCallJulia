@@ -3,6 +3,8 @@ title: 在 Fortran 中嵌入 Julia 运行时
 sync: 2026-10-31
 ---
 
+![FortranCallJulia 徽标](../assets/logo.png)
+
 把 Julia 运行时嵌入 Fortran 应用程序：Fortran 经 C 桥（`fcj_*` C ABI）调用
 Julia，Julia 求解器再回调 Fortran——同一进程、零拷贝数组、每次调用都做异常检查。
 

@@ -4,6 +4,8 @@ copyright: FortranCallJulia - MIT License
 
 theme:
   name: material
+  logo: assets/logo-square.png
+  favicon: assets/favicon.png
 
 plugins:
   - search

@@ -3,6 +3,8 @@ title: FortranCallJulia
 sync: 2026-10-31
 ---
 
+![FortranCallJulia logo](../assets/logo.png)
+
 Embed the Julia runtime inside a Fortran application: Fortran calls Julia
 through a C bridge (the `fcj_*` C ABI), and Julia solvers call back into
 Fortran -- one process, zero-copy arrays, every call exception-checked.
