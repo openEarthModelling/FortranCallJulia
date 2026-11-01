@@ -1,6 +1,6 @@
 ---
 title: Installation
-sync: 2026-10-31
+sync: 2026-11-01
 ---
 
 # Installation
@@ -136,6 +136,44 @@ julia scripts/install_sciml_env.jl    # once; see the SciML section above
 cmake -DFJ_BUILD_SYSIMAGE=ON ..
 make fcj_sysimage                     # minutes; downloads on first run
 ```
+
+## Consuming from another CMake project
+
+The library exports one namespaced CMake target, `fcj::fcj_middleware`,
+through two tiers. Both need the same pinned Julia 1.12.x at configure
+time -- the package re-runs Julia discovery on your machine (Julia on
+`PATH`, or `-DJULIA_EXECUTABLE=...`) and rejects a different minor,
+because the bridge embeds libjulia 1.12.7.
+
+**`find_package`** -- install once, then consume the install tree:
+
+```cmake
+find_package(FortranCallJulia 0.1 REQUIRED)
+target_link_libraries(your_app PRIVATE fcj::fcj_middleware)
+```
+
+Configure with `-DCMAKE_PREFIX_PATH=/path/to/installed/prefix`. One
+caveat: the installed Fortran modules under `include/` were compiled by
+the builder's gfortran -- consume them with the same gfortran version, or
+use FetchContent to compile everything with your own.
+
+**`FetchContent`** -- no install step; compile the bridge inside your
+tree and pin a tag:
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(fcj
+    GIT_REPOSITORY https://github.com/openEarthModelling/FortranCallJulia.git
+    GIT_TAG        v0.1.0)
+FetchContent_MakeAvailable(fcj)
+target_link_libraries(your_app PRIVATE fcj::fcj_middleware)
+```
+
+At runtime the bridge locates the `FortranBridge` Julia package via
+`JULIA_FJ_PROJECT` or a directory next to the executable. With
+`find_package` the Config sets `FortranCallJulia_FortranBridge_DIR` to
+the installed copy; with FetchContent it is `<fcj-source>/src/FortranBridge`.
+Both tiers are exercised in CI by `tests/cmake_consumer`.
 
 ## Where to go next
 

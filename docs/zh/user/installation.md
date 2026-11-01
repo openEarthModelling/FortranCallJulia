@@ -1,6 +1,6 @@
 ---
 title: 安装
-sync: 2026-10-31
+sync: 2026-11-01
 ---
 
 # 安装
@@ -118,6 +118,42 @@ julia scripts/install_sciml_env.jl    # 一次性；见上文 SciML 一节
 cmake -DFJ_BUILD_SYSIMAGE=ON ..
 make fcj_sysimage                     # 数分钟；首次运行有下载
 ```
+
+## 在别的 CMake 工程里消费本库
+
+库通过一个命名空间 CMake 目标 `fcj::fcj_middleware` 对外导出，支持两种
+消费档位。两档都要求 configure 时有同样的钉死 Julia 1.12.x——包会在你的
+机器上重新做 Julia 发现（`PATH` 上的 julia，或 `-DJULIA_EXECUTABLE=...`），
+并拒绝其他 minor 版本，因为桥内嵌的是 libjulia 1.12.7。
+
+**`find_package`**——先安装一次，再消费安装树：
+
+```cmake
+find_package(FortranCallJulia 0.1 REQUIRED)
+target_link_libraries(your_app PRIVATE fcj::fcj_middleware)
+```
+
+configure 时传 `-DCMAKE_PREFIX_PATH=/path/to/installed/prefix`。一个注意
+点：`include/` 下安装的 Fortran 模块由构建者的 gfortran 编译——请用同一
+版本的 gfortran 消费，或改用 FetchContent 让所有代码都用你自己的编译器
+编译。
+
+**`FetchContent`**——无需安装步骤；在自己的树里编译桥，钉住一个 tag：
+
+```cmake
+include(FetchContent)
+FetchContent_Declare(fcj
+    GIT_REPOSITORY https://github.com/openEarthModelling/FortranCallJulia.git
+    GIT_TAG        v0.1.0)
+FetchContent_MakeAvailable(fcj)
+target_link_libraries(your_app PRIVATE fcj::fcj_middleware)
+```
+
+运行期，桥通过 `JULIA_FJ_PROJECT` 或可执行文件旁的目录定位
+`FortranBridge` Julia 包。`find_package` 档的 Config 会把
+`FortranCallJulia_FortranBridge_DIR` 指向已安装的副本；FetchContent 档则
+在 `<fcj-source>/src/FortranBridge`。两档均由 `tests/cmake_consumer`
+在 CI 里实跑验证。
 
 ## 接下来去哪
 
