@@ -5,7 +5,9 @@ gate via its CLI entry point, asserting on the exit code and stderr.
 
 The leak tests rely on the pattern ``/home/`` being present in
 scripts/docs_leak_patterns.txt (pinned by the docs-tree plan as one of the
-three initial patterns).
+three initial patterns). Canary fixtures use synthetic identities
+(``/public/home/ciuser``, ``node01``) so that no real user or host name
+appears in this file while the patterns still match.
 """
 
 import sys
@@ -81,7 +83,7 @@ def test_annex_exempt(tmp_path, capsys):
     # ...but NOT exempt from the leak scan.
     write_page(
         tmp_path, "en", "developer/annex-leak.md", "annex-leak",
-        extra_fm=["annex: true"], body="Runs from /home/redacted/secret/run.sh",
+        extra_fm=["annex: true"], body="Runs from /public/home/ciuser/secret/run.sh",
     )
     rc, err = run_gate(tmp_path, capsys)
     assert rc == 1
@@ -122,7 +124,7 @@ def test_leak_pattern_fails(tmp_path, capsys):
     make_clean_site(tmp_path)
     write_page(
         tmp_path, "en", "user/deploy.md", "deploy",
-        body="Copy the artifact from /home/redacted/deploy/dist.",
+        body="Copy the artifact from /public/home/ciuser/deploy/dist.",
     )
     write_page(tmp_path, "zh", "user/deploy.md", "deploy", body="普通正文。")
     rc, err = run_gate(tmp_path, capsys)
@@ -146,7 +148,7 @@ def test_asset_leak_fails(tmp_path, capsys):
     # The same asset carrying a leak pattern must FAIL the gate -- published
     # assets are scanned just like pages.
     asset.write_text(
-        "<html><body>generated from /home/redacted/site/out.html</body></html>",
+        "<html><body>generated from /public/home/ciuser/site/out.html</body></html>",
         encoding="utf-8",
     )
     rc, err = run_gate(tmp_path, capsys)
