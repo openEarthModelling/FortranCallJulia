@@ -43,9 +43,14 @@ add_library(fcj_middleware STATIC
 # style projects are consumed via FetchContent).
 add_library(fcj::fcj_middleware ALIAS fcj_middleware)
 
-# Set Include Directories (Public so consumers inherit it)
-target_include_directories(fcj_middleware PUBLIC 
+# Set Include Directories (Public so consumers inherit it). The build
+# interface carries BOTH the header/source dir and the compiled Fortran
+# module directory: in-tree consumers (examples, FetchContent/add_subdirectory
+# users) need julia_high_level.mod on their include path; the install
+# interface ships the .mod files inside include/.
+target_include_directories(fcj_middleware PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/modules>
     $<INSTALL_INTERFACE:include>
 )
 
